@@ -17,6 +17,7 @@ feat:
 
 - [ ] bot init config
 - [ ] log system
+- [ ] command alias
 - [ ] command & arg parse system
 - [ ] `MsgCtx` design
 - [ ] replace `flask` with `aiohttp`
