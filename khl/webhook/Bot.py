@@ -72,8 +72,8 @@ class Bot:
                                   msg_timestamp=d['msg_timestamp'], nonce=d['nonce'], extra=d['extra'])
                     arg_list = self.check_msg_is_cmd(msg)
                     if arg_list:
-                        func = self.__cmd_list[arg_list[0]]
-                        if func:
+                        if arg_list[0] in self.__cmd_list.keys():
+                            func = self.__cmd_list[arg_list[0]]
                             argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
                             if argc <= len(arg_list):
                                 func(msg, *arg_list[1:len(signature(func).parameters)])
