@@ -1,4 +1,5 @@
 import json
+import logging
 import shlex
 import zlib
 from inspect import signature, Parameter
@@ -60,7 +61,7 @@ class Bot:
         @self.app.route('/khl-wh', methods=['POST'])
         def respond():
             json_data = self.data_to_json(request.data)
-            print(json_data)
+            logging.debug(json_data)
             assert json_data
             assert json_data['d']['verify_token'] == self.cert.verify_token
 
