@@ -15,13 +15,18 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps khl.p
 
 feat:
 
+T1:
+
+- [ ] replace `flask` with `aiohttp`
+
+T2:
+
 - [ ] bot init config
 - [ ] msg handling in events loop
 - [ ] log system
 - [ ] command alias
 - [ ] command & arg parse system
 - [ ] `MsgCtx` design
-- [ ] replace `flask` with `aiohttp`
 
 bug fix:
 
