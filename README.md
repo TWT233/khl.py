@@ -16,6 +16,7 @@ python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps khl.p
 feat:
 
 - [ ] bot init config
+- [ ] msg handling in events loop
 - [ ] log system
 - [ ] command alias
 - [ ] command & arg parse system
