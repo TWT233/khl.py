@@ -26,7 +26,6 @@ class Bot:
         self.__cmd_list: dict = {}
 
     def command(self, name: str):
-        # TODO: check func args
         def cmd_wrapper(func):
             if name in self.__cmd_list.keys():
                 raise TypeError
@@ -36,25 +35,17 @@ class Bot:
         return cmd_wrapper
 
     def check_msg_is_cmd(self, msg: TextMsg):
-        if msg.content[0] not in self.cmd_prefix:
-            return None
-        return shlex.split(msg.content[1:])
+        return (msg.content[0] not in self.cmd_prefix) and None or shlex.split(msg.content[1:])
 
     def data_to_json(self, data: bytes):
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
-        if 'encrypt' in data.keys():
-            data = json.loads(self.cert.decrypt(data['encrypt']))
-        return data
+        return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
 
     def send(self, channel_id: str, content: str, *, quote: str = '', object_name: int = 1, nonce: str = ''):
         headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
-        data = {'channel_id': channel_id, 'content': content, 'object_name': object_name}
-        if quote:
-            data['quote'] = quote
-        if nonce:
-            data['nonce'] = nonce
-
+        data = {'channel_id': channel_id, 'content': content, 'object_name': object_name, 'quote': quote,
+                'nonce': nonce}
         return requests.post(f'{API_URL}/channel/message?compress=0', headers=headers, data=json.dumps(data))
 
     def run(self):
@@ -78,8 +69,6 @@ class Bot:
                             argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
                             if argc <= len(arg_list):
                                 func(msg, *arg_list[1:len(signature(func).parameters)])
-
-                    return Response(status=200)
                 if d['type'] == 255:
                     if d['channel_type'] == 'WEBHOOK_CHALLENGE':
                         return {'challenge': d['challenge']}
