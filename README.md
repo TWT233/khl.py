@@ -17,6 +17,7 @@ feat:
 
 T1:
 
+- [ ] check `SN`
 - [ ] replace `flask` with `aiohttp`
 
 T2:
