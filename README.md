@@ -4,11 +4,10 @@ SDK for kaiheila.cn in python
 
 # install
 
-**Only available in test.pypi now**
+Python requirement: >= Python 3.6
 
 ```shell
-python3 -m pip install Flask==1.1.2 requests==2.25.0 pycryptodomex==3.9.9
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps khl.py
+pip install khl.py
 ```
 
 # short-term roadmap
