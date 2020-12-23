@@ -24,6 +24,13 @@ class Bot:
         self.app = web.Application()
         self.__cmd_list: dict = {}
 
+    def add_command(self, cmd: Command):
+        if not isinstance(cmd, Command):
+            raise TypeError('not a Command')
+        if cmd.name in self.__cmd_list.keys():
+            raise ValueError('Command Name Exists')
+        self.__cmd_list[cmd.name] = cmd
+
     def command(self, name: str):
         def cmd_wrapper(func):
             if name in self.__cmd_list.keys():
