@@ -36,6 +36,15 @@ class Bot:
     def check_msg_is_cmd(self, msg: TextMsg):
         return (msg.content[0] not in self.cmd_prefix) and None or shlex.split(msg.content[1:])
 
+    async def __msg_handler(self, msg: TextMsg):
+        arg_list = self.split_msg_args(msg)
+        if arg_list:
+            if arg_list[0] in self.__cmd_list.keys():
+                func = self.__cmd_list[arg_list[0]].handler
+                argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
+                if argc <= len(arg_list):
+                    await func(msg, *arg_list[1:len(signature(func).parameters)])
+
     def data_to_json(self, data: bytes):
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
@@ -59,13 +68,7 @@ class Bot:
                     msg = TextMsg(channel_type=d['channel_type'], target_id=d['target_id'],
                                   author_id=d['author_id'], content=d['content'], msg_id=d['msg_id'],
                                   msg_timestamp=d['msg_timestamp'], nonce=d['nonce'], extra=d['extra'])
-                    arg_list = self.check_msg_is_cmd(msg)
-                    if arg_list:
-                        if arg_list[0] in self.__cmd_list.keys():
-                            func = self.__cmd_list[arg_list[0]]
-                            argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
-                            if argc <= len(arg_list):
-                                func(msg, *arg_list[1:len(signature(func).parameters)])
+                    asyncio.ensure_future(self.__msg_handler(msg))
                 if d['type'] == 255:
                     if d['channel_type'] == 'WEBHOOK_CHALLENGE':
                         return web.json_response({'challenge': d['challenge']})
