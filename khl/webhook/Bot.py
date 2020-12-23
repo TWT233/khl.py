@@ -1,15 +1,14 @@
+import asyncio
 import json
-import logging
 import shlex
 import zlib
 from inspect import signature, Parameter
 from typing import Union
 
-import requests
-from flask import Flask, request, Response
+from aiohttp import web, ClientSession
 
-from ..utils import API_URL, TextMsg
 from .cert import Cert
+from ..utils import API_URL, TextMsg, Command
 
 
 class Bot:
@@ -22,7 +21,7 @@ class Bot:
         self.cmd_prefix = [i for i in cmd_prefix]
         self.cert = cert
 
-        self.app = Flask(__name__)
+        self.app = web.Application()
         self.__cmd_list: dict = {}
 
     def command(self, name: str):
@@ -42,17 +41,15 @@ class Bot:
         data = json.loads(str(data, encoding='utf-8'))
         return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
 
-    def send(self, channel_id: str, content: str, *, quote: str = '', object_name: int = 1, nonce: str = ''):
+    async def send(self, channel_id: str, content: str, *, quote: str = '', object_name: int = 1, nonce: str = ''):
         headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
         data = {'channel_id': channel_id, 'content': content, 'object_name': object_name, 'quote': quote,
                 'nonce': nonce}
-        return requests.post(f'{API_URL}/channel/message?compress=0', headers=headers, data=json.dumps(data))
+        return await ClientSession().post(f'{API_URL}/channel/message?compress=0', headers=headers, json=data)
 
     def run(self):
-        @self.app.route('/khl-wh', methods=['POST'])
-        def respond():
-            json_data = self.data_to_json(request.data)
-            logging.debug(json_data)
+        async def respond(request: web.Request) -> web.Response:
+            json_data = self.data_to_json(await request.read())
             assert json_data
             assert json_data['d']['verify_token'] == self.cert.verify_token
 
@@ -71,8 +68,9 @@ class Bot:
                                 func(msg, *arg_list[1:len(signature(func).parameters)])
                 if d['type'] == 255:
                     if d['channel_type'] == 'WEBHOOK_CHALLENGE':
-                        return {'challenge': d['challenge']}
+                        return web.json_response({'challenge': d['challenge']})
 
-            return Response(status=200)
+            return web.Response(status=200)
 
-        self.app.run(host="0.0.0.0", port=self.port)
+        self.app.router.add_post('/khl-wh', respond)
+        web.run_app(self.app, port=self.port)
