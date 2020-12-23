@@ -32,15 +32,13 @@ class Bot:
         self.__cmd_list[cmd.name] = cmd
 
     def command(self, name: str):
-        def cmd_wrapper(func):
-            if name in self.__cmd_list.keys():
-                raise TypeError
-            self.__cmd_list[name] = func
-            return func
+        def decorator(func):
+            cmd = Command.command(name)(func)
+            self.add_command(cmd)
 
-        return cmd_wrapper
+        return decorator
 
-    def check_msg_is_cmd(self, msg: TextMsg):
+    def split_msg_args(self, msg: TextMsg):
         return (msg.content[0] not in self.cmd_prefix) and None or shlex.split(msg.content[1:])
 
     async def __msg_handler(self, msg: TextMsg):
