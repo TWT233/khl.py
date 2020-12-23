@@ -1,8 +1,8 @@
 import json
 import random
 
-from khl.webhook import Bot, Cert
 from khl import TextMsg
+from khl.webhook import Bot, Cert
 
 # load config from config/config.json, replace `path` points to your own config file
 # config template: `./config/config.json`
@@ -32,8 +32,8 @@ bot = Bot(cert=cert, cmd_prefix=['!', '！'], compress=True)
 # add command, accept optional arguments
 # you can invoke this command via:`!骰子 1 100` or ``
 @bot.command(name='骰子')
-def roll(msg: TextMsg, r_min: str, r_max: str, n: str = 1):
-    bot.send(msg.target_id, f'骰出来了：{[random.randint(int(r_min), int(r_max)) for i in range(int(n))]}')
+async def roll(msg: TextMsg, r_min: str, r_max: str, n: str = 1):
+    await bot.send(msg.target_id, f'骰出来了：{[random.randint(int(r_min), int(r_max)) for i in range(int(n))]}')
 
 
 # everything done, go ahead now!
