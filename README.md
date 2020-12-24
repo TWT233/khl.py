@@ -17,12 +17,10 @@ feat:
 T1:
 
 - [ ] check `SN`
-- [ ] replace `flask` with `aiohttp`
 
 T2:
 
 - [ ] bot init config
-- [ ] msg handling in events loop
 - [ ] log system
 - [ ] command alias
 - [ ] command & arg parse system
