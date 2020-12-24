@@ -12,15 +12,16 @@ pip install khl.py
 
 # short-term roadmap
 
+perf:
+
+- [ ] reuse `ClientSession`
+    - consider tear bot and http functions into 2 APIs
+- [ ] check `SN`
+
 feat:
 
 T1:
 
-- [ ] check `SN`
-
-T2:
-
-- [ ] bot init config
 - [ ] log system
 - [ ] command alias
 - [ ] command & arg parse system
