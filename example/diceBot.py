@@ -1,8 +1,8 @@
 import json
 import random
 
-from khl import TextMsg
-from khl.webhook import Bot, Cert
+from khl import TextMsg, Bot
+from khl.webhook import Cert
 
 # load config from config/config.json, replace `path` points to your own config file
 # config template: `./config/config.json`
