@@ -5,10 +5,10 @@ import zlib
 from inspect import signature, Parameter
 from typing import Union
 
-from aiohttp import web, ClientSession
+from aiohttp import web, ClientSession, WSCloseCode
 
-from .cert import Cert
-from ..utils import API_URL, TextMsg, Command
+from .webhook import Cert
+from . import API_URL, TextMsg, Command
 
 
 class Bot:
@@ -21,6 +21,7 @@ class Bot:
         self.cmd_prefix = [i for i in cmd_prefix]
         self.cert = cert
 
+        self.cs = ClientSession()
         self.app = web.Application()
         self.__cmd_list: dict = {}
 
@@ -59,7 +60,8 @@ class Bot:
         headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
         data = {'channel_id': channel_id, 'content': content, 'object_name': object_name, 'quote': quote,
                 'nonce': nonce}
-        return await ClientSession().post(f'{API_URL}/channel/message?compress=0', headers=headers, json=data)
+        async with self.cs.post(f'{API_URL}/channel/message?compress=0', headers=headers, json=data) as res:
+            return res
 
     def run(self):
         async def respond(request: web.Request) -> web.Response:
@@ -80,5 +82,11 @@ class Bot:
 
             return web.Response(status=200)
 
+        async def shutdown_handler(app):
+            for ws in set(app['websockets']):
+                await ws.close(code=WSCloseCode.GOING_AWAY, message='Server shutdown')
+            await self.cs.close()
+
         self.app.router.add_post('/khl-wh', respond)
+        self.app.on_shutdown.append(shutdown_handler)
         web.run_app(self.app, port=self.port)
