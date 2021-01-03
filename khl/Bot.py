@@ -1,28 +1,18 @@
-import asyncio
-import json
 import shlex
-import zlib
 from inspect import signature, Parameter
 from typing import Union
 
-from aiohttp import web, ClientSession, WSCloseCode
-
-from .webhook import Cert
-from . import API_URL, TextMsg, Command
+from . import API_URL, TextMsg, Command, BaseClient
 
 
 class Bot:
     def __init__(self, *,
-                 port: int = 5000, compress: bool = True,
                  cmd_prefix: Union[list, str, tuple] = ('!', '！'),
-                 cert: Cert):
-        self.port: int = port
-        self.compress = compress
+                 net_client: BaseClient
+                 ):
         self.cmd_prefix = [i for i in cmd_prefix]
-        self.cert = cert
+        self.nc = net_client
 
-        self.cs = ClientSession()
-        self.app = web.Application()
         self.__cmd_list: dict = {}
 
     def add_command(self, cmd: Command):
@@ -39,54 +29,29 @@ class Bot:
 
         return decorator
 
+    async def send(self, channel_id: str, content: str, *, quote: str = '', object_name: int = 1, nonce: str = ''):
+        data = {'channel_id': channel_id, 'content': content, 'object_name': object_name, 'quote': quote,
+                'nonce': nonce}
+        return await self.nc.send(f'{API_URL}/channel/message?compress=0', data)
+
     def split_msg_args(self, msg: TextMsg):
         return (msg.content[0] not in self.cmd_prefix) and None or shlex.split(msg.content[1:])
 
-    async def __msg_handler(self, msg: TextMsg):
-        arg_list = self.split_msg_args(msg)
-        if arg_list:
-            if arg_list[0] in self.__cmd_list.keys():
-                func = self.__cmd_list[arg_list[0]].handler
-                argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
-                if argc <= len(arg_list):
-                    await func(msg, *arg_list[1:len(signature(func).parameters)])
+    def gen_msg_handler(self):
+        async def msg_handler(d: dict):
+            msg = TextMsg(channel_type=d['channel_type'], target_id=d['target_id'],
+                          author_id=d['author_id'], content=d['content'], msg_id=d['msg_id'],
+                          msg_timestamp=d['msg_timestamp'], nonce=d['nonce'], extra=d['extra'])
+            arg_list = self.split_msg_args(msg)
+            if arg_list:
+                if arg_list[0] in self.__cmd_list.keys():
+                    func = self.__cmd_list[arg_list[0]].handler
+                    argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
+                    if argc <= len(arg_list):
+                        await func(msg, *arg_list[1:len(signature(func).parameters)])
 
-    def data_to_json(self, data: bytes):
-        data = self.compress and zlib.decompress(data) or data
-        data = json.loads(str(data, encoding='utf-8'))
-        return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
-
-    async def send(self, channel_id: str, content: str, *, quote: str = '', object_name: int = 1, nonce: str = ''):
-        headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
-        data = {'channel_id': channel_id, 'content': content, 'object_name': object_name, 'quote': quote,
-                'nonce': nonce}
-        async with self.cs.post(f'{API_URL}/channel/message?compress=0', headers=headers, json=data) as res:
-            return res
+        return msg_handler
 
     def run(self):
-        async def respond(request: web.Request) -> web.Response:
-            json_data = self.data_to_json(await request.read())
-            assert json_data
-            assert json_data['d']['verify_token'] == self.cert.verify_token
-
-            if json_data['s'] == 0:
-                d = json_data['d']
-                if d['type'] == 1:
-                    msg = TextMsg(channel_type=d['channel_type'], target_id=d['target_id'],
-                                  author_id=d['author_id'], content=d['content'], msg_id=d['msg_id'],
-                                  msg_timestamp=d['msg_timestamp'], nonce=d['nonce'], extra=d['extra'])
-                    asyncio.ensure_future(self.__msg_handler(msg))
-                if d['type'] == 255:
-                    if d['channel_type'] == 'WEBHOOK_CHALLENGE':
-                        return web.json_response({'challenge': d['challenge']})
-
-            return web.Response(status=200)
-
-        async def shutdown_handler(app):
-            for ws in set(app['websockets']):
-                await ws.close(code=WSCloseCode.GOING_AWAY, message='Server shutdown')
-            await self.cs.close()
-
-        self.app.router.add_post('/khl-wh', respond)
-        self.app.on_shutdown.append(shutdown_handler)
-        web.run_app(self.app, port=self.port)
+        self.nc.on_recv_append(self.gen_msg_handler())
+        self.nc.run()
