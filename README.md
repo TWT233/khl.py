@@ -14,8 +14,6 @@ pip install khl.py
 
 perf:
 
-- [ ] reuse `ClientSession`
-    - consider tear bot and http functions into 2 APIs
 - [ ] check `SN`
 
 feat:
