@@ -2,7 +2,7 @@ import json
 import random
 
 from khl import TextMsg, Bot
-from khl.webhook import Cert
+from khl.webhook import Cert, WebhookClient
 
 # load config from config/config.json, replace `path` points to your own config file
 # config template: `./config/config.json`
@@ -26,7 +26,7 @@ cert = Cert(client_id=config['client_id'], client_secret=config['client_secret']
 #  http://your.domain:5000/khl-wh?compress=0    |   Bot(cert=cert, compress=False)  |   (disable compress)
 #          http://your.domain:2333              |      Bot(cert=cert, port=2333)    |   (set port)
 #       http://your.domain:5000/khl-wh          |          Bot(cert=cert)           |   (all as default)
-bot = Bot(cert=cert, cmd_prefix=['!', '！'], compress=True)
+bot = Bot(cmd_prefix=['!', '！'], net_client=WebhookClient(cert=cert, compress=True))
 
 
 # add command, accept optional arguments
