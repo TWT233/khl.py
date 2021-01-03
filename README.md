@@ -12,6 +12,10 @@ pip install khl.py
 
 # short-term roadmap
 
+docs:
+
+- [ ] docs init
+
 perf:
 
 - [ ] check `SN`
