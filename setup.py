@@ -9,7 +9,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name="khl.py",
-    version="0.0.5",
+    version="0.0.6",
     author="TWT233",
     author_email="TWT2333@outlook.com",
     description="SDK for kaiheila.cn in python",
@@ -23,5 +23,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.4',
+    python_requires='>=3.6',
 )
