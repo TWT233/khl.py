@@ -14,11 +14,11 @@ pip install khl.py
 
 docs:
 
-- [ ] docs init
+- [x] docs init
 
 perf:
 
-- [ ] check `SN`
+- [x] check `SN`
 
 feat:
 

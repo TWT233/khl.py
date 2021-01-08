@@ -1,4 +1,5 @@
 import json
+import time
 import zlib
 
 import asyncio
@@ -21,6 +22,7 @@ class WebhookClient(BaseClient):
         self.cert = cert
         self.compress = compress
         self.recv = []
+        self.sn_dup_map = {}
 
     async def send(self, url: str, data):
         headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
@@ -37,6 +39,17 @@ class WebhookClient(BaseClient):
         data = json.loads(str(data, encoding='utf-8'))
         return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
 
+    def is_dup_sn(self, req_json) -> bool:
+        """ check if a req is dup """
+        sn = req_json['sn']
+        current = time.time()
+        if sn in self.sn_dup_map.keys():
+            if current - self.sn_dup_map[sn] <= 600:
+                # 600 sec timed out
+                return True
+        self.sn_dup_map[sn] = current
+        return False
+
     def init_app(self):
         """ init aiohttp app
         """
@@ -45,6 +58,9 @@ class WebhookClient(BaseClient):
             req_json = self.data_to_json(await request.read())
             assert req_json
             assert req_json['d']['verify_token'] == self.cert.verify_token
+
+            if self.is_dup_sn(req_json):
+                return web.Response(status=200)
 
             if req_json['s'] == 0:
                 d = req_json['d']
