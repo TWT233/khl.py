@@ -6,6 +6,8 @@ from . import API_URL, TextMsg, Command, BaseClient
 
 
 class Bot:
+    """ Bot, composed of `NetClient`, ``
+    """
     def __init__(self, *,
                  cmd_prefix: Union[list, str, tuple] = ('!', '！'),
                  net_client: BaseClient

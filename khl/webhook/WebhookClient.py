@@ -9,6 +9,8 @@ from . import Cert
 
 
 class WebhookClient(BaseClient):
+    """ implements BaseClient, with webhook protocol
+    """
 
     def __init__(self, *, port=5000, route='/khl-wh', compress: bool = True, cert: Cert):
         super().__init__(port)
@@ -30,11 +32,15 @@ class WebhookClient(BaseClient):
         pass
 
     def data_to_json(self, data: bytes):
+        """ internal function, used to decompress and decrypt data recv from server"""
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
         return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
 
     def init_app(self):
+        """ init aiohttp app
+        """
+
         async def on_recv(request: web.Request):
             req_json = self.data_to_json(await request.read())
             assert req_json
@@ -44,7 +50,7 @@ class WebhookClient(BaseClient):
                 d = req_json['d']
                 if d['type'] == 1:
                     for i in self.recv:
-                        asyncio.ensure_future(i(d))
+                        await asyncio.ensure_future(i(d))
                 if d['type'] == 255:
                     if d['channel_type'] == 'WEBHOOK_CHALLENGE':
                         return web.json_response({'challenge': d['challenge']})

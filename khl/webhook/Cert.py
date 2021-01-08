@@ -5,6 +5,8 @@ from Cryptodome.Util import Padding
 
 
 class Cert:
+    """ certification, used in auth, encrypt/decrypt, etc."""
+
     def __init__(self, *,
                  client_id: str, client_secret: str,
                  token: str, verify_token: str,
@@ -16,6 +18,12 @@ class Cert:
         self.encrypt_key = encrypt_key
 
     def decrypt(self, data: bytes) -> str:
+        """ decrypt data
+
+        :param data: encrypted byte array
+
+        :return: decrypted str
+        """
         if not self.encrypt_key:
             return ''
         data = base64.b64decode(data)

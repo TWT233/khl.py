@@ -2,10 +2,16 @@ from .User import User
 
 
 class TextMsg:
+    """represents a msg, recv from/send to server
+    """
+
     def __init__(self, *,
                  channel_type: str,
                  target_id: str, author_id: str, content: str, msg_id: str,
                  msg_timestamp: int, nonce: str, extra):
+        """
+        all fields origin from server event object, corresponding to official doc
+        """
         self.channel_type = channel_type
         self.type = 1
         self.target_id = target_id
@@ -22,4 +28,3 @@ class TextMsg:
         self.mention_roles: list = extra['mention_roles']
         self.mention_here: bool = extra['mention_here']
         self.author: User = User(extra['author'])
-
