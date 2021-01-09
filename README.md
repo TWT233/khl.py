@@ -31,6 +31,8 @@ T1:
 
 bug fix:
 
+- [x] error parsing str in `."` pattern (cmd_prefix+unclosing quote)
+
 # commit message rules
 
 only accept commits satisfying [Conventional Commits convention](https://github.com/commitizen/cz-cli)

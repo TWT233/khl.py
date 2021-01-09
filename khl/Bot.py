@@ -8,6 +8,7 @@ from . import API_URL, TextMsg, Command, BaseClient
 class Bot:
     """ Bot, composed of `NetClient`, ``
     """
+
     def __init__(self, *,
                  cmd_prefix: Union[list, str, tuple] = ('!', '！'),
                  net_client: BaseClient
@@ -37,7 +38,14 @@ class Bot:
         return await self.nc.send(f'{API_URL}/channel/message?compress=0', data)
 
     def split_msg_args(self, msg: TextMsg):
-        return (msg.content[0] not in self.cmd_prefix) and None or shlex.split(msg.content[1:])
+        if msg.content[0] not in self.cmd_prefix:
+            ret = None
+        else:
+            try:
+                ret = shlex.split(msg.content[1:])
+            except:
+                ret = None
+        return ret
 
     def gen_msg_handler(self):
         async def msg_handler(d: dict):
