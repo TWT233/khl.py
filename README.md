@@ -27,6 +27,7 @@ T1:
 - [ ] log system
 - [ ] command alias
 - [ ] command & arg parse system
+    - [ ] sub command system
 - [ ] `MsgCtx` design
 
 bug fix:
