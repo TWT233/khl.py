@@ -6,13 +6,21 @@ from . import API_URL, TextMsg, Command, BaseClient
 
 
 class Bot:
-    """ Bot, composed of `NetClient`, ``
+    """
+    Entity that interacts with user/environment
     """
 
     def __init__(self, *,
                  cmd_prefix: Union[list, str, tuple] = ('!', '！'),
                  net_client: BaseClient
                  ):
+        """
+        Constructor of Bot
+
+        :param cmd_prefix: accepted prefix for msg to be a command
+        :param net_client: http connector/handler used, usually :class:`khl.webhook.WebhookClient`
+        """
+
         self.cmd_prefix = [i for i in cmd_prefix]
         self.nc = net_client
 

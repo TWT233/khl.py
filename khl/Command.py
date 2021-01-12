@@ -2,7 +2,8 @@ import asyncio
 
 
 class Command:
-    """ Command class, stands for Commands used in Bot
+    """
+    Command class, used in Bot
     """
 
     def __init__(self, func, name: str):
@@ -18,7 +19,8 @@ class Command:
     def command(name: str):
         """
         decorator to wrap a func into a Command
-        :param name: the name of a Command, also used in triggering Command
+
+        :param name: the name of a Command, also used to trigger Command
         :return: wrapped Command
         """
 

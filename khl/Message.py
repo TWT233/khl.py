@@ -2,7 +2,8 @@ from .User import User
 
 
 class TextMsg:
-    """represents a msg, recv from/send to server
+    """
+    represents a msg, recv from/send to server
     """
 
     def __init__(self, *,

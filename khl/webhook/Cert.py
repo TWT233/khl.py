@@ -5,12 +5,19 @@ from Cryptodome.Util import Padding
 
 
 class Cert:
-    """ certification, used in auth, encrypt/decrypt, etc."""
+    """
+    permission certification
+
+    used in auth/data encrypt/decrypt
+    """
 
     def __init__(self, *,
                  client_id: str, client_secret: str,
                  token: str, verify_token: str,
                  encrypt_key: str = ''):
+        """
+        all fields from bot config panel
+        """
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = token
@@ -21,7 +28,6 @@ class Cert:
         """ decrypt data
 
         :param data: encrypted byte array
-
         :return: decrypted str
         """
         if not self.encrypt_key:
