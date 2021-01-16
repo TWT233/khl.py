@@ -53,10 +53,11 @@ feat:
 
 T1:
 
+- [ ] support websocket (active @TWT233)
 - [ ] log system
 - [ ] command alias
 - [ ] command & arg parse system
-    - [ ] sub command system
+    - [ ] sub command system (active @fi6)
 - [ ] `MsgCtx` design
 
 bug fix:
