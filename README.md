@@ -41,26 +41,29 @@ there is only Webhook now.
 
 # short-term roadmap
 
-docs:
+## docs:
 
 - [x] docs init
+- [x] detailed docstring
 
-perf:
+## perf:
 
 - [x] check `SN`
 
-feat:
+## feat:
 
-T1:
+### T1:
 
 - [ ] support websocket (active @TWT233)
-- [ ] log system
-- [ ] command alias
 - [ ] command & arg parse system
     - [ ] sub command system (active @fi6)
-- [ ] `MsgCtx` design
 
-bug fix:
+### T2:
+- [ ] log system
+- [ ] `MsgCtx` design
+- [ ] command alias
+
+## bug fix:
 
 - [x] error parsing str in `."` pattern (cmd_prefix+unclosing quote)
 
