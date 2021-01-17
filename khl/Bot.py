@@ -3,8 +3,10 @@ from inspect import Parameter, signature
 from typing import Any, Union, List
 
 from .hardcoded import API_URL
-from khl import BaseClient, TextMsg
+from khl import BaseClient, TextMsg, Cert
 from . import Command
+from .webhook import WebhookClient
+from .websocket import WebsocketClient
 
 
 class Bot:
@@ -14,7 +16,9 @@ class Bot:
     def __init__(self,
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
-                 net_client: BaseClient):
+                 cert: Cert,
+                 compress: bool = True,
+                 **kwargs):
         """
         Constructor of Bot
 
@@ -23,7 +27,19 @@ class Bot:
         """
 
         self.cmd_prefix = [i for i in cmd_prefix]
-        self.nc = net_client
+        if cert.type == 'webhook':
+            args = {'cert': cert, 'compress': compress}
+
+            port = kwargs.get('port')
+            if port is not None:
+                args['port'] = port
+
+            route = kwargs.get('route')
+            if route is not None:
+                args['route'] = route
+            self.nc: BaseClient = WebhookClient(**args)
+        else:
+            self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
 
         self.__cmd_list: dict = {}
 
