@@ -1,11 +1,10 @@
 from collections.abc import Sequence
-from typing import Any, Optional
-from khl.command.types import Result
-from khl.command.menu import MenuCommand
-from khl.command.app import AppCommand
+from typing import Any, Coroutine, Optional
 
 from khl.Bot import Bot
-
+from khl.command.app import AppCommand
+from khl.command.menu import MenuCommand
+from khl.command.types import SessionResult, Result
 from khl.Message import MsgType, TextMsg
 
 
@@ -27,11 +26,44 @@ class Session:
         self.msg = msg
         self.bot = bot if bot else self.command.bot
 
+    def reply(
+        self,
+        content: str,
+        result_type: Result = Result.SUCCESS
+    ) -> Coroutine[Any, Any, SessionResult]:
+        func_result = self.send(content=content,
+                                result_type=result_type,
+                                mention=True,
+                                reply=True)
+        return func_result
+
+    def reply_only(
+        self,
+        content: str,
+        result_type: Result = Result.SUCCESS
+    ) -> Coroutine[Any, Any, SessionResult]:
+        func_result = self.send(content=content,
+                                result_type=result_type,
+                                mention=False,
+                                reply=True)
+        return func_result
+
+    def mention(
+        self,
+        content: str,
+        result_type: Result = Result.SUCCESS
+    ) -> Coroutine[Any, Any, SessionResult]:
+        func_result = self.send(content=content,
+                                result_type=result_type,
+                                mention=True,
+                                reply=False)
+        return func_result
+
     async def send(self,
                    content: str,
                    result_type: Result = Result.SUCCESS,
                    mention: bool = False,
-                   reply: bool = False) -> Any:
+                   reply: bool = False) -> SessionResult:
 
         if (mention):
             content = f'(met){self.msg.author_id}(met) ' + content
@@ -44,4 +76,6 @@ class Session:
                                  content=content,
                                  channel_id=self.msg.target_id,
                                  quote=quote)
-        return msg_sent
+        return SessionResult(result_type=result_type,
+                             session=self,
+                             msg_sent=msg_sent)

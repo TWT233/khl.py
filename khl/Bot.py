@@ -2,6 +2,8 @@ import shlex
 from inspect import Parameter, signature
 from typing import Any, Union
 
+from aiohttp.client_reqrep import ClientResponse
+
 from khl import API_URL, BaseClient, TextMsg
 from . import Command
 

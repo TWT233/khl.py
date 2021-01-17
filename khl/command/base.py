@@ -26,14 +26,14 @@ class BaseCommand(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def __run(self, session: Session):
+    def run_func(self, session: Session):
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    def func(self, session: Session):
+    def __func(self, session: Session):
         """
         docstring
         """
@@ -44,10 +44,10 @@ class BaseCommand(ABC):
         return self.__bot
 
     @bot.setter
-    def set_bot(self, bot):
-        if (not isinstance(bot, Bot)):
-            raise TypeError(
-                'Trying to assign none bot instance to bot attribute!')
+    def set_bot(self, bot: Bot):
+        # if (not isinstance(bot, Bot)):
+        #     raise TypeError(
+        #         'Trying to assign none bot instance to bot attribute!')
         self.__bot = bot
 
     @property
