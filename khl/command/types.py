@@ -8,6 +8,7 @@ class Result(Enum):
     SUCCESS = 'SUCCESS'
     FAIL = 'FAIL'
     ERROR = 'ERROR'
+    HELP = 'HELP'
 
 
 class CommandType(Enum):
