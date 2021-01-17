@@ -11,13 +11,22 @@ class Cert:
     used in auth/data encrypt/decrypt
     """
 
-    def __init__(self, *,
+    def __init__(self, *, type: str = '',
                  client_id: str, client_secret: str,
-                 token: str, verify_token: str,
+                 token: str, verify_token: str = '',
                  encrypt_key: str = ''):
         """
         all fields from bot config panel
         """
+        if type not in ['webhook', 'websocket', '']:
+            raise ValueError('unacceptable cert type')
+        if type:
+            self.type = type
+        else:
+            if verify_token:
+                self.type = 'webhook'
+            else:
+                self.type = 'websocket'
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = token
@@ -33,7 +42,7 @@ class Cert:
         if not self.encrypt_key:
             return ''
         data = base64.b64decode(data)
-        data = AES.new(key=self.encrypt_key.encode('utf-8').ljust(32, b'\x00'),
+        data = AES.new(key=self.encrypt_key.encode().ljust(32, b'\x00'),
                        mode=AES.MODE_CBC, iv=data[0:16]).decrypt(base64.b64decode(data[16:]))
         data = Padding.unpad(data, 16)
         return data.decode('utf-8')
