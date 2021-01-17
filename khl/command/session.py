@@ -17,10 +17,12 @@ class Session:
 
     def __init__(self,
                  command: AppCommand or MenuCommand,
+                 command_str: str,
                  args: Sequence[str],
                  msg: TextMsg,
                  bot: Optional[Bot] = None) -> None:
         super().__init__()
+        self.command_str = command_str
         self.command = command
         self.args = args
         self.msg = msg
