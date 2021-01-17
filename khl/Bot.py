@@ -1,19 +1,19 @@
 import shlex
-from inspect import signature, Parameter
-from typing import Union
+from inspect import Parameter, signature
+from typing import Any, Union
 
-from . import API_URL, TextMsg, Command, BaseClient
+from khl import API_URL, BaseClient, TextMsg
+from . import Command
 
 
 class Bot:
     """
     Entity that interacts with user/environment
     """
-
-    def __init__(self, *,
+    def __init__(self,
+                 *,
                  cmd_prefix: Union[list, str, tuple] = ('!', '！'),
-                 net_client: BaseClient
-                 ):
+                 net_client: BaseClient):
         """
         Constructor of Bot
 
@@ -40,10 +40,22 @@ class Bot:
 
         return decorator
 
-    async def send(self, channel_id: str, content: str, *, quote: str = '', object_name: int = 1, nonce: str = ''):
-        data = {'channel_id': channel_id, 'content': content, 'object_name': object_name, 'quote': quote,
-                'nonce': nonce}
-        return await self.nc.send(f'{API_URL}/channel/message?compress=0', data)
+    async def send(self,
+                   channel_id: str,
+                   content: str,
+                   *,
+                   quote: str = '',
+                   object_name: int = 1,
+                   nonce: str = '') -> Any:
+        data = {
+            'channel_id': channel_id,
+            'content': content,
+            'object_name': object_name,
+            'quote': quote,
+            'nonce': nonce
+        }
+        return await self.nc.send(f'{API_URL}/channel/message?compress=0',
+                                  data)
 
     def split_msg_args(self, msg: TextMsg):
         if msg.content[0] not in self.cmd_prefix:
@@ -57,16 +69,25 @@ class Bot:
 
     def gen_msg_handler(self):
         async def msg_handler(d: dict):
-            msg = TextMsg(channel_type=d['channel_type'], target_id=d['target_id'],
-                          author_id=d['author_id'], content=d['content'], msg_id=d['msg_id'],
-                          msg_timestamp=d['msg_timestamp'], nonce=d['nonce'], extra=d['extra'])
+            msg = TextMsg(channel_type=d['channel_type'],
+                          target_id=d['target_id'],
+                          author_id=d['author_id'],
+                          content=d['content'],
+                          msg_id=d['msg_id'],
+                          msg_timestamp=d['msg_timestamp'],
+                          nonce=d['nonce'],
+                          extra=d['extra'])
             arg_list = self.split_msg_args(msg)
             if arg_list:
                 if arg_list[0] in self.__cmd_list.keys():
                     func = self.__cmd_list[arg_list[0]].handler
-                    argc = len([1 for v in signature(func).parameters.values() if v.default == Parameter.empty])
+                    argc = len([
+                        1 for v in signature(func).parameters.values()
+                        if v.default == Parameter.empty
+                    ])
                     if argc <= len(arg_list):
-                        await func(msg, *arg_list[1:len(signature(func).parameters)])
+                        await func(
+                            msg, *arg_list[1:len(signature(func).parameters)])
 
         return msg_handler
 

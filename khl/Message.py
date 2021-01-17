@@ -1,4 +1,11 @@
+from enum import IntEnum
 from .User import User
+
+
+class MsgType(IntEnum):
+    TEXT = 1
+    KMD = 9
+    CARD = 10
 
 
 class TextMsg:

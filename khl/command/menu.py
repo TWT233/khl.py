@@ -1,7 +1,7 @@
 from khl.command.base import BaseCommand
 
 
-class Menu(BaseCommand):
+class MenuCommand(BaseCommand):
     """
     docstring
     """
