@@ -5,8 +5,7 @@ import zlib
 
 from aiohttp import ClientSession, web, ClientResponse
 
-from . import Cert
-from .. import BaseClient
+from .. import BaseClient, Cert
 
 
 class WebhookClient(BaseClient):

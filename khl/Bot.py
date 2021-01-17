@@ -2,7 +2,8 @@ import shlex
 from inspect import signature, Parameter
 from typing import Union
 
-from . import API_URL, TextMsg, Command, BaseClient
+from . import TextMsg, Command, BaseClient
+from .hardcoded import API_URL
 
 
 class Bot:

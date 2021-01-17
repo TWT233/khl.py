@@ -16,7 +16,7 @@ pip install khl.py
 import random
 
 from khl import TextMsg, Bot
-from khl.webhook import Cert, WebhookClient
+from khl.webhook import WebhookCert, WebhookClient
 
 cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx', verify_token='xxxxxx')
 
@@ -25,7 +25,7 @@ bot = Bot(cmd_prefix=['!', '！'], net_client=WebhookClient(cert=cert, compress=
 
 @bot.command(name='roll')
 async def roll(msg: TextMsg):
-    await bot.send(msg.target_id, f'you got: {random.randint(1, 6)}')
+  await bot.send(msg.target_id, f'you got: {random.randint(1, 6)}')
 
 
 bot.run()
