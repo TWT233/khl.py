@@ -1,12 +1,12 @@
+import asyncio
 import json
 import time
 import zlib
 
-import asyncio
 from aiohttp import ClientSession, web
 
-from .. import BaseClient
 from . import Cert
+from .. import BaseClient
 
 
 class WebhookClient(BaseClient):
@@ -34,6 +34,7 @@ class WebhookClient(BaseClient):
     async def send(self, url: str, data):
         headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
         async with self.cs.post(url, headers=headers, json=data) as res:
+            await res.read()
             return res
 
     def on_recv_append(self, callback):
