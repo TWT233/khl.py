@@ -12,8 +12,12 @@ class WebhookClient(BaseClient):
     """
     implements BaseClient with webhook protocol
     """
-
-    def __init__(self, *, port=5000, route='/khl-wh', compress: bool = True, cert: Cert):
+    def __init__(self,
+                 *,
+                 port=5000,
+                 route='/khl-wh',
+                 compress: bool = True,
+                 cert: Cert):
         """
         :param port: port to set webhook server on
         :param route: route for your webhook server
@@ -32,7 +36,10 @@ class WebhookClient(BaseClient):
         self.sn_dup_map = {}
 
     async def send(self, url: str, data) -> ClientResponse:
-        headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
+        headers = {
+            'Authorization': f'Bot {self.cert.token}',
+            'Content-type': 'application/json'
+        }
         async with self.cs.post(url, headers=headers, json=data) as res:
             await res.read()
             return res
@@ -51,7 +58,8 @@ class WebhookClient(BaseClient):
         """
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
-        return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
+        return ('encrypt' in data.keys()) and json.loads(
+            self.cert.decrypt(data['encrypt'])) or data
 
     def __is_req_dup(self, req: dict) -> bool:
         """
@@ -70,7 +78,6 @@ class WebhookClient(BaseClient):
         """
         init aiohttp app
         """
-
         async def on_recv(request: web.Request):
             req_json = self.__raw_2_req(await request.read())
             assert req_json

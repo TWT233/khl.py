@@ -11,9 +11,12 @@ with open('./config/config.json', 'r', encoding='utf-8') as f:
 
 # init Cert for Bot OAuth and data decrypt
 # literal param passing
-cert = Cert(client_id=config['client_id'], client_secret=config['client_secret'],
-            token=config['token'], verify_token=config['verify_token'],
-            encrypt_key='encrypt_key' in config.keys() and config['encrypt_key'] or '')
+cert = Cert(
+    client_id=config['client_id'],
+    client_secret=config['client_secret'],
+    token=config['token'],
+    verify_token=config['verify_token'],
+    encrypt_key='encrypt_key' in config.keys() and config['encrypt_key'] or '')
 
 # init Bot
 # set `compress` param corresponding to your webhook callback url
@@ -26,14 +29,18 @@ cert = Cert(client_id=config['client_id'], client_secret=config['client_secret']
 #  http://your.domain:5000/khl-wh?compress=0    |   Bot(cert=cert, compress=False)  |   (disable compress)
 #          http://your.domain:2333              |      Bot(cert=cert, port=2333)    |   (set port)
 #       http://your.domain:5000/khl-wh          |          Bot(cert=cert)           |   (all as default)
-bot = Bot(cmd_prefix=['!', '！'], net_client=WebhookClient(cert=cert, compress=True))
+bot = Bot(cmd_prefix=['!', '！'],
+          net_client=WebhookClient(cert=cert, compress=True))
 
 
 # add command, accept optional arguments
 # you can invoke this command via:`!骰子 1 100` or ``
 @bot.command(name='骰子')
 async def roll(msg: TextMsg, r_min: str, r_max: str, n: str = 1):
-    await bot.send(msg.target_id, f'骰出来了：{[random.randint(int(r_min), int(r_max)) for i in range(int(n))]}')
+    await bot.send(
+        msg.target_id,
+        f'骰出来了：{[random.randint(int(r_min), int(r_max)) for i in range(int(n))]}'
+    )
 
 
 # everything done, go ahead now!

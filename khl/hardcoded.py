@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 hardcoded data, such as api request link
 """

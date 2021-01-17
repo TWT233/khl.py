@@ -12,7 +12,6 @@ class WebsocketClient(BaseClient):
     """
     implements BaseClient with websocket protocol
     """
-
     def __init__(self, cert: Cert, compress: bool = True):
         super().__init__()
         self.cert = cert
@@ -24,7 +23,10 @@ class WebsocketClient(BaseClient):
         self.RAW_GATEWAY = ''
 
     async def send(self, url: str, data):
-        headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
+        headers = {
+            'Authorization': f'Bot {self.cert.token}',
+            'Content-type': 'application/json'
+        }
         async with ClientSession() as cs:
             async with cs.post(url, headers=headers, json=data) as res:
                 await res.read()
@@ -59,9 +61,13 @@ class WebsocketClient(BaseClient):
 
     async def __main(self):
         async with ClientSession() as cs:
-            headers = {'Authorization': f"Bot {self.cert.token}", 'Content-type': 'application/json'}
+            headers = {
+                'Authorization': f"Bot {self.cert.token}",
+                'Content-type': 'application/json'
+            }
             params = {'compress': self.compress and 1 or 0}
-            async with cs.get(f"{API_URL}/gateway/index", headers=headers,
+            async with cs.get(f"{API_URL}/gateway/index",
+                              headers=headers,
                               params=params) as res:
                 self.RAW_GATEWAY = json.loads(await res.text())['data']['url']
 
