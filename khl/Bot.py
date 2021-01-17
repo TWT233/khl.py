@@ -1,6 +1,6 @@
 import shlex
 from inspect import Parameter, signature
-from typing import Any, Union
+from typing import Any, Union, List
 
 from .hardcoded import API_URL
 from khl import BaseClient, TextMsg
@@ -13,7 +13,7 @@ class Bot:
     """
     def __init__(self,
                  *,
-                 cmd_prefix: Union[list[str], str, tuple] = ('!', '！'),
+                 cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
                  net_client: BaseClient):
         """
         Constructor of Bot
