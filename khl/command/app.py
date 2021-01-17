@@ -14,8 +14,14 @@ class AppCommand(BaseCommand):
         super().__init__()
 
     @overload
-    async def exec(self, command_str: str, args: Sequence[str], msg: TextMsg) -> Result or None:
-        return await self.run_func(Session(self, command_str, args, msg, ))
+    async def exec(self, command_str: str, args: Sequence[str],
+                   msg: TextMsg) -> Result or None:
+        return await self.run_func(Session(
+            self,
+            command_str,
+            args,
+            msg,
+        ))
 
     async def exec(self, session: Session) -> Result or None:
         return await self.run_func(session)

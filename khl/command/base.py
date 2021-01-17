@@ -47,7 +47,7 @@ class BaseCommand(ABC):
     def set_bot(self, bot: Bot):
         # if (not isinstance(bot, Bot)):
         #     raise TypeError(
-        #         'Trying to assign none bot instance to bot attribute!')
+        #         'Trying to assign a non-bot instance!')
         self.__bot = bot
 
     @property
