@@ -15,29 +15,23 @@ pip install khl.py
 ```python
 import random
 
-from khl import TextMsg, Bot
-from khl.webhook import WebhookCert, WebhookClient
+from khl import TextMsg, Bot, Cert
 
 cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx', verify_token='xxxxxx')
 
-bot = Bot(cmd_prefix=['!', '！'], net_client=WebhookClient(cert=cert, compress=True))
+bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
 @bot.command(name='roll')
-async def roll(msg: TextMsg):
-  await bot.send(msg.target_id, f'you got: {random.randint(1, 6)}')
+async def roll(msg: TextMsg, r_min: str, r_max: str):
+    await bot.send(msg.target_id, f'you got: {random.randint(int(r_min), int(r_max))}')
 
 
 bot.run()
+# now invite the bot to ur server,
+# and type '!roll 1 100'(in any channel) to check ur san today!
+# (remember to grant read & send permissions to the bot first)
 ```
-
-## Why `WebhookClient`
-
-There will be multiple ways for Bots to connect to kaiheila.cn, such as Webhook mentioned above, and WebSocket which is
-still WIP
-
-Thus, to make our code easily comprehended and maintained in the future, we choose to leave WebhookClient here, though
-there is only Webhook now.
 
 # short-term roadmap
 
@@ -54,11 +48,12 @@ there is only Webhook now.
 
 ### T1:
 
-- [ ] support websocket (active @TWT233)
+- [x] support websocket
 - [ ] command & arg parse system
-    - [ ] sub command system (active @fi6)
+    - [ ] sub command system (active @fi6 @TWT233)
 
 ### T2:
+
 - [ ] log system
 - [ ] `MsgCtx` design
 - [ ] command alias
