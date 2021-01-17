@@ -9,9 +9,8 @@ class BaseClient(ABC):
     recv raw data from server, resolve request data and msg data from raw, pass it to inner context such as bot
     """
 
-    def __init__(self, port):
+    def __init__(self):
         self.type = ""
-        self.port = port
 
     @abstractmethod
     async def send(self, url: str, data):

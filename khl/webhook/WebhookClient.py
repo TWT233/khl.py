@@ -21,8 +21,9 @@ class WebhookClient(BaseClient):
         :param compress: enable data compress or not, enabled as default
         :param cert: used to auth and data decrypt/encrypt
         """
-        super().__init__(port)
+        super().__init__()
         self.type = 'webhook'
+        self.port = port
         self.route = route
         self.cs = ClientSession()
         self.app = web.Application()
