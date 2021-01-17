@@ -31,8 +31,8 @@ class TextMsg:
 
         self.guild_id: str = extra['guild_id']
         self.channel_name: str = 'channel_name' in extra.keys() and extra['channel_name'] or ''
-        self.mention: list = extra['mention']
+        self.mention: list[str] = extra['mention']
         self.mention_all: bool = extra['mention_all']
-        self.mention_roles: list = extra['mention_roles']
+        self.mention_roles: list[str] = extra['mention_roles']
         self.mention_here: bool = extra['mention_here']
         self.author: User = User(extra['author'])

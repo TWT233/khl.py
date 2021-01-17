@@ -14,7 +14,7 @@ class Bot:
     """
     def __init__(self,
                  *,
-                 cmd_prefix: Union[list, str, tuple] = ('!', '！'),
+                 cmd_prefix: Union[list[str], str, tuple] = ('!', '！'),
                  net_client: BaseClient):
         """
         Constructor of Bot

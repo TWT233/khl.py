@@ -4,8 +4,7 @@ class User:
 
     including other bots
     """
-
     def __init__(self, data):
-        self.id = data['id']
-        self.nickname = data['nickname']
+        self.id: str = data['id']
+        self.nickname: str = data['nickname']
         pass
