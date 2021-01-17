@@ -1,12 +1,12 @@
+import asyncio
 import json
 import time
 import zlib
 
-import asyncio
-from aiohttp import ClientSession, web
+from aiohttp import ClientSession, web, ClientResponse
 
-from .. import BaseClient
 from . import Cert
+from .. import BaseClient
 
 
 class WebhookClient(BaseClient):
@@ -31,9 +31,10 @@ class WebhookClient(BaseClient):
         self.recv = []
         self.sn_dup_map = {}
 
-    async def send(self, url: str, data):
+    async def send(self, url: str, data) -> ClientResponse:
         headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
         async with self.cs.post(url, headers=headers, json=data) as res:
+            await res.read()
             return res
 
     def on_recv_append(self, callback):
@@ -76,7 +77,7 @@ class WebhookClient(BaseClient):
             assert req_json['d']['verify_token'] == self.cert.verify_token
 
             if self.__is_req_dup(req_json):
-                return web.Response(status=200)
+                return web.Response()
 
             if req_json['s'] == 0:
                 d = req_json['d']
@@ -87,7 +88,7 @@ class WebhookClient(BaseClient):
                     if d['channel_type'] == 'WEBHOOK_CHALLENGE':
                         return web.json_response({'challenge': d['challenge']})
 
-            return web.Response(status=200)
+            return web.Response()
 
         self.app.router.add_post(self.route, on_recv)
 
