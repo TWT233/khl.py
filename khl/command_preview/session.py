@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from typing import Any, Coroutine, Optional
 
 from khl.Bot import Bot
-from khl.command.app import AppCommand
-from khl.command.menu import MenuCommand
-from khl.command.types import SessionResult, Result
+from .app import AppCommand
+from .menu import MenuCommand
+from .types import SessionResult, Result
 from khl.Message import MsgType, TextMsg
 
 

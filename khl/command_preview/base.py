@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from khl.command.types import CommandType
+from typing import overload
+from khl.hardcoded import API_BASE_URL
+from .types import CommandType
 
 from khl.Bot import Bot
-from khl.command import Session
+from . import Session
 
 
 class BaseCommand(ABC):
@@ -17,6 +19,14 @@ class BaseCommand(ABC):
 
     def __init__(self) -> None:
         self.name = self.__class__.__name__
+
+    @abstractmethod
+    @overload
+    def exec(self, args, msg):
+        """
+        docstring
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def exec(self, session: Session):

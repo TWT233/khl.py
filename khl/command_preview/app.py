@@ -1,9 +1,9 @@
 from khl.Message import TextMsg
 from typing import Sequence, Union, overload
-from khl.command.types import SessionResult, Result
-from khl.command.session import Session
-from khl.command.base import BaseCommand
-from khl.command.menu import MenuCommand
+from .types import SessionResult, Result
+from .session import Session
+from .base import BaseCommand
+from .menu import MenuCommand
 
 
 class AppCommand(BaseCommand):

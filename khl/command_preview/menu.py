@@ -1,4 +1,4 @@
-from khl.command.base import BaseCommand
+from .base import BaseCommand
 
 
 class MenuCommand(BaseCommand):

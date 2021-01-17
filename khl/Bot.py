@@ -1,12 +1,16 @@
 import shlex
 from inspect import Parameter, signature
-from typing import Any, Union, List
+from typing import Any, Dict, List, Union
+
+from khl import BaseClient, Cert, TextMsg
+
+from . import Command
 
 from .hardcoded import API_URL
-from khl import BaseClient, TextMsg, Cert
-from . import Command
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
+
+from khl.command_preview import BaseCommand, parser
 
 
 class Bot:
@@ -42,6 +46,7 @@ class Bot:
             self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
 
         self.__cmd_list: dict = {}
+        self.__cmd_list_preview: Dict[str, BaseCommand] = {}
 
     def add_command(self, cmd: Command):
         if not isinstance(cmd, Command):
@@ -49,6 +54,26 @@ class Bot:
         if cmd.name in self.__cmd_list.keys():
             raise ValueError('Command Name Exists')
         self.__cmd_list[cmd.name] = cmd
+
+    def add_command_preview(self, cmd: BaseCommand):
+        if not isinstance(cmd, BaseCommand):
+            raise TypeError('not a Command')
+        if cmd.name in self.__cmd_list.keys():
+            raise ValueError('Command Name Exists')
+        self.__cmd_list_preview[cmd.name] = cmd
+
+    def gen_msg_handler_preview(self):
+        def msg_handler_preview(d: dict):
+            """
+            docstring
+            """
+            res = parser(d, self.cmd_prefix, self.__cmd_list_preview)
+            if isinstance(res, TextMsg):
+                return None
+            (command, args, msg) = res
+            self.__cmd_list_preview[command].exec(args, msg)
+
+        return msg_handler_preview
 
     def command(self, name: str):
         def decorator(func):
@@ -110,4 +135,5 @@ class Bot:
 
     def run(self):
         self.nc.on_recv_append(self.gen_msg_handler())
+        self.nc.on_recv_append(self.gen_msg_handler_preview())
         self.nc.run()
