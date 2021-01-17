@@ -17,10 +17,12 @@ class Session:
 
     def __init__(self,
                  command: AppCommand or MenuCommand,
+                 command_str: str,
                  args: Sequence[str],
                  msg: TextMsg,
                  bot: Optional[Bot] = None) -> None:
         super().__init__()
+        self.command_str = command_str
         self.command = command
         self.args = args
         self.msg = msg
@@ -62,6 +64,7 @@ class Session:
     async def send(self,
                    content: str,
                    result_type: Result = Result.SUCCESS,
+                   message_type: MsgType = MsgType.KMD,
                    mention: bool = False,
                    reply: bool = False) -> SessionResult:
 
@@ -72,7 +75,7 @@ class Session:
         if (not self.bot):
             raise AttributeError('Session send used before assigning a bot.'
                                  f' Command: {self.command.name}')
-        msg_sent = self.bot.send(object_name=MsgType.KMD,
+        msg_sent = self.bot.send(object_name=message_type,
                                  content=content,
                                  channel_id=self.msg.target_id,
                                  quote=quote)
