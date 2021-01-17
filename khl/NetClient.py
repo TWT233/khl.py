@@ -1,7 +1,7 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 
-class BaseClient:
+class BaseClient(ABC):
     """
     http wrapper, including server and client
 
