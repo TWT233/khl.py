@@ -1,7 +1,13 @@
 {
     "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
     "python.linting.enabled": true,
     "python.linting.mypyEnabled": false,
-    "python.formatting.provider": "yapf"
+    "python.formatting.provider": "yapf",
+    "python.pythonPath": "C:\\Python39\\python.exe",
+    "python.linting.flake8Enabled": true,
+    "bracket-pair-colorizer-2.colors": [
+        "Gold",
+        "Orchid",
+        "LightSkyBlue"
+    ]
 }
