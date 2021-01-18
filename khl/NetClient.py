@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import Callable, Coroutine, Dict
+from typing import Any, Callable, Coroutine, Dict
 
 
 class BaseClient(ABC):
@@ -27,7 +27,7 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def on_recv_append(self, callback: Callable[[Dict], Coroutine]):
+    def on_recv_append(self, callback: Callable[[Dict[Any, Any]], Coroutine]):
         """
         append callback to on_recv listener list
 

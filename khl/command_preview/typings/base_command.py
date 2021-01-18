@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import overload
-from khl.hardcoded import API_BASE_URL
-from .types import CommandType
+from .types import BaseSession, CommandType
+from khl.Message import BaseMsg
+from typing import Any, Sequence, overload
 
 from khl.Bot import Bot
-from . import Session
 
 
 class BaseCommand(ABC):
@@ -22,28 +21,29 @@ class BaseCommand(ABC):
 
     @abstractmethod
     @overload
-    def exec(self, args, msg):
+    async def execute(self, command_str: str, arg_list: Sequence[str],
+                      msg: BaseMsg) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    def exec(self, session: Session):
+    async def execute(self, session: BaseSession) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    def run_func(self, session: Session):
+    def run_func(self, session: BaseSession) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    def __func(self, session: Session):
+    def func(self, session: BaseSession) -> Any:
         """
         docstring
         """

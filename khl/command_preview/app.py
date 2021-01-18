@@ -1,9 +1,10 @@
-from khl.Message import TextMsg
-from typing import Sequence, Union, overload
-from .types import SessionResult, Result
+from .typings.base_command import BaseCommand
 from .session import Session
-from .base import BaseCommand
+from .typings.types import BaseSession, ResultType, SessionResult
 from .menu import MenuCommand
+
+from khl.Message import BaseMsg
+from typing import Sequence, Union, overload
 
 
 class AppCommand(BaseCommand):
@@ -14,34 +15,36 @@ class AppCommand(BaseCommand):
         super().__init__()
 
     @overload
-    async def exec(self, command_str: str, args: Sequence[str],
-                   msg: TextMsg) -> Result or None:
+    async def execute(self, command_str: str, arg_list: Sequence[str],
+                      msg: BaseMsg) -> ResultType or None:
         return await self.run_func(Session(
             self,
             command_str,
-            args,
+            arg_list,
             msg,
         ))
 
-    async def exec(self, session: Session) -> Result or None:
+    async def execute(self, session: Session) -> ResultType or None:
         return await self.run_func(session)
 
-    async def run_func(self, session: Session) -> Result or None:
+    async def run_func(self, session: BaseSession) -> ResultType or None:
         if (not self.bot):
             raise AttributeError(
                 f'Trigger {self.trigger}({self.__class__.__name__}) '
                 'used before bot is assigned')
         if (self.use_help and session.args[0] == '帮助'):
             await session.reply(self.help)
-            return Result.HELP
-        result: Union[Result, None, SessionResult] = await self.__func(session)
+            return ResultType.HELP
+        result: Union[ResultType, None,
+                      SessionResult] = await self.func(session)
         if (not result):
-            return Result.SUCCESS
+            return ResultType.SUCCESS
         elif isinstance(result, SessionResult):
             return result.result_type
         else:
             return result
 
-    async def __func(self,
-                     session: Session) -> Union[Result, None, SessionResult]:
-        return super().__func(session)
+    async def func(
+            self,
+            session: BaseSession) -> Union[ResultType, None, SessionResult]:
+        return super().func(session)

@@ -1,31 +1,45 @@
-from collections.abc import Sequence
-from .typings.base_command import BaseCommand
-from typing import Any, Coroutine, Optional
-
+from abc import ABC, abstractmethod
+from enum import Enum
+from .session_result import SessionResult
 from khl.Bot import Bot
-from .typings import BaseSession, SessionResult, ResultType
 from khl.Message import BaseMsg, MsgType
+from .base_command import BaseCommand
+from typing import Any, Coroutine, Optional, Sequence
 
 
-class Session(BaseSession):
+class ResultType(Enum):
+    SUCCESS = 'SUCCESS'
+    FAIL = 'FAIL'
+    ERROR = 'ERROR'
+    HELP = 'HELP'
+
+
+class CommandType(Enum):
+    MENU = 'MENU'
+    APP = 'APP'
+
+
+class BaseSession(ABC):
     command: BaseCommand
     command_str: str
     args: Sequence[str]
     msg: BaseMsg
     bot: Bot
 
+    @abstractmethod
     def __init__(self,
                  command: BaseCommand,
                  command_str: str,
                  args: Sequence[str],
                  msg: BaseMsg,
                  bot: Optional[Bot] = None) -> None:
-        super().__init__(command=command,
-                         command_str=command_str,
-                         args=args,
-                         msg=msg,
-                         bot=bot)
+        self.command_str = command_str
+        self.command = command
+        self.args = args
+        self.msg = msg
+        self.bot = bot if bot else self.command.bot
 
+    @abstractmethod
     def reply(
         self,
         content: str,
@@ -37,6 +51,7 @@ class Session(BaseSession):
                                 reply=True)
         return func_result
 
+    @abstractmethod
     def reply_only(
         self,
         content: str,
@@ -48,6 +63,7 @@ class Session(BaseSession):
                                 reply=True)
         return func_result
 
+    @abstractmethod
     def mention(
         self,
         content: str,
@@ -59,6 +75,7 @@ class Session(BaseSession):
                                 reply=False)
         return func_result
 
+    @abstractmethod
     async def send(self,
                    content: str,
                    result_type: ResultType = ResultType.SUCCESS,

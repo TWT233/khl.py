@@ -1,29 +1,16 @@
-from enum import Enum
+from .types import ResultType
 from typing import Any, Coroutine, Optional
-
 from aiohttp.client_reqrep import ClientResponse
 
 
-class Result(Enum):
-    SUCCESS = 'SUCCESS'
-    FAIL = 'FAIL'
-    ERROR = 'ERROR'
-    HELP = 'HELP'
-
-
-class CommandType(Enum):
-    MENU = 'MENU'
-    APP = 'APP'
-
-
 class SessionResult(object):
-    result_type: Result
+    result_type: ResultType
     session: Any
     msg_sent: Optional[Coroutine[Any, Any, Any]]
     detail: Any
 
     def __init__(self,
-                 result_type: Result,
+                 result_type: ResultType,
                  session: Any,
                  msg_sent: Optional[Coroutine[Any, Any, ClientResponse]],
                  detail: Any = None) -> None:
