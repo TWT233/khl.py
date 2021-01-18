@@ -1,18 +1,21 @@
 from abc import ABC
 from enum import IntEnum
-from typing import Any, Mapping, List
+from typing import List
 from .User import User
 
 
-class MsgType(IntEnum):
-    TEXT = 1
-    KMD = 9
-    CARD = 10
+class Msg(ABC):
+    class Types(IntEnum):
+        TEXT = 1
+        IMG = 2
+        VIDEO = 3
+        FILE = 4
+        AUDIO = 8
+        KMD = 9
+        CARD = 10
 
-
-class BaseMsg(ABC):
+    type: Types
     channel_type: str
-    type: MsgType
     target_id: str
     author_id: str
     content: str
@@ -22,30 +25,50 @@ class BaseMsg(ABC):
     extra: dict
 
 
-class TextMsg(BaseMsg):
+class TextMsg(Msg):
     """
     represents a msg, recv from/send to server
     """
-    def __init__(self, *, channel_type: str, target_id: str, author_id: str,
-                 content: str, msg_id: str, msg_timestamp: int, nonce: str,
-                 extra: Mapping[str, Any]):
+    def __init__(self, **kwargs):
         """
-        all fields origin from server event object, corresponding to official doc
+        all fields origin from server event object
+        corresponding to official doc
         """
-        self.channel_type = channel_type
-        self.type = MsgType.TEXT
-        self.target_id = target_id
-        self.author_id = author_id
-        self.content = content
-        self.msg_id = msg_id
-        self.msg_timestamp = msg_timestamp
-        self.nonce = nonce
+        self.channel_type = kwargs['channel_type']
+        self.type = self.Types.TEXT
+        if self.type != kwargs['type']:
+            raise ValueError('wrong type')
 
-        self.guild_id: str = extra['guild_id']
-        self.channel_name: str = 'channel_name' in extra.keys(
-        ) and extra['channel_name'] or ''
-        self.mention: List[str] = extra['mention']
-        self.mention_all: bool = extra['mention_all']
-        self.mention_roles: List[str] = extra['mention_roles']
-        self.mention_here: bool = extra['mention_here']
-        self.author: User = User(extra['author'])
+        self.target_id = kwargs['target_id']
+        self.author_id = kwargs['author_id']
+        self.content = kwargs['content']
+        self.msg_id = kwargs['msg_id']
+        self.msg_timestamp = kwargs['msg_timestamp']
+        self.nonce = kwargs['nonce']
+        self.extra = kwargs['extra']
+
+        self.author: User = User(self.extra['author'])
+
+        @property
+        def guild_id(self) -> str:
+            return self.extra['guild_id']
+
+        @property
+        def channel_name(self) -> str:
+            return self.extra['channel_name']
+
+        @property
+        def mention(self) -> List[str]:
+            return self.extra['mention']
+
+        @property
+        def mention_all(self) -> bool:
+            return self.extra['mention_all']
+
+        @property
+        def mention_roles(self) -> List[str]:
+            return self.extra['mention_roles']
+
+        @property
+        def mention_here(self) -> bool:
+            return self.extra['mention_heres']

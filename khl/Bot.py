@@ -78,7 +78,7 @@ class Bot:
                                   data)
 
     def split_msg_args(self, msg: TextMsg):
-        if msg.content is None or msg.content[0] not in self.cmd_prefix:
+        if msg.content[0] not in self.cmd_prefix:
             ret = None
         else:
             try:
@@ -89,14 +89,7 @@ class Bot:
 
     def gen_msg_handler(self):
         async def msg_handler(d: dict):
-            msg = TextMsg(channel_type=d['channel_type'],
-                          target_id=d['target_id'],
-                          author_id=d['author_id'],
-                          content=d['content'],
-                          msg_id=d['msg_id'],
-                          msg_timestamp=d['msg_timestamp'],
-                          nonce=d['nonce'],
-                          extra=d['extra'])
+            msg = TextMsg(**d)
             arg_list = self.split_msg_args(msg)
             if arg_list:
                 if arg_list[0] in self.__cmd_list.keys():
