@@ -1,4 +1,5 @@
 import base64
+from enum import IntEnum
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Padding
@@ -10,9 +11,14 @@ class Cert:
 
     used in auth/data encrypt/decrypt
     """
+    class Types(IntEnum):
+        NOTSET = 0
+        WS = 1
+        WH = 2
+
     def __init__(self,
                  *,
-                 type: str = '',
+                 type: Types = Types.NOTSET,
                  client_id: str,
                  client_secret: str,
                  token: str,
@@ -21,15 +27,13 @@ class Cert:
         """
         all fields from bot config panel
         """
-        if type not in ['webhook', 'websocket', '']:
-            raise ValueError('unacceptable cert type')
-        if type:
+        if type != Cert.Types.NOTSET:
             self.type = type
         else:
             if verify_token:
-                self.type = 'webhook'
+                self.type = self.Types.WH
             else:
-                self.type = 'websocket'
+                self.type = self.Types.WS
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = token
