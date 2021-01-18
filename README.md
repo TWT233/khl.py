@@ -43,6 +43,9 @@ bot.run()
 ## perf:
 
 - [x] check `SN`
+- [ ] refactor `Msg`, support multimedia msg
+  - [ ] introduce `MsgCtx` with this
+- [ ] check 
 
 ## feat:
 
@@ -51,6 +54,7 @@ bot.run()
 - [x] support websocket
 - [ ] command & arg parse system
     - [ ] sub command system (active @fi6 @TWT233)
+- [ ] event listener for bot (active @TWT233)
 
 ### T2:
 
