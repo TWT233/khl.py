@@ -1,32 +1,30 @@
 from collections.abc import Sequence
+from khl.CommandPreview.base import BaseCommand
 from typing import Any, Coroutine, Optional
 
 from khl.Bot import Bot
-from .app import AppCommand
-from .menu import MenuCommand
-from .types import SessionResult, Result
-from khl.Message import MsgType, TextMsg
+from .types import BaseSession, SessionResult, Result
+from khl.Message import BaseMsg, MsgType, TextMsg
 
 
-class Session:
-    command: AppCommand or MenuCommand
+class Session(BaseSession):
+    command: BaseCommand
     command_str: str
     args: Sequence[str]
-    msg: TextMsg
+    msg: BaseMsg
     bot: Bot
 
     def __init__(self,
-                 command: AppCommand or MenuCommand,
+                 command: BaseCommand,
                  command_str: str,
                  args: Sequence[str],
                  msg: TextMsg,
                  bot: Optional[Bot] = None) -> None:
-        super().__init__()
-        self.command_str = command_str
-        self.command = command
-        self.args = args
-        self.msg = msg
-        self.bot = bot if bot else self.command.bot
+        super().__init__(command=command,
+                         command_str=command_str,
+                         args=args,
+                         msg=msg,
+                         bot=bot)
 
     def reply(
         self,

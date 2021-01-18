@@ -11,7 +11,9 @@ class MsgType(IntEnum):
 
 class BaseMsg(ABC):
     type: MsgType
-    target_id:str
+    channel_type: str
+    target_id: str
+    msg_id: str
 
 
 class TextMsg(BaseMsg):

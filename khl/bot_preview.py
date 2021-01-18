@@ -21,6 +21,7 @@ class BotPreview:
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
                  cert: Cert,
+                 port: int,
                  compress: bool = True,
                  **kwargs):
         """
@@ -29,7 +30,6 @@ class BotPreview:
         :param cmd_prefix: accepted prefix for msg to be a command
         :param net_client: http connector/handler used, usually :class:`khl.webhook.WebhookClient`
         """
-
         self.cmd_prefix = [i for i in cmd_prefix]
         if cert.type == 'webhook':
             args = {'cert': cert, 'compress': compress}
@@ -44,18 +44,9 @@ class BotPreview:
             self.nc: BaseClient = WebhookClient(**args)
         else:
             self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
-
-        self.__cmd_list: dict = {}
         self.__cmd_list_preview: Dict[str, BaseCommand] = {}
 
-    def add_command(self, cmd: Command):
-        if not isinstance(cmd, Command):
-            raise TypeError('not a Command')
-        if cmd.name in self.__cmd_list.keys():
-            raise ValueError('Command Name Exists')
-        self.__cmd_list[cmd.name] = cmd
-
-    def add_command_preview(self, cmd: BaseCommand):
+    def add_command(self, cmd: BaseCommand):
         if not isinstance(cmd, BaseCommand):
             raise TypeError('not a Command')
         if cmd.name in self.__cmd_list.keys():
@@ -71,7 +62,7 @@ class BotPreview:
             if isinstance(res, TextMsg):
                 return None
             (command, args, msg) = res
-            self.__cmd_list_preview[command].exec(args, msg)
+            self.__cmd_list_preview[command].execute(args, msg)
 
         return msg_handler_preview
 

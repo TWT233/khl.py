@@ -1,9 +1,9 @@
-from khl.Message import TextMsg
-from typing import Sequence, Union, overload
-from .types import SessionResult, Result
 from .session import Session
-from .base import BaseCommand
+from .types import Result, SessionResult
 from .menu import MenuCommand
+from .base import BaseCommand
+from khl.Message import BaseMsg
+from typing import Sequence, Union, overload
 
 
 class AppCommand(BaseCommand):
@@ -13,18 +13,17 @@ class AppCommand(BaseCommand):
     def __init__(self) -> None:
         super().__init__()
 
-    @overload
-    async def exec(self, command_str: str, args: Sequence[str],
-                   msg: TextMsg) -> Result or None:
+    async def execute(self, command_str: str, arg_list: Sequence[str],
+                      msg: BaseMsg) -> Result or None:
         return await self.run_func(Session(
             self,
             command_str,
-            args,
+            arg_list,
             msg,
         ))
 
-    async def exec(self, session: Session) -> Result or None:
-        return await self.run_func(session)
+    # async def execute(self, session: Session) -> Result or None:
+    #     return await self.run_func(session)
 
     async def run_func(self, session: Session) -> Result or None:
         if (not self.bot):
