@@ -11,8 +11,15 @@ class MsgType(IntEnum):
 
 
 class BaseMsg(ABC):
+    channel_type: str
     type: MsgType
     target_id: str
+    author_id: str
+    content: str
+    msg_id: str
+    msg_timestamp: int
+    nonce: str
+    extra: dict
 
 
 class TextMsg(BaseMsg):
