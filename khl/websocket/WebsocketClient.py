@@ -4,8 +4,9 @@ import zlib
 
 from aiohttp import ClientSession, ClientWebSocketResponse
 
-from .. import BaseClient, Cert
 from ..hardcoded import API_URL
+from ..NetClient import BaseClient
+from ..Cert import Cert
 
 
 class WebsocketClient(BaseClient):

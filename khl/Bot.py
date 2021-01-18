@@ -1,11 +1,11 @@
 import shlex
 from inspect import Parameter, signature
-from typing import Any, Dict, List, Union
+from typing import Any, List, Union
 
-from khl import BaseClient, Cert, TextMsg
-
-from . import Command
-
+from .NetClient import BaseClient
+from .Cert import Cert
+from .Message import TextMsg
+from .Command import Command
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -25,7 +25,8 @@ class Bot:
         Constructor of Bot
 
         :param cmd_prefix: accepted prefix for msg to be a command
-        :param net_client: http connector/handler used, usually :class:`khl.webhook.WebhookClient`
+        :param cert: used cert for connecting and decrypt
+        :param compress: use compressed data to communicate
         """
 
         self.cmd_prefix = [i for i in cmd_prefix]
@@ -77,7 +78,7 @@ class Bot:
                                   data)
 
     def split_msg_args(self, msg: TextMsg):
-        if msg.content[0] not in self.cmd_prefix:
+        if msg.content is None or msg.content[0] not in self.cmd_prefix:
             ret = None
         else:
             try:
