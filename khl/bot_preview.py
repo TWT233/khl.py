@@ -1,5 +1,5 @@
+from khl.command_preview.typings import BaseCommand
 import shlex
-from inspect import Parameter, signature
 from typing import Any, Dict, List, Union
 
 from khl import BaseClient, Cert, TextMsg
@@ -10,7 +10,7 @@ from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
 
-from khl.command_preview import BaseCommand, parser
+from khl.command_preview import parser
 
 
 class BotPreview:
@@ -47,14 +47,14 @@ class BotPreview:
         self.__cmd_list_preview: Dict[str, BaseCommand] = {}
 
     def add_command(self, cmd: BaseCommand):
-        if not isinstance(cmd, BaseCommand):
-            raise TypeError('not a Command')
+        # if not isinstance(cmd, BaseCommand):
+        #     raise TypeError('not a Command')
         if cmd.name in self.__cmd_list.keys():
             raise ValueError('Command Name Exists')
         self.__cmd_list_preview[cmd.name] = cmd
 
     def gen_msg_handler_preview(self):
-        def msg_handler_preview(d: dict):
+        def msg_handler_preview(d: Dict[Any, Any]):
             """
             docstring
             """
@@ -100,31 +100,30 @@ class BotPreview:
                 ret = None
         return ret
 
-    def gen_msg_handler(self):
-        async def msg_handler(d: dict):
-            msg = TextMsg(channel_type=d['channel_type'],
-                          target_id=d['target_id'],
-                          author_id=d['author_id'],
-                          content=d['content'],
-                          msg_id=d['msg_id'],
-                          msg_timestamp=d['msg_timestamp'],
-                          nonce=d['nonce'],
-                          extra=d['extra'])
-            arg_list = self.split_msg_args(msg)
-            if arg_list:
-                if arg_list[0] in self.__cmd_list.keys():
-                    func = self.__cmd_list[arg_list[0]].handler
-                    argc = len([
-                        1 for v in signature(func).parameters.values()
-                        if v.default == Parameter.empty
-                    ])
-                    if argc <= len(arg_list):
-                        await func(
-                            msg, *arg_list[1:len(signature(func).parameters)])
+    # def gen_msg_handler(self):
+    #     async def msg_handler(d: dict):
+    #         msg = TextMsg(channel_type=d['channel_type'],
+    #                       target_id=d['target_id'],
+    #                       author_id=d['author_id'],
+    #                       content=d['content'],
+    #                       msg_id=d['msg_id'],
+    #                       msg_timestamp=d['msg_timestamp'],
+    #                       nonce=d['nonce'],
+    #                       extra=d['extra'])
+    #         arg_list = self.split_msg_args(msg)
+    #         if arg_list:
+    #             if arg_list[0] in self.__cmd_list.keys():
+    #                 func = self.__cmd_list[arg_list[0]].handler
+    #                 argc = len([
+    #                     1 for v in signature(func).parameters.values()
+    #                     if v.default == Parameter.empty
+    #                 ])
+    #                 if argc <= len(arg_list):
+    #                     await func(
+    #                         msg, *arg_list[1:len(signature(func).parameters)])
 
-        return msg_handler
+    #     return msg_handler
 
     def run(self):
-        self.nc.on_recv_append(self.gen_msg_handler())
         self.nc.on_recv_append(self.gen_msg_handler_preview())
         self.nc.run()

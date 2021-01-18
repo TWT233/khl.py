@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 from khl.Message import BaseMsg, TextMsg
-from typing import Any, Callable
+from typing import Any, Callable, Dict
 
 
 class BaseClient(ABC):
@@ -26,7 +26,7 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def on_recv_append(self, callback: Callable[[BaseMsg], Any]):
+    def on_recv_append(self, callback: Callable[[Dict[Any, Any]], Any]):
         """
         append callback to on_recv listener list, callback accepts msg data from server
 

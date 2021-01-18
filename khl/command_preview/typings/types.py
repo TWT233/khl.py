@@ -1,14 +1,13 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from .session_result import SessionResult
 from khl.Bot import Bot
 from khl.Message import BaseMsg, MsgType
-from .base import BaseCommand
+from .base_command import BaseCommand
 from typing import Any, Coroutine, Optional, Sequence
 
-from aiohttp.client_reqrep import ClientResponse
 
-
-class Result(Enum):
+class ResultType(Enum):
     SUCCESS = 'SUCCESS'
     FAIL = 'FAIL'
     ERROR = 'ERROR'
@@ -18,23 +17,6 @@ class Result(Enum):
 class CommandType(Enum):
     MENU = 'MENU'
     APP = 'APP'
-
-
-class SessionResult(object):
-    result_type: Result
-    session: Any
-    msg_sent: Optional[Coroutine[Any, Any, Any]]
-    detail: Any
-
-    def __init__(self,
-                 result_type: Result,
-                 session: Any,
-                 msg_sent: Optional[Coroutine[Any, Any, ClientResponse]],
-                 detail: Any = None) -> None:
-        self.result_type = result_type
-        self.session = session
-        self.msg_sent = msg_sent
-        self.detail = detail
 
 
 class BaseSession(ABC):
@@ -61,7 +43,7 @@ class BaseSession(ABC):
     def reply(
         self,
         content: str,
-        result_type: Result = Result.SUCCESS
+        result_type: ResultType = ResultType.SUCCESS
     ) -> Coroutine[Any, Any, SessionResult]:
         func_result = self.send(content=content,
                                 result_type=result_type,
@@ -73,7 +55,7 @@ class BaseSession(ABC):
     def reply_only(
         self,
         content: str,
-        result_type: Result = Result.SUCCESS
+        result_type: ResultType = ResultType.SUCCESS
     ) -> Coroutine[Any, Any, SessionResult]:
         func_result = self.send(content=content,
                                 result_type=result_type,
@@ -85,7 +67,7 @@ class BaseSession(ABC):
     def mention(
         self,
         content: str,
-        result_type: Result = Result.SUCCESS
+        result_type: ResultType = ResultType.SUCCESS
     ) -> Coroutine[Any, Any, SessionResult]:
         func_result = self.send(content=content,
                                 result_type=result_type,
@@ -96,7 +78,7 @@ class BaseSession(ABC):
     @abstractmethod
     async def send(self,
                    content: str,
-                   result_type: Result = Result.SUCCESS,
+                   result_type: ResultType = ResultType.SUCCESS,
                    message_type: MsgType = MsgType.KMD,
                    mention: bool = False,
                    reply: bool = False) -> SessionResult:

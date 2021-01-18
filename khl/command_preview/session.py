@@ -1,10 +1,10 @@
 from collections.abc import Sequence
-from khl.CommandPreview.base import BaseCommand
+from .typings.base_command import BaseCommand
 from typing import Any, Coroutine, Optional
 
 from khl.Bot import Bot
-from .types import BaseSession, SessionResult, Result
-from khl.Message import BaseMsg, MsgType, TextMsg
+from .typings import BaseSession, SessionResult, ResultType
+from khl.Message import BaseMsg, MsgType
 
 
 class Session(BaseSession):
@@ -18,7 +18,7 @@ class Session(BaseSession):
                  command: BaseCommand,
                  command_str: str,
                  args: Sequence[str],
-                 msg: TextMsg,
+                 msg: BaseMsg,
                  bot: Optional[Bot] = None) -> None:
         super().__init__(command=command,
                          command_str=command_str,
@@ -29,7 +29,7 @@ class Session(BaseSession):
     def reply(
         self,
         content: str,
-        result_type: Result = Result.SUCCESS
+        result_type: ResultType = ResultType.SUCCESS
     ) -> Coroutine[Any, Any, SessionResult]:
         func_result = self.send(content=content,
                                 result_type=result_type,
@@ -40,7 +40,7 @@ class Session(BaseSession):
     def reply_only(
         self,
         content: str,
-        result_type: Result = Result.SUCCESS
+        result_type: ResultType = ResultType.SUCCESS
     ) -> Coroutine[Any, Any, SessionResult]:
         func_result = self.send(content=content,
                                 result_type=result_type,
@@ -51,7 +51,7 @@ class Session(BaseSession):
     def mention(
         self,
         content: str,
-        result_type: Result = Result.SUCCESS
+        result_type: ResultType = ResultType.SUCCESS
     ) -> Coroutine[Any, Any, SessionResult]:
         func_result = self.send(content=content,
                                 result_type=result_type,
@@ -61,7 +61,7 @@ class Session(BaseSession):
 
     async def send(self,
                    content: str,
-                   result_type: Result = Result.SUCCESS,
+                   result_type: ResultType = ResultType.SUCCESS,
                    message_type: MsgType = MsgType.KMD,
                    mention: bool = False,
                    reply: bool = False) -> SessionResult:

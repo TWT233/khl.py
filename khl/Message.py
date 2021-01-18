@@ -15,6 +15,9 @@ class BaseMsg(ABC):
     channel_type: str
     target_id: str
     msg_id: str
+    msg_timestamp: int
+    author: User
+    author_id: str
 
 
 class TextMsg(BaseMsg):
