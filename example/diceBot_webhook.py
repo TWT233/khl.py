@@ -10,8 +10,8 @@ with open('./config/config.json', 'r', encoding='utf-8') as f:
 
 # init Cert for Bot OAuth and data decrypt
 # pass `verify_token` to `Cert()` to get a webhook cert
-# besides you can pass `type='webhook'` explicitly to get a webhook cert
-# meanwhile `type='websocket'` will gain a websocket cert
+# besides you can pass `type=Cert.Types.WH` explicitly to get a webhook cert
+# meanwhile `type=Cert.Types.WS` will gain a websocket cert
 cert = Cert(
     client_id=config['client_id'],
     client_secret=config['client_secret'],
@@ -28,7 +28,11 @@ cert = Cert(
 #   http://your.domain:5000/khl-wh?compress=0   |   Bot(cert=cert, compress=False)  |   (disable compress)
 #          http://your.domain:2333              |      Bot(cert=cert, port=2333)    |   (set port)
 #        http://your.domain:5000/meow           |   Bot(cert=cert, route='/meow')   |   (set route)
-bot = Bot(cmd_prefix=['!', '！'], cert=cert, port=2333, compress=False, route='/meow')
+bot = Bot(cmd_prefix=['!', '！'],
+          cert=cert,
+          port=2333,
+          compress=False,
+          route='/meow')
 
 
 # add command, accept optional arguments

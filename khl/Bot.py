@@ -30,7 +30,7 @@ class Bot:
         """
 
         self.cmd_prefix = [i for i in cmd_prefix]
-        if cert.type == 'webhook':
+        if cert.type == cert.Types.WH:
             args = {'cert': cert, 'compress': compress}
 
             port = kwargs.get('port')
