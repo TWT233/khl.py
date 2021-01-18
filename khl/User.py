@@ -7,7 +7,7 @@ class User:
 
     including other bots
     """
-    def __init__(self, data:Mapping[str, Any]):
+    def __init__(self, data: Mapping[str, Any]):
         self.id: str = data['id']
         self.nickname: str = data['nickname']
         pass
