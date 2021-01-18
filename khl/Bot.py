@@ -11,7 +11,6 @@ from .webhook import WebhookClient
 from .websocket import WebsocketClient
 
 
-
 class Bot:
     """
     Entity that interacts with user/environment

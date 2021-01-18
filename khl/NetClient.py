@@ -26,7 +26,7 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def on_recv_append(self, callback: Callable[[BaseMsg],Any]):
+    def on_recv_append(self, callback: Callable[[BaseMsg], Any]):
         """
         append callback to on_recv listener list, callback accepts msg data from server
 
