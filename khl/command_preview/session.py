@@ -4,21 +4,21 @@ from typing import Any, Coroutine, Optional
 
 from khl.Bot import Bot
 from .typings import BaseSession, SessionResult, ResultType
-from khl.Message import BaseMsg, MsgType
+from khl.Message import Msg
 
 
 class Session(BaseSession):
     command: BaseCommand
     command_str: str
     args: Sequence[str]
-    msg: BaseMsg
+    msg: Msg
     bot: Bot
 
     def __init__(self,
                  command: BaseCommand,
                  command_str: str,
                  args: Sequence[str],
-                 msg: BaseMsg,
+                 msg: Msg,
                  bot: Optional[Bot] = None) -> None:
         super().__init__(command=command,
                          command_str=command_str,
@@ -62,7 +62,7 @@ class Session(BaseSession):
     async def send(self,
                    content: str,
                    result_type: ResultType = ResultType.SUCCESS,
-                   message_type: MsgType = MsgType.KMD,
+                   message_type: Msg.Types = Msg.Types.KMD,
                    mention: bool = False,
                    reply: bool = False) -> SessionResult:
 

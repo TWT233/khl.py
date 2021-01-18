@@ -1,16 +1,13 @@
-from khl.command_preview.typings import BaseCommand
 import shlex
 from typing import Any, Dict, List, Union
 
 from khl import BaseClient, Cert, TextMsg
-
-from . import Command
+from khl.command_preview import parser
+from khl.command_preview.typings import BaseCommand
 
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
-
-from khl.command_preview import parser
 
 
 class BotPreview:
@@ -21,7 +18,6 @@ class BotPreview:
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
                  cert: Cert,
-                 port: int,
                  compress: bool = True,
                  **kwargs):
         """
@@ -35,8 +31,7 @@ class BotPreview:
             args = {'cert': cert, 'compress': compress}
 
             port = kwargs.get('port')
-            if port is not None:
-                args['port'] = port
+            args['port'] = port if port else 8600
 
             route = kwargs.get('route')
             if route is not None:
@@ -49,29 +44,31 @@ class BotPreview:
     def add_command(self, cmd: BaseCommand):
         # if not isinstance(cmd, BaseCommand):
         #     raise TypeError('not a Command')
-        if cmd.name in self.__cmd_list.keys():
+        if cmd.name in self.__cmd_list_preview.keys():
             raise ValueError('Command Name Exists')
         self.__cmd_list_preview[cmd.name] = cmd
 
     def gen_msg_handler_preview(self):
-        def msg_handler_preview(d: Dict[Any, Any]):
+        async def msg_handler_preview(d: Dict[Any, Any]):
             """
             docstring
             """
             res = parser(d, self.cmd_prefix, self.__cmd_list_preview)
             if isinstance(res, TextMsg):
                 return None
-            (command, args, msg) = res
-            self.__cmd_list_preview[command].execute(args, msg)
+            (command_str, args, msg) = res
+            result = self.__cmd_list_preview[command_str].execute(
+                command_str, args, msg)
+            return await result
 
         return msg_handler_preview
 
-    def command(self, name: str):
-        def decorator(func):
-            cmd = Command.command(name)(func)
-            self.add_command(cmd)
+    # def command(self, name: str):
+    #     def decorator(func):
+    #         cmd = Command.command(name)(func)
+    #         self.add_command(cmd)
 
-        return decorator
+    #     return decorator
 
     async def send(self,
                    channel_id: str,

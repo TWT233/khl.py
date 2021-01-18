@@ -3,8 +3,9 @@ from .session import Session
 from .typings.types import BaseSession, ResultType, SessionResult
 from .menu import MenuCommand
 
-from khl.Message import BaseMsg
-from typing import Sequence, Union, overload
+from khl.Message import Msg
+from collections.abc import Sequence
+from types import Union, overload
 
 
 class AppCommand(BaseCommand):
@@ -16,7 +17,7 @@ class AppCommand(BaseCommand):
 
     @overload
     async def execute(self, command_str: str, arg_list: Sequence[str],
-                      msg: BaseMsg) -> ResultType or None:
+                      msg: Msg) -> ResultType or None:
         return await self.run_func(Session(
             self,
             command_str,

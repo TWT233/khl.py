@@ -1,7 +1,7 @@
 import shlex
 from khl.Message import TextMsg
 from typing import List, Mapping, Sequence, Tuple, Union
-from .base import BaseCommand
+from .typings import BaseCommand
 
 
 def parser(
