@@ -17,8 +17,7 @@ import random
 
 from khl import TextMsg, Bot, Cert
 
-cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx', verify_token='xxxxxx')
-
+cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx')
 bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
