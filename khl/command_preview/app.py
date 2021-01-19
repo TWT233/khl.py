@@ -30,16 +30,16 @@ class AppCommand(BaseCommand):
 
     async def run_func(
             self, session: BaseSession) -> BaseSession.ResultTypes or None:
-        if (not self.bot):
+        if not self.bot:
             raise AttributeError(
                 f'Trigger {self.trigger}({self.__class__.__name__}) '
                 'used before bot is assigned')
-        if (session.args and self.use_help and session.args[0] == '帮助'):
+        if session.args and self.use_help and session.args[0] == '帮助':
             await session.reply(self.help)
             return BaseSession.ResultTypes.HELP
         result: Union[BaseSession.ResultTypes, None,
                       BaseSession] = await self.func(session)
-        if (not result):
+        if not result:
             return BaseSession.ResultTypes.SUCCESS
         elif isinstance(result, BaseSession):
             return result.result_type

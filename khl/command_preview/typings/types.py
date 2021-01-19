@@ -79,17 +79,16 @@ class BaseSession(ABC):
                    mention: bool = False,
                    reply: bool = False):
 
-        if (mention):
+        if mention:
             content = f'(met){self.msg.author_id}(met) ' + content
-        quote: str = self.msg.msg_id if (reply) else ''
+        quote: str = self.msg.msg_id if reply else ''
 
-        if (not self.bot):
+        if not self.bot:
             raise AttributeError('Session send used before assigning a bot.'
                                  f' Command: {self.command.name}')
         self.msg_sent = await self.bot.send(object_name=message_type,
                                             content=content,
                                             channel_id=self.msg.target_id,
                                             quote=quote)
-        print(self.msg_sent)
         self.result_type = result_type
         return self
