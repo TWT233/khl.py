@@ -4,8 +4,6 @@ from enum import IntEnum
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Padding
 
-# https://pycryptodome.readthedocs.io/en/latest/src/installation.html
-
 
 class Cert:
     """
@@ -14,9 +12,20 @@ class Cert:
     used in auth/data encrypt/decrypt
     """
     class Types(IntEnum):
+        """
+        types of :class:`Cert`
+
+        used in extinguishing Cert and construct corresponding net client
+        """
         NOTSET = 0
         WS = 1
+        """
+        websocket cert
+        """
         WH = 2
+        """
+        webhook cert
+        """
 
     def __init__(self,
                  *,
