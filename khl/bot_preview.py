@@ -50,6 +50,15 @@ class BotPreview:
         self.__cmd_list[cmd.trigger] = cmd
         cmd.set_bot(self)
 
+    def command(self, name: str):
+        def decorator(func):
+            cmd = AppCommand()
+            cmd.trigger = name
+            cmd.func = func
+            self.add_command(cmd)
+
+        return decorator
+
     def gen_msg_handler_preview(self):
         async def msg_handler_preview(d: Dict[Any, Any]):
             """
