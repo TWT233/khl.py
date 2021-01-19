@@ -3,6 +3,7 @@ import json
 import zlib
 
 from aiohttp import ClientSession, ClientWebSocketResponse
+from aiohttp.client_reqrep import ClientResponse
 
 from ..hardcoded import API_URL
 from ..NetClient import BaseClient
@@ -23,7 +24,7 @@ class WebsocketClient(BaseClient):
         self.NEWEST_SN = 0
         self.RAW_GATEWAY = ''
 
-    async def send(self, url: str, data):
+    async def send(self, url: str, data) -> ClientResponse:
         headers = {
             'Authorization': f'Bot {self.cert.token}',
             'Content-type': 'application/json'

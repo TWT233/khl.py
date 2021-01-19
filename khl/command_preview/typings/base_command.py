@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .types import BaseSession, CommandType
-from khl.Message import BaseMsg
+from khl.Message import Msg
 from typing import Any, Sequence, overload
 
 from khl.Bot import Bot
@@ -19,10 +19,10 @@ class BaseCommand(ABC):
     def __init__(self) -> None:
         self.name = self.__class__.__name__
 
-    @abstractmethod
     @overload
-    async def execute(self, command_str: str, arg_list: Sequence[str],
-                      msg: BaseMsg) -> Any:
+    @abstractmethod
+    async def execute(self, command_str: str, args: Sequence[str],
+                      msg: Msg) -> Any:
         """
         docstring
         """
@@ -36,14 +36,14 @@ class BaseCommand(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def run_func(self, session: BaseSession) -> Any:
+    async def run_func(self, session: BaseSession) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    def func(self, session: BaseSession) -> Any:
+    async def func(self, session: BaseSession) -> Any:
         """
         docstring
         """
@@ -53,11 +53,7 @@ class BaseCommand(ABC):
     def bot(self):
         return self.__bot
 
-    @bot.setter
-    def set_bot(self, bot: Bot):
-        # if (not isinstance(bot, Bot)):
-        #     raise TypeError(
-        #         'Trying to assign a non-bot instance!')
+    def set_bot(self, bot):
         self.__bot = bot
 
     @property

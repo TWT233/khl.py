@@ -1,24 +1,24 @@
-from collections.abc import Sequence
-from .typings.base_command import BaseCommand
-from typing import Any, Coroutine, Optional
+from typing import Any, Coroutine, Optional, Sequence
 
 from khl.Bot import Bot
-from .typings import BaseSession, SessionResult, ResultType
-from khl.Message import BaseMsg, MsgType
+from khl.Message import Msg
+
+from .typings import BaseSession
+from .typings.base_command import BaseCommand
 
 
 class Session(BaseSession):
     command: BaseCommand
     command_str: str
     args: Sequence[str]
-    msg: BaseMsg
+    msg: Msg
     bot: Bot
 
     def __init__(self,
                  command: BaseCommand,
                  command_str: str,
                  args: Sequence[str],
-                 msg: BaseMsg,
+                 msg: Msg,
                  bot: Optional[Bot] = None) -> None:
         super().__init__(command=command,
                          command_str=command_str,
@@ -26,46 +26,37 @@ class Session(BaseSession):
                          msg=msg,
                          bot=bot)
 
-    def reply(
+    async def reply(
         self,
         content: str,
-        result_type: ResultType = ResultType.SUCCESS
-    ) -> Coroutine[Any, Any, SessionResult]:
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=True,
-                                reply=True)
-        return func_result
+        message_type: Msg.Types = Msg.Types.KMD,
+        result_type: BaseSession.ResultTypes = BaseSession.ResultTypes.SUCCESS
+    ):
+        return await self.send(content, message_type, result_type, True, True)
 
-    def reply_only(
+    async def reply_only(
         self,
         content: str,
-        result_type: ResultType = ResultType.SUCCESS
-    ) -> Coroutine[Any, Any, SessionResult]:
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=False,
-                                reply=True)
-        return func_result
+        message_type: Msg.Types = Msg.Types.KMD,
+        result_type: BaseSession.ResultTypes = BaseSession.ResultTypes.SUCCESS
+    ):
+        return await self.send(content, message_type, result_type, False, True)
 
-    def mention(
+    async def mention(
         self,
         content: str,
-        result_type: ResultType = ResultType.SUCCESS
-    ) -> Coroutine[Any, Any, SessionResult]:
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=True,
-                                reply=False)
-        return func_result
+        message_type: Msg.Types = Msg.Types.KMD,
+        result_type: BaseSession.ResultTypes = BaseSession.ResultTypes.SUCCESS
+    ):
+        return await self.send(content, message_type, result_type, True, False)
 
     async def send(self,
                    content: str,
-                   result_type: ResultType = ResultType.SUCCESS,
-                   message_type: MsgType = MsgType.KMD,
+                   message_type: Msg.Types = Msg.Types.KMD,
+                   result_type: BaseSession.ResultTypes = BaseSession.
+                   ResultTypes.SUCCESS,
                    mention: bool = False,
-                   reply: bool = False) -> SessionResult:
-
+                   reply: bool = False):
         if (mention):
             content = f'(met){self.msg.author_id}(met) ' + content
         quote: str = self.msg.msg_id if (reply) else ''
@@ -73,10 +64,10 @@ class Session(BaseSession):
         if (not self.bot):
             raise AttributeError('Session send used before assigning a bot.'
                                  f' Command: {self.command.name}')
-        msg_sent = self.bot.send(object_name=message_type,
-                                 content=content,
-                                 channel_id=self.msg.target_id,
-                                 quote=quote)
-        return SessionResult(result_type=result_type,
-                             session=self,
-                             msg_sent=msg_sent)
+        self.msg_sent = await self.bot.send(object_name=message_type,
+                                            content=content,
+                                            channel_id=self.msg.target_id,
+                                            quote=quote)
+        print(self.msg_sent)
+        self.result_type = result_type
+        return self

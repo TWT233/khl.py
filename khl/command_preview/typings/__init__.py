@@ -1,2 +1,2 @@
-from .session_result import *
+from .base_command import *
 from .types import *

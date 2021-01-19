@@ -1,5 +1,7 @@
 from abc import abstractmethod, ABC
-from typing import Any, Callable, Coroutine, Dict
+from typing import Any, Callable, Coroutine, Dict, Union
+
+from aiohttp.client_reqrep import ClientResponse
 
 
 class BaseClient(ABC):
@@ -15,7 +17,8 @@ class BaseClient(ABC):
         self.type = ""
 
     @abstractmethod
-    async def send(self, url: str, data):
+    async def send(self, url: str,
+                   data: Dict[str, Union[str, int]]) -> ClientResponse:
         """
         send `data` to `url` with POST
 
@@ -27,7 +30,8 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def on_recv_append(self, callback: Callable[[Dict[Any, Any]], Coroutine]):
+    def on_recv_append(self, callback: Callable[[Dict[Any, Any]],
+                                                Coroutine[Any, Any, Any]]):
         """
         append callback to on_recv listener list
 
