@@ -1,17 +1,15 @@
-from khl.command_preview.session import Session
-import shlex
 from typing import Any, Dict, List, Union
 
 from khl import BaseClient, Cert, TextMsg
-from khl.command_preview import parser
+from khl.command_preview import parser, AppCommand
+from khl.command_preview.session import Session
 from khl.command_preview.typings import BaseCommand
-
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
 
 
-class BotPreview:
+class Bot:
     """
     Entity that interacts with user/environment
     """
@@ -78,13 +76,6 @@ class BotPreview:
 
         return msg_handler_preview
 
-    # def command(self, name: str):
-    #     def decorator(func):
-    #         cmd = Command.command(name)(func)
-    #         self.add_command(cmd)
-
-    #     return decorator
-
     async def send(self,
                    channel_id: str,
                    content: str,
@@ -101,30 +92,6 @@ class BotPreview:
         }
         return await self.nc.send(f'{API_URL}/channel/message?compress=0',
                                   data)
-
-    # def gen_msg_handler(self):
-    #     async def msg_handler(d: dict):
-    #         msg = TextMsg(channel_type=d['channel_type'],
-    #                       target_id=d['target_id'],
-    #                       author_id=d['author_id'],
-    #                       content=d['content'],
-    #                       msg_id=d['msg_id'],
-    #                       msg_timestamp=d['msg_timestamp'],
-    #                       nonce=d['nonce'],
-    #                       extra=d['extra'])
-    #         arg_list = self.split_msg_args(msg)
-    #         if arg_list:
-    #             if arg_list[0] in self.__cmd_list.keys():
-    #                 func = self.__cmd_list[arg_list[0]].handler
-    #                 argc = len([
-    #                     1 for v in signature(func).parameters.values()
-    #                     if v.default == Parameter.empty
-    #                 ])
-    #                 if argc <= len(arg_list):
-    #                     await func(
-    #                         msg, *arg_list[1:len(signature(func).parameters)])
-
-    #     return msg_handler
 
     def run(self):
         self.nc.on_recv_append(self.gen_msg_handler_preview())
