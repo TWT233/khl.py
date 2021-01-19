@@ -1,17 +1,8 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from .session_result import SessionResult
 from khl.Bot import Bot
-from khl.Message import BaseMsg, MsgType
-from .base_command import BaseCommand
+from khl.Message import Msg
 from typing import Any, Coroutine, Optional, Sequence
-
-
-class ResultType(Enum):
-    SUCCESS = 'SUCCESS'
-    FAIL = 'FAIL'
-    ERROR = 'ERROR'
-    HELP = 'HELP'
 
 
 class CommandType(Enum):
@@ -20,18 +11,26 @@ class CommandType(Enum):
 
 
 class BaseSession(ABC):
-    command: BaseCommand
+    class ResultTypes(Enum):
+        SUCCESS = 'SUCCESS'
+        FAIL = 'FAIL'
+        ERROR = 'ERROR'
+        HELP = 'HELP'
+
+    command: Any
     command_str: str
     args: Sequence[str]
-    msg: BaseMsg
+    msg: Msg
     bot: Bot
+    result_type: ResultTypes
+    detail: Any
 
     @abstractmethod
     def __init__(self,
-                 command: BaseCommand,
+                 command: Any,
                  command_str: str,
                  args: Sequence[str],
-                 msg: BaseMsg,
+                 msg: Msg,
                  bot: Optional[Bot] = None) -> None:
         self.command_str = command_str
         self.command = command
@@ -40,11 +39,9 @@ class BaseSession(ABC):
         self.bot = bot if bot else self.command.bot
 
     @abstractmethod
-    def reply(
-        self,
-        content: str,
-        result_type: ResultType = ResultType.SUCCESS
-    ) -> Coroutine[Any, Any, SessionResult]:
+    def reply(self,
+              content: str,
+              result_type: ResultTypes = ResultTypes.SUCCESS):
         func_result = self.send(content=content,
                                 result_type=result_type,
                                 mention=True,
@@ -52,11 +49,9 @@ class BaseSession(ABC):
         return func_result
 
     @abstractmethod
-    def reply_only(
-        self,
-        content: str,
-        result_type: ResultType = ResultType.SUCCESS
-    ) -> Coroutine[Any, Any, SessionResult]:
+    def reply_only(self,
+                   content: str,
+                   result_type: ResultTypes = ResultTypes.SUCCESS):
         func_result = self.send(content=content,
                                 result_type=result_type,
                                 mention=False,
@@ -64,11 +59,9 @@ class BaseSession(ABC):
         return func_result
 
     @abstractmethod
-    def mention(
-        self,
-        content: str,
-        result_type: ResultType = ResultType.SUCCESS
-    ) -> Coroutine[Any, Any, SessionResult]:
+    def mention(self,
+                content: str,
+                result_type: ResultTypes = ResultTypes.SUCCESS):
         func_result = self.send(content=content,
                                 result_type=result_type,
                                 mention=True,
@@ -78,10 +71,10 @@ class BaseSession(ABC):
     @abstractmethod
     async def send(self,
                    content: str,
-                   result_type: ResultType = ResultType.SUCCESS,
-                   message_type: MsgType = MsgType.KMD,
+                   result_type: ResultTypes = ResultTypes.SUCCESS,
+                   message_type: Msg.Types = Msg.Types.KMD,
                    mention: bool = False,
-                   reply: bool = False) -> SessionResult:
+                   reply: bool = False):
 
         if (mention):
             content = f'(met){self.msg.author_id}(met) ' + content
@@ -90,10 +83,9 @@ class BaseSession(ABC):
         if (not self.bot):
             raise AttributeError('Session send used before assigning a bot.'
                                  f' Command: {self.command.name}')
-        msg_sent = self.bot.send(object_name=message_type,
-                                 content=content,
-                                 channel_id=self.msg.target_id,
-                                 quote=quote)
-        return SessionResult(result_type=result_type,
-                             session=self,
-                             msg_sent=msg_sent)
+        self.msg_sent = self.bot.send(object_name=message_type,
+                                      content=content,
+                                      channel_id=self.msg.target_id,
+                                      quote=quote)
+
+        return self

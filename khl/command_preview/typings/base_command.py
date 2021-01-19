@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .types import BaseSession, CommandType
-from khl.Message import BaseMsg
+from khl.Message import Msg
 from typing import Any, Sequence, overload
 
 from khl.Bot import Bot
@@ -22,7 +22,7 @@ class BaseCommand(ABC):
     @abstractmethod
     @overload
     async def execute(self, command_str: str, arg_list: Sequence[str],
-                      msg: BaseMsg) -> Any:
+                      msg: Msg) -> Any:
         """
         docstring
         """
