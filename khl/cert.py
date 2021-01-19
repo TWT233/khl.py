@@ -17,12 +17,12 @@ class Cert:
 
         used in extinguishing Cert and construct corresponding net client
         """
-        NOTSET = 0
-        WS = 1
+        NOTSET = 'not_set'
+        WS = 'websocket'
         """
         websocket cert
         """
-        WH = 2
+        WH = 'webhook'
         """
         webhook cert
         """
