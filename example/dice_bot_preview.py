@@ -1,3 +1,5 @@
+import sys
+sys.path.append('.')
 import json
 from khl.command_preview.typings.types import BaseSession
 import random
@@ -11,7 +13,7 @@ from khl.command_preview import AppCommand
 #
 # config template: `./config/config.json.example`
 # rename it into 'config.json' and filling fields
-with open('./config/config.json', 'r', encoding='utf-8') as f:
+with open('./example/config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 # init Cert for Bot OAuth and data decrypt

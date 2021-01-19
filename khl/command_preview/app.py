@@ -1,11 +1,10 @@
+from typing import Sequence, Union, overload
 from .typings.base_command import BaseCommand
 from .session import Session
 from .typings.types import BaseSession
 from .menu import MenuCommand
 
 from khl.Message import Msg
-from collections.abc import Sequence
-from types import Union, overload
 
 
 class AppCommand(BaseCommand):

@@ -4,6 +4,8 @@ from enum import IntEnum
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Padding
 
+# https://pycryptodome.readthedocs.io/en/latest/src/installation.html
+
 
 class Cert:
     """

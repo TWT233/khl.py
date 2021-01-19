@@ -53,6 +53,7 @@ class BotPreview:
             """
             docstring
             """
+            print(d)
             res = parser(d, self.cmd_prefix, self.__cmd_list_preview)
             if isinstance(res, TextMsg):
                 return None
@@ -87,15 +88,6 @@ class BotPreview:
         return await self.nc.send(f'{API_URL}/channel/message?compress=0',
                                   data)
 
-    def split_msg_args(self, msg: TextMsg):
-        if msg.content[0] not in self.cmd_prefix:
-            ret = None
-        else:
-            try:
-                ret = shlex.split(msg.content[1:])
-            except:
-                ret = None
-        return ret
 
     # def gen_msg_handler(self):
     #     async def msg_handler(d: dict):

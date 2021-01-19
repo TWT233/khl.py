@@ -36,14 +36,14 @@ class BaseCommand(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def run_func(self, session: BaseSession) -> Any:
+    async def run_func(self, session: BaseSession) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    def func(self, session: BaseSession) -> Any:
+    async def func(self, session: BaseSession) -> Any:
         """
         docstring
         """

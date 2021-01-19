@@ -8,14 +8,7 @@ def parser(
     d: dict, prefixes: Union[List[str], str,
                              tuple], commandMap: Mapping[str, BaseCommand]
 ) -> Union[Tuple[str, Sequence[str], TextMsg], TextMsg]:
-    msg = TextMsg(channel_type=d['channel_type'],
-                  target_id=d['target_id'],
-                  author_id=d['author_id'],
-                  content=d['content'],
-                  msg_id=d['msg_id'],
-                  msg_timestamp=d['msg_timestamp'],
-                  nonce=d['nonce'],
-                  extra=d['extra'])
+    msg = TextMsg(**d)
 
     for prefix in prefixes:
         if msg.content.startswith(prefix):

@@ -1,10 +1,10 @@
-from collections.abc import Sequence
-from .typings.base_command import BaseCommand
-from typing import Any, Coroutine, Optional
+from typing import Any, Coroutine, Optional, Sequence
 
 from khl.Bot import Bot
-from .typings import BaseSession
 from khl.Message import Msg
+
+from .typings import BaseSession
+from .typings.base_command import BaseCommand
 
 
 class Session(BaseSession):
