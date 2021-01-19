@@ -28,11 +28,12 @@ class BotPreview:
         :param net_client: http connector/handler used, usually :class:`khl.webhook.WebhookClient`
         """
         self.cmd_prefix = [i for i in cmd_prefix]
-        if cert.type == 'webhook':
+        if cert.type == cert.Types.WH:
             args = {'cert': cert, 'compress': compress}
 
             port = kwargs.get('port')
-            args['port'] = port if port else 8600
+            if port is not None:
+                args['port'] = port
 
             route = kwargs.get('route')
             if route is not None:
@@ -40,6 +41,7 @@ class BotPreview:
             self.nc: BaseClient = WebhookClient(**args)
         else:
             self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
+
         self.__cmd_list: Dict[str, BaseCommand] = {}
 
     def add_command(self, cmd: BaseCommand):
