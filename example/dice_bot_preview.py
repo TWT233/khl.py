@@ -1,4 +1,5 @@
 import json
+from khl.command_preview.session import Session
 
 from khl import Cert, Bot
 from khl.command_preview.typings.types import BaseSession
@@ -39,7 +40,6 @@ bot = Bot(cmd_prefix=['.', '。'], cert=cert)
 async def func(session: BaseSession):
     await session.reply(f'{session.args}')
     return None
-
 
 # everything done, go ahead now!
 bot.run()
