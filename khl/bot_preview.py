@@ -64,7 +64,6 @@ class Bot:
             """
             docstring
             """
-            print(d)
             res = parser(d, self.cmd_prefix, self.__cmd_list)
             if isinstance(res, TextMsg):
                 return None
