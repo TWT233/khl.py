@@ -1,7 +1,7 @@
 from typing import Any, Coroutine, Optional, Sequence
 
-from khl.Bot import Bot
-from khl.Message import Msg
+from khl.bot import Bot
+from khl.message import Msg
 
 from .typings import BaseSession
 from .typings.base_command import BaseCommand

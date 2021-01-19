@@ -5,10 +5,10 @@ import shlex
 from inspect import Parameter, signature
 from typing import Any, List, Union
 
-from .NetClient import BaseClient
-from .Cert import Cert
-from .Message import TextMsg
-from .Command import Command
+from .net_client import BaseClient
+from .cert import Cert
+from .message import TextMsg
+from .command import Command
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient

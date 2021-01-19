@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from .types import BaseSession, CommandType
-from khl.Message import Msg
+from khl.message import Msg
 from typing import Any, Sequence, overload
 
-from khl.Bot import Bot
+from khl.bot import Bot
 
 
 class BaseCommand(ABC):

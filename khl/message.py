@@ -1,7 +1,7 @@
 from abc import ABC
 from enum import IntEnum
 from typing import List
-from .User import User
+from .user import User
 
 
 class Msg(ABC):

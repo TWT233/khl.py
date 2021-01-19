@@ -6,8 +6,8 @@ from aiohttp import ClientSession, ClientWebSocketResponse
 from aiohttp.client_reqrep import ClientResponse
 
 from ..hardcoded import API_URL
-from ..NetClient import BaseClient
-from ..Cert import Cert
+from ..net_client import BaseClient
+from ..cert import Cert
 
 
 class WebsocketClient(BaseClient):

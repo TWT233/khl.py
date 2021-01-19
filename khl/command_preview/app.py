@@ -4,7 +4,7 @@ from .session import Session
 from .typings.types import BaseSession
 from .menu import MenuCommand
 
-from khl.Message import Msg
+from khl.message import Msg
 
 
 class AppCommand(BaseCommand):

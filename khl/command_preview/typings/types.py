@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from khl.Bot import Bot
-from khl.Message import Msg
+from khl.bot import Bot
+from khl.message import Msg
 from typing import Any, Coroutine, Optional, Sequence
 
 

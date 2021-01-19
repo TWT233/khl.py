@@ -1,5 +1,5 @@
 import shlex
-from khl.Message import TextMsg
+from khl.message import TextMsg
 from typing import List, Mapping, Sequence, Tuple, Union
 from .typings import BaseCommand
 
