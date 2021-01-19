@@ -1,5 +1,5 @@
 import base64
-from enum import IntEnum
+from enum import Enum
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Padding
@@ -11,7 +11,7 @@ class Cert:
 
     used in auth/data encrypt/decrypt
     """
-    class Types(IntEnum):
+    class Types(Enum):
         """
         types of :class:`Cert`
 
