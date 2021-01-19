@@ -1,3 +1,7 @@
+"""
+deprecated
+"""
+
 import asyncio
 
 
@@ -5,7 +9,6 @@ class Command:
     """
     Command class, used in Bot
     """
-
     def __init__(self, func, name: str):
         if not asyncio.iscoroutinefunction(func):
             raise TypeError('handler must be a coroutine.')
@@ -23,7 +26,6 @@ class Command:
         :param name: the name of a Command, also used to trigger Command
         :return: wrapped Command
         """
-
         def decorator(func):
             return Command(func, name)
 

@@ -1,20 +1,24 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
+from typing import Any, Callable, Coroutine, Dict, Union
+
+from aiohttp.client_reqrep import ClientResponse
 
 
-class BaseClient:
+class BaseClient(ABC):
     """
     http wrapper, including server and client
 
     abstract base class
-    recv raw data from server, resolve request data and msg data from raw, pass it to inner context such as bot
+        1. recv raw data from server
+        2. resolve request data and msg data from raw
+        3. pass it to inner context such as bot
     """
-
-    def __init__(self, port):
+    def __init__(self):
         self.type = ""
-        self.port = port
 
     @abstractmethod
-    async def send(self, url: str, data):
+    async def send(self, url: str,
+                   data: Dict[str, Union[str, int]]) -> ClientResponse:
         """
         send `data` to `url` with POST
 
@@ -26,9 +30,10 @@ class BaseClient:
         pass
 
     @abstractmethod
-    def on_recv_append(self, callback):
+    def on_recv_append(self, callback: Callable[[Dict[Any, Any]],
+                                                Coroutine[Any, Any, Any]]):
         """
-        append callback to on_recv listener list, callback accepts msg data from server
+        append callback to on_recv listener list
 
         :param callback: handler that will be called on msg recv
         :type callback: function(e)->Any

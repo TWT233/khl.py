@@ -15,53 +15,49 @@ pip install khl.py
 ```python
 import random
 
-from khl import TextMsg, Bot
-from khl.webhook import Cert, WebhookClient
+from khl import Bot, Cert
 
-cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx', verify_token='xxxxxx')
-
-bot = Bot(cmd_prefix=['!', '！'], net_client=WebhookClient(cert=cert, compress=True))
+cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx')
+bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
 @bot.command(name='roll')
-async def roll(msg: TextMsg):
-    await bot.send(msg.target_id, f'you got: {random.randint(1, 6)}')
+async def roll(session):
+    await session.reply(f'{random.randint(int(session.args[0]), int(session.args[1]))}')
 
 
 bot.run()
+# now invite the bot to ur server,
+# and type '!roll 1 100'(in any channel) to check ur san today!
+# (remember to grant read & send permissions to the bot first)
 ```
-
-## Why `WebhookClient`
-
-There will be multiple ways for Bots to connect to kaiheila.cn, such as Webhook mentioned above, and WebSocket which is
-still WIP
-
-Thus, to make our code easily comprehended and maintained in the future, we choose to leave WebhookClient here, though
-there is only Webhook now.
 
 # short-term roadmap
 
-docs:
+## refactor
 
-- [x] docs init
+- [ ] rename files according to PEP8 (active @TWT233)
 
-perf:
+## perf:
 
-- [x] check `SN`
+- [ ] refactor `Msg`, support multimedia msg (active @TWT233)
+    - [ ] introduce `MsgCtx` with this
+- [ ] check
 
-feat:
+## feat:
 
-T1:
+### T1:
+
+- [ ] command & arg parse system
+- [ ] event listener for bot
+    - [ ] find another approach to handle msg
+- [ ] command group
+
+### T2:
 
 - [ ] log system
-- [ ] command alias
-- [ ] command & arg parse system
-    - [ ] sub command system
 - [ ] `MsgCtx` design
-
-bug fix:
-
-- [x] error parsing str in `."` pattern (cmd_prefix+unclosing quote)
+- [ ] command alias
 
 # commit message rules
 

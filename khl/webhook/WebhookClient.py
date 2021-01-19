@@ -1,28 +1,33 @@
+import asyncio
 import json
 import time
 import zlib
 
-import asyncio
-from aiohttp import ClientSession, web
+from aiohttp import ClientSession, web, ClientResponse
 
-from .. import BaseClient
-from . import Cert
+from ..net_client import BaseClient
+from ..cert import Cert
 
 
 class WebhookClient(BaseClient):
     """
     implements BaseClient with webhook protocol
     """
-
-    def __init__(self, *, port=5000, route='/khl-wh', compress: bool = True, cert: Cert):
+    def __init__(self,
+                 *,
+                 port=5000,
+                 route='/khl-wh',
+                 compress: bool = True,
+                 cert: Cert):
         """
         :param port: port to set webhook server on
         :param route: route for your webhook server
         :param compress: enable data compress or not, enabled as default
         :param cert: used to auth and data decrypt/encrypt
         """
-        super().__init__(port)
+        super().__init__()
         self.type = 'webhook'
+        self.port = port
         self.route = route
         self.cs = ClientSession()
         self.app = web.Application()
@@ -31,9 +36,13 @@ class WebhookClient(BaseClient):
         self.recv = []
         self.sn_dup_map = {}
 
-    async def send(self, url: str, data):
-        headers = {'Authorization': f'Bot {self.cert.token}', 'Content-type': 'application/json'}
+    async def send(self, url: str, data) -> ClientResponse:
+        headers = {
+            'Authorization': f'Bot {self.cert.token}',
+            'Content-type': 'application/json'
+        }
         async with self.cs.post(url, headers=headers, json=data) as res:
+            await res.read()
             return res
 
     def on_recv_append(self, callback):
@@ -50,7 +59,8 @@ class WebhookClient(BaseClient):
         """
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
-        return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
+        return ('encrypt' in data.keys()) and json.loads(
+            self.cert.decrypt(data['encrypt'])) or data
 
     def __is_req_dup(self, req: dict) -> bool:
         """
@@ -69,14 +79,13 @@ class WebhookClient(BaseClient):
         """
         init aiohttp app
         """
-
         async def on_recv(request: web.Request):
             req_json = self.__raw_2_req(await request.read())
             assert req_json
             assert req_json['d']['verify_token'] == self.cert.verify_token
 
             if self.__is_req_dup(req_json):
-                return web.Response(status=200)
+                return web.Response()
 
             if req_json['s'] == 0:
                 d = req_json['d']
@@ -87,7 +96,7 @@ class WebhookClient(BaseClient):
                     if d['channel_type'] == 'WEBHOOK_CHALLENGE':
                         return web.json_response({'challenge': d['challenge']})
 
-            return web.Response(status=200)
+            return web.Response()
 
         self.app.router.add_post(self.route, on_recv)
 
