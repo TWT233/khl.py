@@ -85,8 +85,9 @@ class BaseSession(ABC):
         quote: str = self.msg.msg_id if (reply) else ''
 
         if (not self.bot):
-            raise AttributeError('Session send method used before setting a bot.'
-                                 f' Command: {self.command.name}')
+            raise AttributeError(
+                'Session send method used before setting a bot.'
+                f' Command: {self.command.name}')
         self.msg_sent = await self.bot.send(
             object_name=message_type,
             content=content,

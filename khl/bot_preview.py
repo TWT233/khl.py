@@ -26,7 +26,7 @@ class Bot:
         :param net_client: http connector/handler used, usually :class:`khl.webhook.WebhookClient`
         """
         self.cmd_prefix = [i for i in cmd_prefix]
-        if cert.type == cert.Types.WH:
+        if cert.type == cert.Types.WEBHOOK:
             args = {'cert': cert, 'compress': compress}
 
             port = kwargs.get('port')
@@ -69,9 +69,9 @@ class Bot:
             if isinstance(res, TextMsg):
                 return None
             (command_str, args, msg) = res
-            ins = self.__cmd_list.get(command_str)
-            if ins:
-                result = ins.execute(Session(ins, command_str, args, msg))
+            inst = self.__cmd_list.get(command_str)
+            if inst:
+                result = inst.execute(Session(inst, command_str, args, msg))
                 return await result
 
         return msg_handler_preview

@@ -18,11 +18,11 @@ class Cert:
         used in extinguishing Cert and construct corresponding net client
         """
         NOTSET = 'not_set'
-        WS = 'websocket'
+        WEBSOCKET = 'websocket'
         """
         websocket cert
         """
-        WH = 'webhook'
+        WEBHOOK = 'webhook'
         """
         webhook cert
         """
@@ -42,9 +42,9 @@ class Cert:
             self.type = type
         else:
             if verify_token:
-                self.type = self.Types.WH
+                self.type = self.Types.WEBHOOK
             else:
-                self.type = self.Types.WS
+                self.type = self.Types.WEBSOCKET
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = token

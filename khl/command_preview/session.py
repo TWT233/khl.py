@@ -129,12 +129,15 @@ class Session(BaseSession):
         quote: str = self.msg.msg_id if (reply) else ''
 
         if (not self.bot):
-            raise AttributeError('Session send used before assigning a bot.'
-                                 f' Command: {self.command.name}')
-        self.msg_sent = await self.bot.send(object_name=message_type,
-                                            content=content,
-                                            channel_id=self.msg.target_id,
-                                            quote=quote)
+            raise AttributeError(
+                'Session send method used before setting a bot.'
+                f' Command: {self.command.name}')
+        self.msg_sent = await self.bot.send(
+            object_name=message_type,
+            content=content,
+            channel_id=message_channel
+            if message_channel else self.msg.target_id,
+            quote=quote)
         print(self.msg_sent)
         self.result_type = result_type
         return self
