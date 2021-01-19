@@ -15,12 +15,12 @@ class AppCommand(BaseCommand):
         super().__init__()
 
     @overload
-    async def execute(self, command_str: str, arg_list: Sequence[str],
+    async def execute(self, command_str: str, args: Sequence[str],
                       msg: Msg) -> BaseSession.ResultTypes or None:
         return await self.run_func(Session(
             self,
             command_str,
-            arg_list,
+            args,
             msg,
         ))
 
@@ -34,7 +34,7 @@ class AppCommand(BaseCommand):
             raise AttributeError(
                 f'Trigger {self.trigger}({self.__class__.__name__}) '
                 'used before bot is assigned')
-        if (self.use_help and session.args[0] == '帮助'):
+        if (session.args and self.use_help and session.args[0] == '帮助'):
             await session.reply(self.help)
             return BaseSession.ResultTypes.HELP
         result: Union[BaseSession.ResultTypes, None,
@@ -49,4 +49,4 @@ class AppCommand(BaseCommand):
     async def func(
         self, session: BaseSession
     ) -> Union[BaseSession, BaseSession.ResultTypes, None]:
-        return super().func(session)
+        return None

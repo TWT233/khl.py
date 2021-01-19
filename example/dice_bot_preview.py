@@ -1,12 +1,13 @@
 import sys
+
 sys.path.append('.')
 import json
-from khl.command_preview.typings.types import BaseSession
 import random
 
 from khl import Cert
 from khl.bot_preview import BotPreview
 from khl.command_preview import AppCommand
+from khl.command_preview.typings.types import BaseSession
 
 # load config from config/config.json,
 # replace `path` points to your own config file.
@@ -44,18 +45,17 @@ bot = BotPreview(port=2000, cmd_prefix=['.', '。'], cert=cert)
 # you can invoke this command via:
 #   `!roll 1 100`
 #   `!roll 1 100 3` (param `n` is optional as set below)
-class DiceApp(AppCommand):
-    trigger = 'roll'
+class EchoApp(AppCommand):
+    trigger = 'echo'
 
     async def func(self, session: BaseSession):
-        r_min, r_max, n = session.args
-        n = n if n else 1
-        return session.reply(
-            f'you got：{[random.randint(int(r_min), int(r_max)) for i in range(int(n))]}'
-        )
+        print(self)
+        await session.reply(f'{session.args}')
+        # await bot.send(session.msg.target_id, f'you said：{session.args}')
+        return None
 
 
-bot.add_command(DiceApp())
+bot.add_command(EchoApp())
 
 # everything done, go ahead now!
 bot.run()

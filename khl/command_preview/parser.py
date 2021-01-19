@@ -15,6 +15,6 @@ def parser(
             res = shlex.split(msg.content[1:])
             command = res[0]
             args = res[1:]
-            return (command, args, msg)
+            return command, args, msg
 
     return msg

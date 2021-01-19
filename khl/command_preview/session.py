@@ -26,47 +26,37 @@ class Session(BaseSession):
                          msg=msg,
                          bot=bot)
 
-    def reply(
+    async def reply(
         self,
         content: str,
+        message_type: Msg.Types = Msg.Types.KMD,
         result_type: BaseSession.ResultTypes = BaseSession.ResultTypes.SUCCESS
     ):
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=True,
-                                reply=True)
-        return func_result
+        return await self.send(content, message_type, result_type, True, True)
 
-    def reply_only(
+    async def reply_only(
         self,
         content: str,
+        message_type: Msg.Types = Msg.Types.KMD,
         result_type: BaseSession.ResultTypes = BaseSession.ResultTypes.SUCCESS
     ):
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=False,
-                                reply=True)
-        return func_result
+        return await self.send(content, message_type, result_type, False, True)
 
-    def mention(
+    async def mention(
         self,
         content: str,
+        message_type: Msg.Types = Msg.Types.KMD,
         result_type: BaseSession.ResultTypes = BaseSession.ResultTypes.SUCCESS
     ):
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=True,
-                                reply=False)
-        return func_result
+        return await self.send(content, message_type, result_type, True, False)
 
     async def send(self,
                    content: str,
+                   message_type: Msg.Types = Msg.Types.KMD,
                    result_type: BaseSession.ResultTypes = BaseSession.
                    ResultTypes.SUCCESS,
-                   message_type: Msg.Types = Msg.Types.KMD,
                    mention: bool = False,
                    reply: bool = False):
-
         if (mention):
             content = f'(met){self.msg.author_id}(met) ' + content
         quote: str = self.msg.msg_id if (reply) else ''
@@ -74,9 +64,10 @@ class Session(BaseSession):
         if (not self.bot):
             raise AttributeError('Session send used before assigning a bot.'
                                  f' Command: {self.command.name}')
-        self.msg_sent = self.bot.send(object_name=message_type,
-                                      content=content,
-                                      channel_id=self.msg.target_id,
-                                      quote=quote)
+        self.msg_sent = await self.bot.send(object_name=message_type,
+                                            content=content,
+                                            channel_id=self.msg.target_id,
+                                            quote=quote)
+        print(self.msg_sent)
         self.result_type = result_type
         return self

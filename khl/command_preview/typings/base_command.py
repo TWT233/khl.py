@@ -19,9 +19,9 @@ class BaseCommand(ABC):
     def __init__(self) -> None:
         self.name = self.__class__.__name__
 
-    @abstractmethod
     @overload
-    async def execute(self, command_str: str, arg_list: Sequence[str],
+    @abstractmethod
+    async def execute(self, command_str: str, args: Sequence[str],
                       msg: Msg) -> Any:
         """
         docstring
@@ -53,11 +53,7 @@ class BaseCommand(ABC):
     def bot(self):
         return self.__bot
 
-    @bot.setter
-    def set_bot(self, bot: Bot):
-        # if (not isinstance(bot, Bot)):
-        #     raise TypeError(
-        #         'Trying to assign a non-bot instance!')
+    def set_bot(self, bot):
         self.__bot = bot
 
     @property

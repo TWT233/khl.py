@@ -1,3 +1,4 @@
+from khl.command_preview.session import Session
 import shlex
 from typing import Any, Dict, List, Union
 
@@ -39,14 +40,15 @@ class BotPreview:
             self.nc: BaseClient = WebhookClient(**args)
         else:
             self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
-        self.__cmd_list_preview: Dict[str, BaseCommand] = {}
+        self.__cmd_list: Dict[str, BaseCommand] = {}
 
     def add_command(self, cmd: BaseCommand):
         # if not isinstance(cmd, BaseCommand):
         #     raise TypeError('not a Command')
-        if cmd.name in self.__cmd_list_preview.keys():
+        if cmd.trigger in self.__cmd_list.keys():
             raise ValueError('Command Name Exists')
-        self.__cmd_list_preview[cmd.name] = cmd
+        self.__cmd_list[cmd.trigger] = cmd
+        cmd.set_bot(self)
 
     def gen_msg_handler_preview(self):
         async def msg_handler_preview(d: Dict[Any, Any]):
@@ -54,13 +56,14 @@ class BotPreview:
             docstring
             """
             print(d)
-            res = parser(d, self.cmd_prefix, self.__cmd_list_preview)
+            res = parser(d, self.cmd_prefix, self.__cmd_list)
             if isinstance(res, TextMsg):
                 return None
             (command_str, args, msg) = res
-            result = self.__cmd_list_preview[command_str].execute(
-                command_str, args, msg)
-            return await result
+            ins = self.__cmd_list.get(command_str)
+            if ins:
+                result = ins.execute(Session(ins, command_str, args, msg))
+                return await result
 
         return msg_handler_preview
 
@@ -87,7 +90,6 @@ class BotPreview:
         }
         return await self.nc.send(f'{API_URL}/channel/message?compress=0',
                                   data)
-
 
     # def gen_msg_handler(self):
     #     async def msg_handler(d: dict):

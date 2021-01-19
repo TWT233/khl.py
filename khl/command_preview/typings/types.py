@@ -39,40 +39,43 @@ class BaseSession(ABC):
         self.bot = bot if bot else self.command.bot
 
     @abstractmethod
-    def reply(self,
-              content: str,
-              result_type: ResultTypes = ResultTypes.SUCCESS):
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=True,
-                                reply=True)
+    async def reply(self,
+                    content: str,
+                    message_type: Msg.Types = Msg.Types.KMD,
+                    result_type: ResultTypes = ResultTypes.SUCCESS):
+        func_result = await self.send(content=content,
+                                      result_type=result_type,
+                                      mention=True,
+                                      reply=True)
         return func_result
 
     @abstractmethod
-    def reply_only(self,
-                   content: str,
-                   result_type: ResultTypes = ResultTypes.SUCCESS):
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=False,
-                                reply=True)
+    async def reply_only(self,
+                         content: str,
+                         message_type: Msg.Types = Msg.Types.KMD,
+                         result_type: ResultTypes = ResultTypes.SUCCESS):
+        func_result = await self.send(content=content,
+                                      result_type=result_type,
+                                      mention=False,
+                                      reply=True)
         return func_result
 
     @abstractmethod
-    def mention(self,
-                content: str,
-                result_type: ResultTypes = ResultTypes.SUCCESS):
-        func_result = self.send(content=content,
-                                result_type=result_type,
-                                mention=True,
-                                reply=False)
+    async def mention(self,
+                      content: str,
+                      message_type: Msg.Types = Msg.Types.KMD,
+                      result_type: ResultTypes = ResultTypes.SUCCESS):
+        func_result = await self.send(content=content,
+                                      result_type=result_type,
+                                      mention=True,
+                                      reply=False)
         return func_result
 
     @abstractmethod
     async def send(self,
                    content: str,
-                   result_type: ResultTypes = ResultTypes.SUCCESS,
                    message_type: Msg.Types = Msg.Types.KMD,
+                   result_type: ResultTypes = ResultTypes.SUCCESS,
                    mention: bool = False,
                    reply: bool = False):
 
@@ -83,9 +86,10 @@ class BaseSession(ABC):
         if (not self.bot):
             raise AttributeError('Session send used before assigning a bot.'
                                  f' Command: {self.command.name}')
-        self.msg_sent = self.bot.send(object_name=message_type,
-                                      content=content,
-                                      channel_id=self.msg.target_id,
-                                      quote=quote)
-
+        self.msg_sent = await self.bot.send(object_name=message_type,
+                                            content=content,
+                                            channel_id=self.msg.target_id,
+                                            quote=quote)
+        print(self.msg_sent)
+        self.result_type = result_type
         return self
