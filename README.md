@@ -22,8 +22,8 @@ bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
 @bot.command(name='roll')
-async def roll(msg: TextMsg, r_min: str, r_max: str):
-    await bot.send(msg.target_id, f'you got: {random.randint(int(r_min), int(r_max))}')
+async def roll(session):
+    await session.reply(f'{random.randint(int(session.args[0]), int(session.args[1]))}')
 
 
 bot.run()
@@ -43,7 +43,7 @@ bot.run()
 
 - [x] check `SN`
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-  - [ ] introduce `MsgCtx` with this
+    - [ ] introduce `MsgCtx` with this
 - [ ] check
 
 ## feat:
@@ -52,7 +52,7 @@ bot.run()
 
 - [x] support websocket
 - [ ] command & arg parse system
-  - [ ] sub command system (active @fi6 @TWT233)
+    - [x] sub command system (active @fi6 @TWT233)
 - [ ] event listener for bot
 
 ### T2:
