@@ -1,3 +1,6 @@
+"""
+deprecated
+"""
 import shlex
 from inspect import Parameter, signature
 from typing import Any, List, Union

@@ -15,7 +15,7 @@ pip install khl.py
 ```python
 import random
 
-from khl import TextMsg, Bot, Cert
+from khl import Bot, Cert
 
 cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx')
 bot = Bot(cmd_prefix=['!', '！'], cert=cert)
@@ -34,14 +34,12 @@ bot.run()
 
 # short-term roadmap
 
-## docs:
+## refactor
 
-- [x] docs init
-- [x] detailed docstring
+- [ ] rename files according to PEP8 (active @TWT233)
 
 ## perf:
 
-- [x] check `SN`
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
     - [ ] introduce `MsgCtx` with this
 - [ ] check
@@ -50,20 +48,16 @@ bot.run()
 
 ### T1:
 
-- [x] support websocket
 - [ ] command & arg parse system
-    - [x] sub command system (active @fi6 @TWT233)
 - [ ] event listener for bot
+    - [ ] find another approach to handle msg
+- [ ] command group
 
 ### T2:
 
 - [ ] log system
 - [ ] `MsgCtx` design
 - [ ] command alias
-
-## bug fix:
-
-- [x] error parsing str in `."` pattern (cmd_prefix+unclosing quote)
 
 # commit message rules
 
