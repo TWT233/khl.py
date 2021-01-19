@@ -1,1 +1,1 @@
-from .WebhookClient import WebhookClient
+from .net_client_webhook import WebhookClient
