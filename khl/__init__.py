@@ -3,4 +3,4 @@ from .command import Command
 from .message import TextMsg
 from .net_client import BaseClient
 from .user import User
-from .bot_preview import Bot
+from .bot import Bot

@@ -1,8 +1,9 @@
+import sys
+sys.path.append('.')
 import json
-from khl.command_preview.session import Session
+from khl.command import Session
 
 from khl import Cert, Bot
-from khl.command_preview.typings.types import BaseSession
 
 # load config from config/config.json,
 # replace `path` points to your own config file.
@@ -36,8 +37,8 @@ bot = Bot(cmd_prefix=['.', '。'], cert=cert)
 # add command, accept optional arguments
 # you can invoke this command via:
 #   `.echo test`
-@bot.command(name='roll')
-async def func(session: BaseSession):
+@bot.command(name='echo')
+async def func(session: Session):
     await session.reply(f'{session.args}')
     return None
 

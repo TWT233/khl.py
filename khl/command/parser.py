@@ -1,12 +1,10 @@
 import shlex
 from khl.message import TextMsg
 from typing import List, Mapping, Sequence, Tuple, Union
-from .typings import BaseCommand
 
 
 def parser(
-    d: dict, prefixes: Union[List[str], str,
-                             tuple], commandMap: Mapping[str, BaseCommand]
+    d: dict, prefixes: Union[List[str], str, tuple]
 ) -> Union[Tuple[str, Sequence[str], TextMsg], TextMsg]:
     msg = TextMsg(**d)
 
