@@ -68,26 +68,26 @@ class TextMsg(Msg):
 
         self.author: User = User(self.extra['author'])
 
-        @property
-        def guild_id(self) -> str:
-            return self.extra['guild_id']
+    @property
+    def guild_id(self) -> str:
+        return self.extra['guild_id']
 
-        @property
-        def channel_name(self) -> str:
-            return self.extra['channel_name']
+    @property
+    def channel_name(self) -> str:
+        return self.extra['channel_name']
 
-        @property
-        def mention(self) -> List[str]:
-            return self.extra['mention']
+    @property
+    def mention(self) -> List[str]:
+        return self.extra['mention']
 
-        @property
-        def mention_all(self) -> bool:
-            return self.extra['mention_all']
+    @property
+    def mention_all(self) -> bool:
+        return self.extra['mention_all']
 
-        @property
-        def mention_roles(self) -> List[str]:
-            return self.extra['mention_roles']
+    @property
+    def mention_roles(self) -> List[str]:
+        return self.extra['mention_roles']
 
-        @property
-        def mention_here(self) -> bool:
-            return self.extra['mention_heres']
+    @property
+    def mention_here(self) -> bool:
+        return self.extra['mention_heres']
