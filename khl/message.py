@@ -1,7 +1,26 @@
 from abc import ABC
 from enum import IntEnum
 from typing import List
+
+from .bot import Bot
+from .channel import Channel
+from .guild import Guild
 from .user import User
+
+
+class MsgCtx:
+    """
+    represents a context of a msg
+    """
+    def __init__(self, guild: Guild, channel: Channel, receiver: Bot,
+                 sender: User):
+        self.guild: Guild = guild
+        self.channel: Channel = channel
+        self.receiver: Bot = receiver
+        self.sender: User = sender
+
+    async def send(self, content: str):
+        await self.receiver.send(self.channel.id, content)
 
 
 class Msg(ABC):
