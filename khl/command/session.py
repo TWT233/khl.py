@@ -1,25 +1,47 @@
+from abc import ABC
+from enum import Enum
+
 from typing import Any, Coroutine, Optional, Sequence
 
-from khl.bot import Bot
+
 from khl.message import Msg
 
-from .typings import BaseSession
-from .typings.base_command import BaseCommand
 
+class BaseSession(ABC):
+    class ResultTypes(Enum):
+        SUCCESS = 'SUCCESS'
+        FAIL = 'FAIL'
+        ERROR = 'ERROR'
+        HELP = 'HELP'
 
-class Session(BaseSession):
-    command: BaseCommand
+    command: Any
     command_str: str
     args: Sequence[str]
     msg: Msg
-    bot: Bot
+    bot: Any
+    result_type: ResultTypes
+    detail: Any
+
+
+class Session(object):
+    class ResultTypes(Enum):
+        SUCCESS = 'SUCCESS'
+        FAIL = 'FAIL'
+        ERROR = 'ERROR'
+        HELP = 'HELP'
+
+    command: Any
+    command_str: str
+    args: Sequence[str]
+    msg: Msg
+    bot: Any
 
     def __init__(self,
-                 command: BaseCommand,
+                 command: Any,
                  command_str: str,
                  args: Sequence[str],
                  msg: Msg,
-                 bot: Optional[Bot] = None) -> None:
+                 bot: Any = None) -> None:
         """[summary]
 
         Args:
@@ -29,11 +51,11 @@ class Session(BaseSession):
             msg (Msg): [description]
             bot (Optional[Bot], optional): [description]. Defaults to None.
         """
-        super().__init__(command=command,
-                         command_str=command_str,
-                         args=args,
-                         msg=msg,
-                         bot=bot)
+        self.command_str = command_str
+        self.command = command
+        self.args = args
+        self.msg = msg
+        self.bot = bot if bot else self.command.bot
 
     async def reply(
         self,

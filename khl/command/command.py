@@ -1,16 +1,18 @@
 from abc import ABC, abstractmethod
-from .types import BaseSession, CommandType
+from enum import Enum
+from khl.command.session import Session
 from khl.message import Msg
 from typing import Any, Sequence, overload
 
-from khl.bot import Bot
 
+class Command(ABC):
+    class Types(Enum):
+        MENU = 'MENU'
+        APP = 'APP'
 
-class BaseCommand(ABC):
     trigger: str
     help: str
-    __bot: Bot
-    _type: CommandType
+    __bot: Any
 
     use_help: bool = True
     with_reply: bool = True
@@ -29,21 +31,21 @@ class BaseCommand(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def execute(self, session: BaseSession) -> Any:
+    async def execute(self, session: Session) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def run_func(self, session: BaseSession) -> Any:
+    async def run_func(self, session: Session) -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def func(self, session: BaseSession) -> Any:
+    async def func(self, session: Session) -> Any:
         """
         docstring
         """
@@ -53,9 +55,5 @@ class BaseCommand(ABC):
     def bot(self):
         return self.__bot
 
-    def set_bot(self, bot):
+    def set_bot(self, bot: Any):
         self.__bot = bot
-
-    @property
-    def type(self):
-        return self._type
