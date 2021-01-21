@@ -36,7 +36,7 @@ bot.run()
 
 ## refactor
 
-- [ ] rename files according to PEP8 (active @TWT233)
+- [x] rename files according to PEP8
 
 ## perf:
 
