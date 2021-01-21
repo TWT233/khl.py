@@ -1,8 +1,6 @@
 from abc import ABC
 from enum import Enum
-
-from typing import Any, Coroutine, Optional, Sequence
-
+from typing import Any, Optional, Sequence
 
 from khl.message import Msg
 
