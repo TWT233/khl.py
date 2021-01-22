@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from khl.command.session import Session
+from khl.__legacy__.command.session import Session
 from khl.message import Msg
 from typing import Any, Sequence, overload
 
