@@ -1,6 +1,6 @@
 from abc import ABC
 from enum import IntEnum
-from typing import List
+from typing import List, Any
 
 from .bot import Bot
 from .channel import Channel
@@ -42,6 +42,7 @@ class Msg(ABC):
     msg_timestamp: int
     nonce: str
     extra: dict
+    ctx: MsgCtx
 
 
 class TextMsg(Msg):
@@ -67,6 +68,8 @@ class TextMsg(Msg):
         self.extra = kwargs['extra']
 
         self.author: User = User(self.extra['author'])
+        self.ctx = MsgCtx(Guild(self.guild_id), Channel(self.channel_name),
+                          kwargs['receiver'], self.author)
 
     @property
     def guild_id(self) -> str:
