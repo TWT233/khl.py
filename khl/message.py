@@ -19,8 +19,8 @@ class MsgCtx:
         self.receiver: Bot = receiver
         self.sender: User = sender
 
-    async def send(self, content: str):
-        await self.receiver.send(self.channel.id, content)
+    async def send(self, content: str, **kwargs) -> Any:
+        return await self.receiver.send(self.channel.id, content, **kwargs)
 
 
 class Msg(ABC):
