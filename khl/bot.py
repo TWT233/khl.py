@@ -1,7 +1,7 @@
 from khl.command.session import Session
 from typing import Any, Dict, List, Union
 
-from khl import BaseClient, Cert, TextMsg
+from khl import BaseClient, Cert, TextMsg, user
 from khl.command import AppCommand, Command, parser
 
 from .hardcoded import API_URL
@@ -36,9 +36,10 @@ class Bot:
             route = kwargs.get('route')
             if route is not None:
                 args['route'] = route
-            self.nc: BaseClient = WebhookClient(**args)
+            self.net_client: BaseClient = WebhookClient(**args)
         else:
-            self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
+            self.net_client: BaseClient = WebsocketClient(cert=cert,
+                                                          compress=compress)
 
         self.__cmd_list: Dict[str, Command] = {}
 
@@ -90,9 +91,18 @@ class Bot:
             'quote': quote,
             'nonce': nonce
         }
-        return await self.nc.send(f'{API_URL}/channel/message?compress=0',
-                                  data)
+        return await self.net_client.send(
+            f'{API_URL}/channel/message?compress=0', data)
+
+    async def user_grant_role(self, user_id: str, guild_id: str,
+                              role_id: int) -> Any:
+        return await self.net_client.send(
+            f'{API_URL}/guild-role/grant?compress=0', {
+                'user_id': user_id,
+                'guild_id': guild_id,
+                'role_id': role_id
+            })
 
     def run(self):
-        self.nc.on_recv_append(self.gen_msg_handler_preview())
-        self.nc.run()
+        self.net_client.on_recv_append(self.gen_msg_handler_preview())
+        self.net_client.run()
