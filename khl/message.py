@@ -91,3 +91,12 @@ class TextMsg(Msg):
     @property
     def mention_here(self) -> bool:
         return self.extra['mention_heres']
+
+    async def reply(self,
+                    content: str,
+                    use_quote: bool = False,
+                    use_mention: bool = False):
+        await self.ctx.send(
+            f"(met){self.author_id}(met)" if use_mention else '' + content,
+            quote=self.msg_id if use_quote else '',
+            object_name=Msg.Types.KMD)
