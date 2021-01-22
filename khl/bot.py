@@ -81,7 +81,7 @@ class Bot:
                    content: str,
                    *,
                    quote: str = '',
-                   object_name: int = 1,
+                   object_name: int = TextMsg.Types.KMD,
                    nonce: str = '') -> Any:
         data = {
             'channel_id': channel_id,
