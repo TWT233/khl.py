@@ -1,8 +1,11 @@
 from abc import ABC
 from enum import Enum
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, TYPE_CHECKING
 
 from khl.message import Msg
+
+if TYPE_CHECKING:
+    from khl.command import Command
 
 
 class BaseSession(ABC):
@@ -12,7 +15,7 @@ class BaseSession(ABC):
         ERROR = 'ERROR'
         HELP = 'HELP'
 
-    command: Any
+    command: 'Command'
     command_str: str
     args: Sequence[str]
     msg: Msg
@@ -28,14 +31,14 @@ class Session(object):
         ERROR = 'ERROR'
         HELP = 'HELP'
 
-    command: Any
+    command: 'Command'
     command_str: str
     args: Sequence[str]
     msg: Msg
     bot: Any
 
     def __init__(self,
-                 command: Any,
+                 command: 'Command',
                  command_str: str,
                  args: Sequence[str],
                  msg: Msg,
@@ -43,7 +46,7 @@ class Session(object):
         """[summary]
 
         Args:
-            command (BaseCommand): [description]
+            command (Command): [description]
             command_str (str): [description]
             args (Sequence[str]): [description]
             msg (Msg): [description]

@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from khl.command.session import Session
-from khl.message import Msg
-from typing import Any, Sequence, overload
+from typing import Any, Sequence, TYPE_CHECKING, overload
+if TYPE_CHECKING:
+    from khl.command.session import Session
+    from khl.message import Msg
 
 
 class Command(ABC):
@@ -24,28 +25,28 @@ class Command(ABC):
     @overload
     @abstractmethod
     async def execute(self, command_str: str, args: Sequence[str],
-                      msg: Msg) -> Any:
+                      msg: 'Msg') -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def execute(self, session: Session) -> Any:
+    async def execute(self, session: 'Session') -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def run_func(self, session: Session) -> Any:
+    async def run_func(self, session: 'Session') -> Any:
         """
         docstring
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def func(self, session: Session) -> Any:
+    async def func(self, session: 'Session') -> Any:
         """
         docstring
         """

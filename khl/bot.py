@@ -1,12 +1,16 @@
-from khl.command.session import Session
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, TYPE_CHECKING, Union
 
-from khl import BaseClient, Cert, TextMsg, user
-from khl.command import AppCommand, Command, parser
+from khl.message import TextMsg
+from khl.command import AppCommand, Session, parser
 
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
+
+if TYPE_CHECKING:
+    from khl.net_client import BaseClient
+    from khl.cert import Cert
+    from khl.command import Command
 
 
 class Bot:
@@ -16,7 +20,7 @@ class Bot:
     def __init__(self,
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
-                 cert: Cert,
+                 cert: 'Cert',
                  compress: bool = True,
                  **kwargs):
         """
@@ -36,14 +40,14 @@ class Bot:
             route = kwargs.get('route')
             if route is not None:
                 args['route'] = route
-            self.net_client: BaseClient = WebhookClient(**args)
+            self.net_client: 'BaseClient' = WebhookClient(**args)
         else:
-            self.net_client: BaseClient = WebsocketClient(cert=cert,
-                                                          compress=compress)
+            self.net_client: 'BaseClient' = WebsocketClient(cert=cert,
+                                                            compress=compress)
 
-        self.__cmd_list: Dict[str, Command] = {}
+        self.__cmd_list: Dict[str, 'Command'] = {}
 
-    def add_command(self, cmd: Command):
+    def add_command(self, cmd: 'Command'):
         # if not isinstance(cmd, BaseCommand):
         #     raise TypeError('not a Command')
         if cmd.trigger in self.__cmd_list.keys():

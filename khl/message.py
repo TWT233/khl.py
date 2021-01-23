@@ -1,26 +1,28 @@
 from abc import ABC
 from enum import IntEnum
-from typing import List, Any
+from typing import List, Any, Mapping, TYPE_CHECKING
 
-from .bot import Bot
-from .channel import Channel
-from .guild import Guild
-from .user import User
+from khl.channel import Channel
+from khl.guild import Guild
+from khl.user import User
+
+if TYPE_CHECKING:
+    from khl.bot import Bot
 
 
 class MsgCtx:
     """
     represents a context of a msg
     """
-    def __init__(self, guild: Guild, channel: Channel, receiver: Bot,
+    def __init__(self, guild: Guild, channel: Channel, bot: 'Bot',
                  sender: User):
         self.guild: Guild = guild
         self.channel: Channel = channel
-        self.receiver: Bot = receiver
+        self.bot: 'Bot' = bot
         self.sender: User = sender
 
     async def send(self, content: str, **kwargs) -> Any:
-        return await self.receiver.send(self.channel.id, content, **kwargs)
+        return await self.bot.send(self.channel.id, content, **kwargs)
 
 
 class Msg(ABC):
@@ -41,7 +43,7 @@ class Msg(ABC):
     msg_id: str
     msg_timestamp: int
     nonce: str
-    extra: dict
+    extra: Mapping[str, Any]
     ctx: MsgCtx
 
 
@@ -67,9 +69,9 @@ class TextMsg(Msg):
         self.nonce = kwargs['nonce']
         self.extra = kwargs['extra']
 
-        self.author: User = User(self.extra['author'])
+        self.author: User = User(self.extra['author'], kwargs['bot'])
         self.ctx = MsgCtx(Guild(self.guild_id), Channel(self.channel_name),
-                          kwargs['receiver'], self.author)
+                          kwargs['bot'], self.author)
 
     @property
     def guild_id(self) -> str:

@@ -33,6 +33,7 @@ cert = Cert(client_id=config['client_id'],
 #      http://your.domain:5000/meow         | Bot(cert=cert, route='/meow')
 bot = Bot(cmd_prefix=['.', '。'], cert=cert)
 
+print('started')
 
 # add command, accept optional arguments
 # you can invoke this command via:
