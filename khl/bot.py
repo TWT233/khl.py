@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, TYPE_CHECKING, Union
+from typing import Any, Dict, List, NamedTuple, TYPE_CHECKING, Union
 
 from khl.message import Msg, TextMsg
 from khl.command import AppCommand, Session, parser
