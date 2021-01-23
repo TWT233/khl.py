@@ -92,7 +92,7 @@ class Bot:
 
     def gen_msg_handler(self):
         async def msg_handler(d: dict):
-            msg = TextMsg(**d)
+            msg = TextMsg(self, **d)
             arg_list = self.split_msg_args(msg)
             if arg_list:
                 if arg_list[0] in self.__cmd_list.keys():

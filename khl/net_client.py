@@ -13,8 +13,10 @@ class BaseClient(ABC):
         2. resolve request data and msg data from raw
         3. pass it to inner context such as bot
     """
+    type: str
+
     def __init__(self):
-        self.type = ""
+        pass
 
     @abstractmethod
     async def send(self, url: str,

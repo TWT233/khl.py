@@ -1,26 +1,28 @@
 from abc import ABC
 from enum import IntEnum
-from typing import List, Any
+from typing import List, Any, Mapping, TYPE_CHECKING
 
-from .bot import Bot
-from .channel import Channel
-from .guild import Guild
-from .user import User
+from khl.channel import Channel
+from khl.guild import Guild
+from khl.user import User
+
+if TYPE_CHECKING:
+    from khl.bot import Bot
 
 
 class MsgCtx:
     """
     represents a context of a msg
     """
-    def __init__(self, guild: Guild, channel: Channel, receiver: Bot,
-                 sender: User):
+    def __init__(self, guild: Guild, channel: Channel, bot: 'Bot',
+                 author: 'User'):
         self.guild: Guild = guild
         self.channel: Channel = channel
-        self.receiver: Bot = receiver
-        self.sender: User = sender
+        self.bot: 'Bot' = bot
+        self.author: 'User' = author
 
     async def send(self, content: str, **kwargs) -> Any:
-        return await self.receiver.send(self.channel.id, content, **kwargs)
+        return await self.bot.send(self.channel.id, content, **kwargs)
 
 
 class Msg(ABC):
@@ -41,7 +43,7 @@ class Msg(ABC):
     msg_id: str
     msg_timestamp: int
     nonce: str
-    extra: dict
+    extra: Mapping[str, Any]
     ctx: MsgCtx
 
 
@@ -67,9 +69,11 @@ class TextMsg(Msg):
         self.nonce = kwargs['nonce']
         self.extra = kwargs['extra']
 
-        self.author: User = User(self.extra['author'])
-        self.ctx = MsgCtx(Guild(self.guild_id), Channel(self.channel_name),
-                          kwargs['receiver'], self.author)
+        self.author: User = User(self.extra['author'], kwargs['bot'])
+        self.ctx = MsgCtx(guild=Guild(self.guild_id),
+                          channel=Channel(self.channel_name),
+                          bot=kwargs['bot'],
+                          author=self.author)
 
     @property
     def guild_id(self) -> str:
@@ -102,4 +106,4 @@ class TextMsg(Msg):
         await self.ctx.send(
             f"(met){self.author_id}(met)" if use_mention else '' + content,
             quote=self.msg_id if use_quote else '',
-            object_name=Msg.Types.KMD)
+            type=Msg.Types.KMD)

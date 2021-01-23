@@ -33,13 +33,14 @@ cert = Cert(client_id=config['client_id'],
 #      http://your.domain:5000/meow         | Bot(cert=cert, route='/meow')
 bot = Bot(cmd_prefix=['.', '。'], cert=cert)
 
+print('started')
 
 # add command, accept optional arguments
 # you can invoke this command via:
 #   `.echo test`
 @bot.command(name='echo')
 async def func(session: Session):
-    await session.reply(f'{session.args}')
+    print(await session.reply(f'{session.args}'))
     return None
 
 # everything done, go ahead now!

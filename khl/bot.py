@@ -1,12 +1,18 @@
-from khl.command.session import Session
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, TYPE_CHECKING, Union
 
-from khl import BaseClient, Cert, TextMsg
-from khl.command import AppCommand, Command, parser
+from khl.message import Msg, TextMsg
+from khl.command import AppCommand, Session, parser
 
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
+
+import logging
+
+if TYPE_CHECKING:
+    from khl.net_client import BaseClient
+    from khl.cert import Cert
+    from khl.command import Command
 
 
 class Bot:
@@ -16,7 +22,7 @@ class Bot:
     def __init__(self,
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
-                 cert: Cert,
+                 cert: 'Cert',
                  compress: bool = True,
                  **kwargs):
         """
@@ -36,13 +42,14 @@ class Bot:
             route = kwargs.get('route')
             if route is not None:
                 args['route'] = route
-            self.nc: BaseClient = WebhookClient(**args)
+            self.net_client: 'BaseClient' = WebhookClient(**args)
         else:
-            self.nc: BaseClient = WebsocketClient(cert=cert, compress=compress)
+            self.net_client: 'BaseClient' = WebsocketClient(cert=cert,
+                                                            compress=compress)
 
-        self.__cmd_list: Dict[str, Command] = {}
+        self.__cmd_list: Dict[str, 'Command'] = {}
 
-    def add_command(self, cmd: Command):
+    def add_command(self, cmd: 'Command'):
         # if not isinstance(cmd, BaseCommand):
         #     raise TypeError('not a Command')
         if cmd.trigger in self.__cmd_list.keys():
@@ -59,12 +66,13 @@ class Bot:
 
         return decorator
 
-    def gen_msg_handler_preview(self):
-        async def msg_handler_preview(d: Dict[Any, Any]):
+    def gen_msg_handler(self):
+        async def msg_handler(d: Dict[Any, Any]):
             """
             docstring
             """
-            print(d)
+            d['bot'] = self
+            logging.debug(d)
             res = parser(d, self.cmd_prefix)
             if isinstance(res, TextMsg):
                 return None
@@ -74,25 +82,43 @@ class Bot:
                 result = inst.execute(Session(inst, command_str, args, msg))
                 return await result
 
-        return msg_handler_preview
+        return msg_handler
 
     async def send(self,
                    channel_id: str,
                    content: str,
                    *,
                    quote: str = '',
-                   object_name: int = TextMsg.Types.KMD,
+                   type: int = Msg.Types.KMD,
                    nonce: str = '') -> Any:
         data = {
             'channel_id': channel_id,
             'content': content,
-            'object_name': object_name,
+            'type': type,
             'quote': quote,
             'nonce': nonce
         }
-        return await self.nc.send(f'{API_URL}/channel/message?compress=0',
-                                  data)
+        return await self.net_client.send(
+            f'{API_URL}/channel/message?compress=0', data)
+
+    async def user_grant_role(self, user_id: str, guild_id: str,
+                              role_id: str) -> Any:
+        return await self.net_client.send(
+            f'{API_URL}/guild-role/grant?compress=0', {
+                'user_id': user_id,
+                'guild_id': guild_id,
+                'role_id': role_id
+            })
+
+    async def user_revode_role(self, user_id: str, guild_id: str,
+                               role_id: str) -> Any:
+        return await self.net_client.send(
+            f'{API_URL}/guild-role/revoke?compress=0', {
+                'user_id': user_id,
+                'guild_id': guild_id,
+                'role_id': role_id
+            })
 
     def run(self):
-        self.nc.on_recv_append(self.gen_msg_handler_preview())
-        self.nc.run()
+        self.net_client.on_recv_append(self.gen_msg_handler())
+        self.net_client.run()

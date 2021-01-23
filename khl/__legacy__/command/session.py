@@ -1,8 +1,11 @@
 from abc import ABC
 from enum import Enum
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, TYPE_CHECKING
 
 from khl.message import Msg
+
+if TYPE_CHECKING:
+    from khl.command import Command
 
 
 class BaseSession(ABC):
@@ -12,7 +15,7 @@ class BaseSession(ABC):
         ERROR = 'ERROR'
         HELP = 'HELP'
 
-    command: Any
+    command: 'Command'
     command_str: str
     args: Sequence[str]
     msg: Msg
@@ -28,14 +31,14 @@ class Session(object):
         ERROR = 'ERROR'
         HELP = 'HELP'
 
-    command: Any
+    command: 'Command'
     command_str: str
     args: Sequence[str]
     msg: Msg
     bot: Any
 
     def __init__(self,
-                 command: Any,
+                 command: 'Command',
                  command_str: str,
                  args: Sequence[str],
                  msg: Msg,
@@ -43,7 +46,7 @@ class Session(object):
         """[summary]
 
         Args:
-            command (BaseCommand): [description]
+            command (Command): [description]
             command_str (str): [description]
             args (Sequence[str]): [description]
             msg (Msg): [description]
@@ -153,7 +156,7 @@ class Session(object):
                 'Session send method used before setting a bot.'
                 f' Command: {self.command.name}')
         self.msg_sent = await self.bot.send(
-            object_name=message_type,
+            type=message_type,
             content=content,
             channel_id=message_channel
             if message_channel else self.msg.target_id,

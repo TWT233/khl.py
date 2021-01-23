@@ -11,6 +11,7 @@ from ..cert import Cert
 
 
 class WebsocketClient(BaseClient):
+    __slots__ = 'cert', 'compress', 'recv', 'NEWEST_SN', 'RAW_GATEWAY'
     """
     implements BaseClient with websocket protocol
     """
