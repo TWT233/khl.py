@@ -13,6 +13,7 @@ from ..hardcoded import API_URL
 from ..webhook import WebhookClient
 from ..websocket import WebsocketClient
 
+
 class Bot:
     """
     Entity that interacts with user/environment
