@@ -1,3 +1,4 @@
+import logging
 import sys
 sys.path.append('.')
 import json
@@ -32,15 +33,15 @@ cert = Cert(client_id=config['client_id'],
 #        http://your.domain:2333            |    Bot(cert=cert, port=2333)
 #      http://your.domain:5000/meow         | Bot(cert=cert, route='/meow')
 bot = Bot(cmd_prefix=['.', '。'], cert=cert)
+logging.basicConfig(level=logging.DEBUG)
 
-print('started')
 
 # add command, accept optional arguments
 # you can invoke this command via:
 #   `.echo test`
 @bot.command(name='echo')
 async def func(session: Session):
-    print(await session.reply(f'{session.args}'))
+    logging.info(await session.reply(f'{session.args}'))
     return None
 
 # everything done, go ahead now!
