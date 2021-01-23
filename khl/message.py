@@ -15,11 +15,11 @@ class MsgCtx:
     represents a context of a msg
     """
     def __init__(self, guild: Guild, channel: Channel, bot: 'Bot',
-                 sender: User):
+                 author: 'User'):
         self.guild: Guild = guild
         self.channel: Channel = channel
         self.bot: 'Bot' = bot
-        self.sender: User = sender
+        self.author: 'User' = author
 
     async def send(self, content: str, **kwargs) -> Any:
         return await self.bot.send(self.channel.id, content, **kwargs)
@@ -70,8 +70,10 @@ class TextMsg(Msg):
         self.extra = kwargs['extra']
 
         self.author: User = User(self.extra['author'], kwargs['bot'])
-        self.ctx = MsgCtx(Guild(self.guild_id), Channel(self.channel_name),
-                          kwargs['bot'], self.author)
+        self.ctx = MsgCtx(guild=Guild(self.guild_id),
+                          channel=Channel(self.channel_name),
+                          bot=kwargs['bot'],
+                          author=self.author)
 
     @property
     def guild_id(self) -> str:
@@ -104,4 +106,4 @@ class TextMsg(Msg):
         await self.ctx.send(
             f"(met){self.author_id}(met)" if use_mention else '' + content,
             quote=self.msg_id if use_quote else '',
-            object_name=Msg.Types.KMD)
+            type=Msg.Types.KMD)

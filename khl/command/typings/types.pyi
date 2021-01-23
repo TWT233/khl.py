@@ -89,7 +89,7 @@ class CommandType(Enum):
 #                 'Session send method used before setting a bot.'
 #                 f' Command: {self.command.name}')
 #         self.msg_sent = await self.bot.send(
-#             object_name=message_type,
+#             type=message_type,
 #             content=content,
 #             channel_id=message_channel
 #             if message_channel else self.msg.target_id,

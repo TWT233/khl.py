@@ -1,11 +1,13 @@
 from typing import Any, Dict, List, TYPE_CHECKING, Union
 
-from khl.message import TextMsg
+from khl.message import Msg, TextMsg
 from khl.command import AppCommand, Session, parser
 
 from .hardcoded import API_URL
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
+
+import logging
 
 if TYPE_CHECKING:
     from khl.net_client import BaseClient
@@ -64,12 +66,13 @@ class Bot:
 
         return decorator
 
-    def gen_msg_handler_preview(self):
-        async def msg_handler_preview(d: Dict[Any, Any]):
+    def gen_msg_handler(self):
+        async def msg_handler(d: Dict[Any, Any]):
             """
             docstring
             """
-            print(d)
+            d['bot'] = self
+            logging.debug(d)
             res = parser(d, self.cmd_prefix)
             if isinstance(res, TextMsg):
                 return None
@@ -79,19 +82,19 @@ class Bot:
                 result = inst.execute(Session(inst, command_str, args, msg))
                 return await result
 
-        return msg_handler_preview
+        return msg_handler
 
     async def send(self,
                    channel_id: str,
                    content: str,
                    *,
                    quote: str = '',
-                   object_name: int = TextMsg.Types.KMD,
+                   type: int = Msg.Types.KMD,
                    nonce: str = '') -> Any:
         data = {
             'channel_id': channel_id,
             'content': content,
-            'object_name': object_name,
+            'type': type,
             'quote': quote,
             'nonce': nonce
         }
@@ -99,7 +102,7 @@ class Bot:
             f'{API_URL}/channel/message?compress=0', data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
-                              role_id: int) -> Any:
+                              role_id: str) -> Any:
         return await self.net_client.send(
             f'{API_URL}/guild-role/grant?compress=0', {
                 'user_id': user_id,
@@ -107,6 +110,15 @@ class Bot:
                 'role_id': role_id
             })
 
+    async def user_revode_role(self, user_id: str, guild_id: str,
+                               role_id: str) -> Any:
+        return await self.net_client.send(
+            f'{API_URL}/guild-role/revoke?compress=0', {
+                'user_id': user_id,
+                'guild_id': guild_id,
+                'role_id': role_id
+            })
+
     def run(self):
-        self.net_client.on_recv_append(self.gen_msg_handler_preview())
+        self.net_client.on_recv_append(self.gen_msg_handler())
         self.net_client.run()

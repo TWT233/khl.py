@@ -1,6 +1,6 @@
 import shlex
 from khl.message import TextMsg
-from typing import List, Mapping, Sequence, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 
 
 def parser(

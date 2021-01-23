@@ -40,7 +40,7 @@ print('started')
 #   `.echo test`
 @bot.command(name='echo')
 async def func(session: Session):
-    await session.reply(f'{session.args}')
+    print(await session.reply(f'{session.args}'))
     return None
 
 # everything done, go ahead now!
