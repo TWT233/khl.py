@@ -1,6 +1,7 @@
 from abc import ABC
 from enum import IntEnum
-from typing import List, Any, Mapping, TYPE_CHECKING
+
+from typing import List, Any, Mapping, NamedTuple, TYPE_CHECKING
 
 from khl.channel import Channel
 from khl.guild import Guild
@@ -8,20 +9,21 @@ from khl.user import User
 
 if TYPE_CHECKING:
     from khl.bot import Bot
+    from khl.args import BotSendArgs
 
 
 class MsgCtx:
     """
     represents a context of a msg
     """
-    def __init__(self, guild: Guild, channel: Channel, bot: 'Bot',
+    def __init__(self, guild: 'Guild', channel: 'Channel', bot: 'Bot',
                  author: 'User'):
-        self.guild: Guild = guild
-        self.channel: Channel = channel
+        self.guild: 'Guild' = guild
+        self.channel: 'Channel' = channel
         self.bot: 'Bot' = bot
         self.author: 'User' = author
 
-    async def send(self, content: str, **kwargs) -> Any:
+    async def send(self, content: str, **kwargs: 'BotSendArgs') -> Any:
         return await self.bot.send(self.channel.id, content, **kwargs)
 
 
@@ -44,7 +46,7 @@ class Msg(ABC):
     msg_timestamp: int
     nonce: str
     extra: Mapping[str, Any]
-    ctx: MsgCtx
+    ctx: 'MsgCtx'
 
 
 class TextMsg(Msg):

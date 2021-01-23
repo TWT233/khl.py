@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, TYPE_CHECKING, Union
+from typing import Any, Dict, List, NamedTuple, TYPE_CHECKING, Union
 
 from khl.message import Msg, TextMsg
 from khl.command import AppCommand, Session, parser
@@ -15,10 +15,7 @@ if TYPE_CHECKING:
     from khl.command import Command
 
 
-class Bot:
-    """
-    Entity that interacts with user/environment
-    """
+class _Bot:
     def __init__(self,
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
@@ -49,23 +46,6 @@ class Bot:
 
         self.__cmd_list: Dict[str, 'Command'] = {}
 
-    def add_command(self, cmd: 'Command'):
-        # if not isinstance(cmd, BaseCommand):
-        #     raise TypeError('not a Command')
-        if cmd.trigger in self.__cmd_list.keys():
-            raise ValueError('Command Name Exists')
-        self.__cmd_list[cmd.trigger] = cmd
-        cmd.set_bot(self)
-
-    def command(self, name: str):
-        def decorator(func):
-            cmd = AppCommand()
-            cmd.trigger = name
-            cmd.func = func
-            self.add_command(cmd)
-
-        return decorator
-
     def gen_msg_handler(self):
         async def msg_handler(d: Dict[Any, Any]):
             """
@@ -83,6 +63,33 @@ class Bot:
                 return await result
 
         return msg_handler
+
+    def add_command(self, cmd: 'Command'):
+        # if not isinstance(cmd, BaseCommand):
+        #     raise TypeError('not a Command')
+        if cmd.trigger in self.__cmd_list.keys():
+            raise ValueError('Command Name Exists')
+        self.__cmd_list[cmd.trigger] = cmd
+        cmd.set_bot(self)
+
+    def run(self):
+        self.net_client.on_recv_append(self.gen_msg_handler())
+        self.net_client.run()
+
+
+class Bot(_Bot):
+    """
+    Entity that interacts with user/environment
+    """
+
+    def command(self, name: str):
+        def decorator(func):
+            cmd = AppCommand()
+            cmd.trigger = name
+            cmd.func = func
+            self.add_command(cmd)
+
+        return decorator
 
     async def send(self,
                    channel_id: str,
@@ -118,7 +125,3 @@ class Bot:
                 'guild_id': guild_id,
                 'role_id': role_id
             })
-
-    def run(self):
-        self.net_client.on_recv_append(self.gen_msg_handler())
-        self.net_client.run()
