@@ -1,7 +1,6 @@
 from abc import ABC
 from enum import IntEnum
-
-from typing import List, Any, Mapping, NamedTuple, TYPE_CHECKING
+from typing import List, Any, Mapping, TYPE_CHECKING
 
 from khl.channel import Channel
 from khl.guild import Guild
@@ -9,7 +8,6 @@ from khl.user import User
 
 if TYPE_CHECKING:
     from khl.bot import Bot
-    from khl.args import BotSendArgs
 
 
 class MsgCtx:
@@ -23,7 +21,7 @@ class MsgCtx:
         self.bot: 'Bot' = bot
         self.author: 'User' = author
 
-    async def send(self, content: str, **kwargs: 'BotSendArgs') -> Any:
+    async def send(self, content: str, **kwargs) -> Any:
         return await self.bot.send(self.channel.id, content, **kwargs)
 
 
