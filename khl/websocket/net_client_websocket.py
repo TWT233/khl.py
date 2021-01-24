@@ -74,7 +74,6 @@ class WebsocketClient(BaseClient):
                         self.NEWEST_SN = req_json['sn']
                         event = req_json['d']
                         await self.event_queue.put(event)
-                        print(event)
 
     async def run(self):
         asyncio.ensure_future(self._main())

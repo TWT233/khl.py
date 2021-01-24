@@ -70,7 +70,6 @@ class _Bot:
 
         while True:
             event = await self.net_client.event_queue.get()
-            print(event)
             try:
                 await _run_event('on_all_events')
 
