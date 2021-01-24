@@ -116,7 +116,7 @@ class Bot(_Bot):
                 'role_id': role_id
             })
 
-    async def user_revode_role(self, user_id: str, guild_id: str,
+    async def user_revoke_role(self, user_id: str, guild_id: str,
                                role_id: str) -> Any:
         return await self.net_client.post(
             f'{API_URL}/guild-role/revoke?compress=0', {
