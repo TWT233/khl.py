@@ -2,9 +2,9 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
+from .command import Command
 from .hardcoded import API_URL
 from .message import Msg
-from .command import Command
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -114,6 +114,20 @@ class Bot:
             self.add_command(cmd)
 
         return decorator
+
+    def add_event_listener(self, type: str, func: Callable[..., Coroutine]):
+        if type not in self.__event_list.keys():
+            raise ValueError('event not found')
+        self.__event_list[type].append(func)
+
+    def on_all_events(self, func):
+        self.add_event_listener('on_all_events', func)
+
+    def on_message(self, func):
+        self.add_event_listener('on_message', func)
+
+    def on_system_event(self, func):
+        self.add_event_listener('on_system_event', func)
 
     async def send(self,
                    channel_id: str,
