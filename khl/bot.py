@@ -81,7 +81,6 @@ class Bot(_Bot):
     """
     Entity that interacts with user/environment
     """
-
     def command(self, name: str):
         def decorator(func):
             cmd = AppCommand()
