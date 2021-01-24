@@ -106,7 +106,7 @@ class TextMsg(Msg):
                     content: str,
                     use_quote: bool = False,
                     use_mention: bool = False):
-        await self.ctx.send(
-            f"(met){self.author_id}(met)" if use_mention else '' + content,
+        return await self.ctx.send(
+            (f"(met){self.author_id}(met)" if use_mention else '') + content,
             quote=self.msg_id if use_quote else '',
             type=Msg.Types.KMD)
