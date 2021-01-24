@@ -62,7 +62,9 @@ class WebhookClient(BaseClient):
         """
         check if a req is dup
         """
-        sn = req['sn']
+        sn = req.get('sn', None)
+        if not sn:
+            return False
         current = time.time()
         if sn in self.sn_dup_map.keys():
             if current - self.sn_dup_map[sn] <= 600:
