@@ -77,6 +77,10 @@ class TextMsg(Msg):
                           author=self.author)
 
     @property
+    def channel_id(self) -> str:
+        return self.target_id
+
+    @property
     def guild_id(self) -> str:
         return self.extra['guild_id']
 
