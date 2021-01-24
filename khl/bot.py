@@ -14,7 +14,10 @@ if TYPE_CHECKING:
     from .net_client import BaseClient
 
 
-class _Bot:
+class Bot:
+    """
+    Entity that interacts with user/environment
+    """
     def __init__(self,
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
@@ -85,11 +88,6 @@ class _Bot:
                 pass
             self.net_client.event_queue.task_done()
 
-
-class Bot(_Bot):
-    """
-    Entity that interacts with user/environment
-    """
     def add_command(self, cmd: 'Command'):
         for i in cmd.trigger:
             if i in self.__cmd_index.keys():
