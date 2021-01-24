@@ -1,18 +1,17 @@
-from typing import Any, Dict, List, NamedTuple, TYPE_CHECKING, Union
-
-from khl.message import Msg, TextMsg
-from khl.command import AppCommand, Session, parser
+import asyncio
+import logging
+from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
 from .hardcoded import API_URL
+from .message import Msg
+from .command import Command
+from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
 
-import logging
-
 if TYPE_CHECKING:
-    from khl.net_client import BaseClient
-    from khl.cert import Cert
-    from khl.command import Command
+    from .cert import Cert
+    from .net_client import BaseClient
 
 
 class _Bot:
@@ -44,48 +43,77 @@ class _Bot:
             self.net_client: 'BaseClient' = WebsocketClient(cert=cert,
                                                             compress=compress)
 
-        self.__cmd_list: Dict[str, 'Command'] = {}
+        self.__cmd_index: Dict[str, 'Command'] = {}
+        self.__event_list: Dict[str, List[Callable[..., Coroutine]]] = {
+            'on_all_events': [],
+            'on_message': [],
+            'on_system_event': []
+        }
 
-    def gen_msg_handler(self):
-        async def msg_handler(d: Dict[Any, Any]):
-            """
-            docstring
-            """
-            d['bot'] = self
-            logging.debug(d)
-            res = parser(d, self.cmd_prefix)
-            if isinstance(res, TextMsg):
-                return None
-            (command_str, args, msg) = res
-            inst = self.__cmd_list.get(command_str)
-            if inst:
-                result = inst.execute(Session(inst, command_str, args, msg))
-                return await result
+    async def text_handler(self, event: Dict[Any, Any]):
+        """
+        docstring
+        """
+        logging.debug(event)
+        event['bot'] = self
+        (msg, raw_cmd) = parser(event, self.cmd_prefix)
+        if len(raw_cmd) == 0:
+            return None
+        inst = self.__cmd_index.get(raw_cmd[0], None)
+        if inst:
+            return await inst.execute(msg, *raw_cmd[1:])
 
-        return msg_handler
+    async def event_handler(self):
+        async def _run_event(which: str):
+            for i in self.__event_list[which]:
+                asyncio.ensure_future(i(event))
 
-    def add_command(self, cmd: 'Command'):
-        # if not isinstance(cmd, BaseCommand):
-        #     raise TypeError('not a Command')
-        if cmd.trigger in self.__cmd_list.keys():
-            raise ValueError('Command Name Exists')
-        self.__cmd_list[cmd.trigger] = cmd
-        cmd.set_bot(self)
+        while True:
+            event = await self.net_client.event_queue.get()
+            print(event)
+            try:
+                await _run_event('on_all_events')
 
-    def run(self):
-        self.net_client.on_recv_append(self.gen_msg_handler())
-        self.net_client.run()
+                if event['type'] == Msg.Types.SYS:
+                    await _run_event('on_system_event')
+                else:
+                    await _run_event('on_message')
+                    if event['type'] == Msg.Types.TEXT:
+                        await self.text_handler(event)
+
+            except Exception as e:
+                logging.warning(e)
+                pass
+            self.net_client.event_queue.task_done()
 
 
 class Bot(_Bot):
     """
     Entity that interacts with user/environment
     """
-    def command(self, name: str):
+    def add_command(self, cmd: 'Command'):
+        for i in cmd.trigger:
+            if i in self.__cmd_index.keys():
+                raise ValueError('Command trigger already exists')
+        for i in cmd.trigger:
+            self.__cmd_index[i] = cmd
+
+    def command(self,
+                name: str = '',
+                aliases: Iterable[str] = (),
+                help_doc: str = '',
+                desc_doc: str = ''):
+        """
+        decorator to wrap a func into a Command
+
+        :param name: the name of this Command, also used to trigger
+        :param aliases: the aliases, used to trigger Command
+        :param help_doc: detailed manual
+        :param desc_doc: short introduction
+        :return: wrapped Command
+        """
         def decorator(func):
-            cmd = AppCommand()
-            cmd.trigger = name
-            cmd.func = func
+            cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
 
         return decorator
@@ -124,3 +152,8 @@ class Bot(_Bot):
                 'guild_id': guild_id,
                 'role_id': role_id
             })
+
+    def run(self):
+        asyncio.ensure_future(self.net_client.run())
+        asyncio.ensure_future(self.event_handler())
+        asyncio.get_event_loop().run_forever()
