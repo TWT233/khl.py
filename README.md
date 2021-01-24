@@ -61,7 +61,9 @@ please install certi manually, turning to this post for guide:
 
 - [ ] command & arg parse system
 - [ ] event listener for bot
-    - [ ] find another approach to handle msg
+    - [x] find another approach to handle msg
+    - [ ] utilize event listener
+- [ ] add get for net client
 - [x] command group
 
 ### T2:
@@ -70,7 +72,6 @@ please install certi manually, turning to this post for guide:
 - [x] `MsgCtx` design
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
-- [ ] add get for net client
 
 # commit message rules
 
