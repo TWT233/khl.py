@@ -111,7 +111,7 @@ class Bot(_Bot):
         :param desc_doc: short introduction
         :return: wrapped Command
         """
-        def decorator(func):
+        def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
 
