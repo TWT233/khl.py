@@ -54,7 +54,6 @@ please install certi manually, turning to this post for guide:
 
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
     - [x] introduce `MsgCtx` with this
-- [ ] check
 
 ## feat:
 
@@ -63,13 +62,15 @@ please install certi manually, turning to this post for guide:
 - [ ] command & arg parse system
 - [ ] event listener for bot
     - [ ] find another approach to handle msg
-- [ ] command group
+- [x] command group
 
 ### T2:
 
 - [ ] log system
 - [x] `MsgCtx` design
-- [ ] command alias
+- [x] command alias
+- [ ] bot send args (done by @fi6, waiting for merge)
+- [ ] add get for net client
 
 # commit message rules
 
