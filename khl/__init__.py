@@ -1,5 +1,5 @@
-from .cert import Cert
-from .message import TextMsg
-from .net_client import BaseClient
-from .user import User
 from .bot import Bot
+from .cert import Cert
+from .command import Command, CommandGroup
+from .message import Msg, TextMsg
+from .user import User
