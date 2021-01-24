@@ -4,8 +4,8 @@ from typing import Tuple, Iterable, List
 from khl.message import TextMsg
 
 
-def parser(d: dict, prefixes: Iterable) -> Tuple[TextMsg, List[str]]:
-    msg = TextMsg(**d)
+def parser(event: dict, prefixes: Iterable) -> Tuple[TextMsg, List[str]]:
+    msg = TextMsg(**event)
 
     for prefix in prefixes:
         if msg.content.startswith(prefix):

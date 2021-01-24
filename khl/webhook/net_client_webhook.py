@@ -33,7 +33,7 @@ class WebhookClient(BaseClient):
         self.app = web.Application()
         self.cert = cert
         self.compress = compress
-        self.recv = []
+        self.event_queue = asyncio.Queue()
         self.sn_dup_map = {}
 
     async def post(self, url: str, data) -> ClientResponse:
@@ -44,10 +44,6 @@ class WebhookClient(BaseClient):
         async with self.cs.post(url, headers=headers, json=data) as res:
             await res.read()
             return res
-
-    def on_recv_append(self, callback):
-        self.recv.append(callback)
-        pass
 
     def __raw_2_req(self, data: bytes) -> dict:
         """
@@ -88,13 +84,12 @@ class WebhookClient(BaseClient):
                 return web.Response()
 
             if req_json['s'] == 0:
-                d = req_json['d']
-                if d['type'] == 1:
-                    for i in self.recv:
-                        await asyncio.ensure_future(i(d))
-                if d['type'] == 255:
-                    if d['channel_type'] == 'WEBHOOK_CHALLENGE':
-                        return web.json_response({'challenge': d['challenge']})
+                event = req_json['d']
+                await self.event_queue.put(event)
+                if event['type'] == 255:
+                    if event['channel_type'] == 'WEBHOOK_CHALLENGE':
+                        return web.json_response(
+                            {'challenge': event['challenge']})
 
             return web.Response()
 
@@ -105,6 +100,9 @@ class WebhookClient(BaseClient):
 
         self.app.on_shutdown.append(on_shutdown)
 
-    def run(self):
+    async def run(self):
         self.__init_app()
-        web.run_app(self.app, port=self.port)
+        runner = web.AppRunner(self.app)
+        await runner.setup()
+        site = web.TCPSite(runner, '0.0.0.0', self.port)
+        await site.start()

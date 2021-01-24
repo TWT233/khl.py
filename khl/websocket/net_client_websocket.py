@@ -11,7 +11,7 @@ from ..cert import Cert
 
 
 class WebsocketClient(BaseClient):
-    __slots__ = 'cert', 'compress', 'recv', 'NEWEST_SN', 'RAW_GATEWAY'
+    __slots__ = 'cert', 'compress', 'event_queue', 'NEWEST_SN', 'RAW_GATEWAY'
     """
     implements BaseClient with websocket protocol
     """
@@ -20,7 +20,7 @@ class WebsocketClient(BaseClient):
         self.cert = cert
         self.compress = compress
 
-        self.recv = []
+        self.event_queue = asyncio.Queue()
 
         self.NEWEST_SN = 0
         self.RAW_GATEWAY = ''
@@ -34,15 +34,6 @@ class WebsocketClient(BaseClient):
             async with cs.post(url, headers=headers, json=data) as res:
                 await res.read()
                 return res
-
-    def on_recv_append(self, callback):
-        self.recv.append(callback)
-        pass
-
-    # async def on_INIT(self):
-    #     headers = {'Authorization': f"Bot {self.cert.token}", 'Content-type': 'application/json'}
-    #     async with self.cs.get(f"{API_URL}/gateway/index", headers=headers, params={}) as res:
-    #         await res.read()
 
     async def heartbeater(self, ws_conn: ClientWebSocketResponse):
         while True:
@@ -62,7 +53,7 @@ class WebsocketClient(BaseClient):
         # return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
         return data
 
-    async def __main(self):
+    async def _main(self):
         async with ClientSession() as cs:
             headers = {
                 'Authorization': f"Bot {self.cert.token}",
@@ -81,10 +72,9 @@ class WebsocketClient(BaseClient):
                     req_json = self.__raw_2_req(msg.data)
                     if req_json['s'] == 0:
                         self.NEWEST_SN = req_json['sn']
-                        d = req_json['d']
-                        if d['type'] == 1:
-                            for i in self.recv:
-                                await asyncio.ensure_future(i(d))
+                        event = req_json['d']
+                        await self.event_queue.put(event)
+                        print(event)
 
-    def run(self):
-        asyncio.get_event_loop().run_until_complete(self.__main())
+    async def run(self):
+        asyncio.ensure_future(self._main())
