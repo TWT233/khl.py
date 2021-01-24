@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Sequence, TYPE_CHECKING, overload
 if TYPE_CHECKING:
-    from khl.command.session import Session
+    from .session import Session
     from khl.message import Msg
 
 
