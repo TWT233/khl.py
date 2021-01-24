@@ -60,10 +60,10 @@ please install certi manually, turning to this post for guide:
 ### T1:
 
 - [ ] command & arg parse system
-- [ ] event listener for bot
+- [x] event listener for bot
     - [x] find another approach to handle msg
-    - [ ] utilize event listener
-- [ ] add get for net client
+    - [x] utilize event listener
+- [x] add get for net client
 - [x] command group
 
 ### T2:
