@@ -50,7 +50,7 @@ class _Bot:
             'on_system_event': []
         }
 
-    async def text_handler(self, event: Dict[Any, Any]):
+    async def _text_handler(self, event: Dict[Any, Any]):
         """
         docstring
         """
@@ -63,7 +63,7 @@ class _Bot:
         if inst:
             return await inst.execute(msg, *raw_cmd[1:])
 
-    async def event_handler(self):
+    async def _event_handler(self):
         async def _run_event(which: str):
             for i in self.__event_list[which]:
                 asyncio.ensure_future(i(event))
@@ -78,7 +78,7 @@ class _Bot:
                 else:
                     await _run_event('on_message')
                     if event['type'] == Msg.Types.TEXT:
-                        await self.text_handler(event)
+                        await self._text_handler(event)
 
             except Exception as e:
                 logging.warning(e)
@@ -154,5 +154,5 @@ class Bot(_Bot):
 
     def run(self):
         asyncio.ensure_future(self.net_client.run())
-        asyncio.ensure_future(self.event_handler())
+        asyncio.ensure_future(self._event_handler())
         asyncio.get_event_loop().run_forever()
