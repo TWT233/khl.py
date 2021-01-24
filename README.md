@@ -41,7 +41,7 @@ bot.run()
 ## perf:
 
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-    - [ ] introduce `MsgCtx` with this
+    - [x] introduce `MsgCtx` with this
 - [ ] check
 
 ## feat:
@@ -56,7 +56,7 @@ bot.run()
 ### T2:
 
 - [ ] log system
-- [ ] `MsgCtx` design
+- [x] `MsgCtx` design
 - [ ] command alias
 
 # commit message rules
