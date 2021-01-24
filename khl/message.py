@@ -73,7 +73,7 @@ class TextMsg(Msg):
 
         self.author: User = User(self.extra['author'], kwargs['bot'])
         self.ctx = MsgCtx(guild=Guild(self.guild_id),
-                          channel=Channel(self.channel_name),
+                          channel=Channel(self.target_id),
                           bot=kwargs['bot'],
                           author=self.author)
 
