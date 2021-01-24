@@ -36,15 +36,6 @@ class WebhookClient(BaseClient):
         self.event_queue = asyncio.Queue()
         self.sn_dup_map = {}
 
-    async def post(self, url: str, data) -> ClientResponse:
-        headers = {
-            'Authorization': f'Bot {self.cert.token}',
-            'Content-type': 'application/json'
-        }
-        async with self.cs.post(url, headers=headers, json=data) as res:
-            await res.read()
-            return res
-
     def __raw_2_req(self, data: bytes) -> dict:
         """
         convert raw data to human-readable request data

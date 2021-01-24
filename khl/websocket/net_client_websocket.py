@@ -25,16 +25,6 @@ class WebsocketClient(BaseClient):
         self.NEWEST_SN = 0
         self.RAW_GATEWAY = ''
 
-    async def post(self, url: str, data) -> ClientResponse:
-        headers = {
-            'Authorization': f'Bot {self.cert.token}',
-            'Content-type': 'application/json'
-        }
-        async with ClientSession() as cs:
-            async with cs.post(url, headers=headers, json=data) as res:
-                await res.read()
-                return res
-
     async def heartbeater(self, ws_conn: ClientWebSocketResponse):
         while True:
             await asyncio.sleep(26)

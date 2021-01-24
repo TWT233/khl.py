@@ -2,6 +2,8 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
+from aiohttp import ClientSession
+
 from .command import Command
 from .hardcoded import API_URL
 from .message import Msg
@@ -46,6 +48,7 @@ class Bot:
             self.net_client: 'BaseClient' = WebsocketClient(cert=cert,
                                                             compress=compress)
 
+        self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
         self.__event_list: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_all_events': [],
@@ -129,6 +132,23 @@ class Bot:
     def on_system_event(self, func):
         self.add_event_listener('on_system_event', func)
 
+    async def get(self, url, **kwargs):
+        headers = kwargs.get('headers', {})
+        headers['Authorization'] = f'Bot {self.net_client.cert.token}'
+
+        async with self.__cs.post(url, headers=headers, **kwargs) as res:
+            await res.read()
+            return res
+
+    async def post(self, url, **kwargs):
+        headers = kwargs.get('headers', {})
+        headers['Authorization'] = f'Bot {self.net_client.cert.token}'
+        headers['Content-type'] = 'application/json'
+
+        async with self.__cs.post(url, headers=headers, **kwargs) as res:
+            await res.read()
+            return res
+
     async def send(self,
                    channel_id: str,
                    content: str,
@@ -143,26 +163,26 @@ class Bot:
             'quote': quote,
             'nonce': nonce
         }
-        return await self.net_client.post(
-            f'{API_URL}/channel/message?compress=0', data)
+        return await self.post(f'{API_URL}/channel/message?compress=0',
+                               json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: str) -> Any:
-        return await self.net_client.post(
-            f'{API_URL}/guild-role/grant?compress=0', {
-                'user_id': user_id,
-                'guild_id': guild_id,
-                'role_id': role_id
-            })
+        return await self.post(f'{API_URL}/guild-role/grant?compress=0',
+                               json={
+                                   'user_id': user_id,
+                                   'guild_id': guild_id,
+                                   'role_id': role_id
+                               })
 
     async def user_revoke_role(self, user_id: str, guild_id: str,
                                role_id: str) -> Any:
-        return await self.net_client.post(
-            f'{API_URL}/guild-role/revoke?compress=0', {
-                'user_id': user_id,
-                'guild_id': guild_id,
-                'role_id': role_id
-            })
+        return await self.post(f'{API_URL}/guild-role/revoke?compress=0',
+                               json={
+                                   'user_id': user_id,
+                                   'guild_id': guild_id,
+                                   'role_id': role_id
+                               })
 
     def run(self):
         asyncio.ensure_future(self.net_client.run())

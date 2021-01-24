@@ -4,6 +4,8 @@ from typing import Dict, Union
 
 from aiohttp.client_reqrep import ClientResponse
 
+from .cert import Cert
+
 
 class BaseClient(ABC):
     """
@@ -16,21 +18,9 @@ class BaseClient(ABC):
     """
     type: str
     event_queue: Queue
+    cert: Cert
 
     def __init__(self):
-        pass
-
-    @abstractmethod
-    async def post(self, url: str,
-                   data: Dict[str, Union[str, int]]) -> ClientResponse:
-        """
-        send `data` to `url` with POST
-
-        :param url: the destination
-        :param data: payload
-        :type data: dict or array
-        :return: request result
-        """
         pass
 
     @abstractmethod
