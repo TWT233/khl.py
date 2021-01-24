@@ -155,7 +155,7 @@ class Session(object):
             raise AttributeError(
                 'Session send method used before setting a bot.'
                 f' Command: {self.command.name}')
-        self.msg_sent = await self.bot.send(
+        self.msg_sent = await self.bot.post(
             type=message_type,
             content=content,
             channel_id=message_channel

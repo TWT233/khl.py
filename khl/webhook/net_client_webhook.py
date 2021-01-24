@@ -36,7 +36,7 @@ class WebhookClient(BaseClient):
         self.recv = []
         self.sn_dup_map = {}
 
-    async def send(self, url: str, data) -> ClientResponse:
+    async def post(self, url: str, data) -> ClientResponse:
         headers = {
             'Authorization': f'Bot {self.cert.token}',
             'Content-type': 'application/json'

@@ -25,7 +25,7 @@ class WebsocketClient(BaseClient):
         self.NEWEST_SN = 0
         self.RAW_GATEWAY = ''
 
-    async def send(self, url: str, data) -> ClientResponse:
+    async def post(self, url: str, data) -> ClientResponse:
         headers = {
             'Authorization': f'Bot {self.cert.token}',
             'Content-type': 'application/json'

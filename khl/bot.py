@@ -104,12 +104,12 @@ class Bot(_Bot):
             'quote': quote,
             'nonce': nonce
         }
-        return await self.net_client.send(
+        return await self.net_client.post(
             f'{API_URL}/channel/message?compress=0', data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: str) -> Any:
-        return await self.net_client.send(
+        return await self.net_client.post(
             f'{API_URL}/guild-role/grant?compress=0', {
                 'user_id': user_id,
                 'guild_id': guild_id,
@@ -118,7 +118,7 @@ class Bot(_Bot):
 
     async def user_revode_role(self, user_id: str, guild_id: str,
                                role_id: str) -> Any:
-        return await self.net_client.send(
+        return await self.net_client.post(
             f'{API_URL}/guild-role/revoke?compress=0', {
                 'user_id': user_id,
                 'guild_id': guild_id,

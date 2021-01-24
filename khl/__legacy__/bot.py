@@ -77,7 +77,7 @@ class Bot:
             'quote': quote,
             'nonce': nonce
         }
-        return await self.nc.send(f'{API_URL}/channel/message?compress=0',
+        return await self.nc.post(f'{API_URL}/channel/message?compress=0',
                                   data)
 
     def split_msg_args(self, msg: TextMsg):

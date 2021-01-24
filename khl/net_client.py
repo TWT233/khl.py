@@ -19,7 +19,7 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    async def send(self, url: str,
+    async def post(self, url: str,
                    data: Dict[str, Union[str, int]]) -> ClientResponse:
         """
         send `data` to `url` with POST
