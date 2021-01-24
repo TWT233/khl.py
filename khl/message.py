@@ -36,6 +36,7 @@ class Msg(ABC):
         AUDIO = 8
         KMD = 9
         CARD = 10
+        SYS = 255
 
     type: Types
     channel_type: str
