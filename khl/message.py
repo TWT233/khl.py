@@ -106,7 +106,7 @@ class TextMsg(Msg):
 
     async def reply(self,
                     content: str,
-                    use_quote: bool = False,
+                    use_quote: bool = True,
                     use_mention: bool = False):
         return await self.ctx.send(
             (f"(met){self.author_id}(met)" if use_mention else '') + content,
