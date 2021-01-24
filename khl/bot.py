@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientResponse
 
 from .command import Command
 from .hardcoded import API_URL
@@ -132,7 +132,7 @@ class Bot:
     def on_system_event(self, func):
         self.add_event_listener('on_system_event', func)
 
-    async def get(self, url, **kwargs):
+    async def get(self, url, **kwargs) -> ClientResponse:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
@@ -140,7 +140,7 @@ class Bot:
             await res.read()
             return res
 
-    async def post(self, url, **kwargs):
+    async def post(self, url, **kwargs) -> ClientResponse:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
         headers['Content-type'] = 'application/json'
@@ -155,7 +155,7 @@ class Bot:
                    *,
                    quote: str = '',
                    type: int = Msg.Types.KMD,
-                   nonce: str = '') -> Any:
+                   nonce: str = '') -> ClientResponse:
         data = {
             'channel_id': channel_id,
             'content': content,

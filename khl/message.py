@@ -2,6 +2,8 @@ from abc import ABC
 from enum import IntEnum
 from typing import List, Any, Mapping, TYPE_CHECKING
 
+from aiohttp import ClientResponse
+
 from khl.channel import Channel
 from khl.guild import Guild
 from khl.user import User
@@ -21,7 +23,7 @@ class MsgCtx:
         self.bot: 'Bot' = bot
         self.author: 'User' = author
 
-    async def send(self, content: str, **kwargs) -> Any:
+    async def send(self, content: str, **kwargs) -> ClientResponse:
         return await self.bot.send(self.channel.id, content, **kwargs)
 
 
