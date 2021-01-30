@@ -155,13 +155,15 @@ class Bot:
                    *,
                    quote: str = '',
                    type: int = Msg.Types.KMD,
-                   nonce: str = '') -> ClientResponse:
+                   nonce: str = '',
+                   temp_target_id: str = '') -> ClientResponse:
         data = {
             'channel_id': channel_id,
             'content': content,
             'type': type,
             'quote': quote,
-            'nonce': nonce
+            'nonce': nonce,
+            'temp_target_id': temp_target_id
         }
         return await self.post(f'{API_URL}/channel/message?compress=0',
                                json=data)
