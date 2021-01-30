@@ -35,12 +35,12 @@ class MsgCtx:
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
 
-    async def set_reply_trigger(self, condition: re.Pattern[Any],
-                                callback):
-        async def trigger(msg: Any):
-            if condition.search(msg.content):
-                callback(msg.content)
-        self.bot.on_message(trigger)
+    # async def set_reply_trigger(self, condition: re.Pattern[Any],
+    #                             callback):
+    #     async def trigger(msg: Any):
+    #         if condition.search(msg.content):
+    #             callback(msg.content)
+    #     self.bot.on_message(trigger)
 
     async def send_card(self, content: str):
         return await self.send(content, False, False, 10)
@@ -80,13 +80,13 @@ class MsgCtx:
         if mention:
             content = f'(met){self.user_id}(met) ' + content
         if reply:
-            if kwargs['quote']:
+            if kwargs.get('quote'):
                 logging.debug(
                     'reply is true but already defined in kwargs. use kwargs.')
             else:
                 kwargs['quote'] = self.msg_ids[-1]
         if type:
-            if (kwargs['type']):
+            if kwargs.get('type'):
                 logging.debug(
                     'type is used but already defined in kwargs. use kwargs.')
             else:
@@ -101,6 +101,7 @@ class MsgCtx:
 
         if temp_target_id:
             kwargs['temp_target_id'] = temp_target_id
+
         return await self.bot.send(channel_id, content, **kwargs)
 
 
