@@ -2,9 +2,8 @@ import logging
 import sys
 sys.path.append('.')
 import json
-from khl.command import Session
 
-from khl import Cert, Bot
+from khl import Cert, Bot, TextMsg
 
 # load config from config/config.json,
 # replace `path` points to your own config file.
@@ -40,8 +39,8 @@ logging.basicConfig(level=logging.DEBUG)
 # you can invoke this command via:
 #   `.echo test`
 @bot.command(name='echo')
-async def func(session: Session):
-    logging.info(await session.reply(f'{session.args}'))
+async def func(msg: TextMsg, *args: str):
+    logging.info(await msg.ctx.reply(f'{args}'))
     return None
 
 # everything done, go ahead now!

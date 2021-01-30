@@ -76,7 +76,7 @@ class MsgCtx:
         if type:
             kwargs['type'] = type
 
-        kwargs['channel_id'] = channel_id if channel_id else self.channel.id
+        channel_id = channel_id if channel_id else self.channel.id
 
         if mention and type == 10:
             logging.warning(
@@ -85,7 +85,7 @@ class MsgCtx:
 
         if temp_target_id:
             kwargs['temp_target_id'] = temp_target_id
-        return await self.bot.send(self.channel.id, content, **kwargs)
+        return await self.bot.send(channel_id, content, **kwargs)
 
 
 class Msg(ABC):
