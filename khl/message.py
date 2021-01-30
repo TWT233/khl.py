@@ -1,5 +1,6 @@
 from abc import ABC
 from enum import IntEnum
+import re
 
 from typing import Coroutine, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
 
@@ -33,6 +34,13 @@ class MsgCtx:
         self.author: 'User' = author
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
+
+    async def set_reply_trigger(self, condition: re.Pattern[Any],
+                                callback):
+        async def trigger(msg: Any):
+            if condition.search(msg.content):
+                callback(msg.content)
+        self.bot.on_message(trigger)
 
     async def send_card(self, content: str):
         return await self.send(content, False, False, 10)
@@ -72,9 +80,17 @@ class MsgCtx:
         if mention:
             content = f'(met){self.user_id}(met) ' + content
         if reply:
-            kwargs['quote'] = self.msg_ids[-1]
+            if kwargs['quote']:
+                logging.debug(
+                    'reply is true but already defined in kwargs. use kwargs.')
+            else:
+                kwargs['quote'] = self.msg_ids[-1]
         if type:
-            kwargs['type'] = type
+            if (kwargs['type']):
+                logging.debug(
+                    'type is used but already defined in kwargs. use kwargs.')
+            else:
+                kwargs['type'] = type
 
         channel_id = channel_id if channel_id else self.channel.id
 
