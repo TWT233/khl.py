@@ -60,7 +60,7 @@ class Bot:
         """
         docstring
         """
-        logging.debug(event)
+        # logging.debug(event)
         event['bot'] = self
         (msg, raw_cmd) = parser(event, self.cmd_prefix)
         if len(raw_cmd) == 0:
@@ -83,7 +83,8 @@ class Bot:
                     await _run_event('on_system_event')
                 else:
                     await _run_event('on_message')
-                    if event['type'] == Msg.Types.TEXT:
+                    if event['type'] == Msg.Types.TEXT or event[
+                            'type'] == Msg.Types.KMD:
                         await self._text_handler(event)
 
             except Exception as e:

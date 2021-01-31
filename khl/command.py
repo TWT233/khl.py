@@ -11,6 +11,11 @@ class Command:
     """
     Command, used in interaction from bots
     """
+    name = ''
+    handler = None
+    trigger = ['']
+    help = ''
+    desc = ''
     def __init__(self, func: Callable[..., Coroutine], name: str,
                  aliases: Iterable[str], help_doc: str, desc_doc: str):
         self.name: str
@@ -74,9 +79,9 @@ class CommandGroup(Command):
     def __gen_handler(self):
         async def __handler(msg: Msg, *args):
             args = args[1:]
-            for i in self._sub_commands:
-                if args[0] in i.trigger:
-                    await i.execute(msg, *args)
+            for app in self._sub_commands:
+                if args[0] in app.trigger:
+                    await app.execute(msg, *args)
 
         return __handler
 
