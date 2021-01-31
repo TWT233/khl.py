@@ -1,8 +1,8 @@
 from abc import ABC
-from enum import IntEnum
+from enum import Enum, IntEnum
 import re
 
-from typing import Coroutine, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
+from typing import Coroutine, List, Any, Mapping, NamedTuple, Optional, Sequence, TYPE_CHECKING
 
 from aiohttp import ClientResponse
 
@@ -193,3 +193,37 @@ class TextMsg(Msg):
             (f"(met){self.author_id}(met)" if use_mention else '') + content,
             quote=self.msg_id if use_quote else '',
             type=Msg.Types.KMD)
+
+
+class _SystemMsg(Msg):
+    __slots__ = ['event']
+
+    class EventTypes(Enum):
+        button = 'message_btn_click'
+
+    def __init__(self, **kwargs: Any) -> None:
+        self.type = Msg.Types.SYS
+        self.target_id = kwargs['target_id']
+        self.author_id = kwargs['author_id']
+        self.content = kwargs['content']
+        self.msg_id = kwargs['msg_id']
+        self.msg_timestamp = kwargs['msg_timestamp']
+        self.extra = kwargs['extra']
+
+
+class SystemMsg(_SystemMsg):
+    event: _SystemMsg.EventTypes
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.event = kwargs['extra']['type']
+        if self.event == self.EventTypes.button:
+            self.button_value = self.extra['body']['value']
+            self.ctx = MsgCtx(
+                guild=None,
+                channel=Channel(self.extra['body']['target_id']),
+                bot=kwargs['bot'],
+                author=User({'id': self.extra['body']['user_id']},
+                            kwargs['bot']),
+                msg_ids=[self.extra['body']['msg_id']])
