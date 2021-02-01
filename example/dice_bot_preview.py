@@ -40,8 +40,10 @@ logging.basicConfig(level=logging.DEBUG)
 #   `.echo test`
 @bot.command(name='echo')
 async def func(msg: TextMsg, *args: str):
-    logging.info(await msg.ctx.send(f'{args}'))
+    msg_sent = await msg.ctx.send(f'{args}')
+    logging.info(f'sent message: \n{msg_sent}')
     return None
+
 
 logging.debug('ready to run')
 

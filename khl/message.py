@@ -129,6 +129,7 @@ class Msg(ABC):
 
 
 class TextMsg(Msg):
+    type = Msg.Types.TEXT
     """
     represents a msg, recv from/send to server
     """
@@ -138,10 +139,8 @@ class TextMsg(Msg):
         corresponding to official doc
         """
         self.channel_type = kwargs['channel_type']
-        self.type = self.Types.TEXT
         if self.type != kwargs['type']:
-            raise ValueError('wrong type')
-
+            raise ValueError(f'wrong type found in message: {kwargs}')
         self.target_id = kwargs['target_id']
         self.author_id = kwargs['author_id']
         self.content = kwargs['content']
@@ -193,6 +192,10 @@ class TextMsg(Msg):
             (f"(met){self.author_id}(met)" if use_mention else '') + content,
             quote=self.msg_id if use_quote else '',
             type=Msg.Types.KMD)
+
+
+class KMarkdownMsg(TextMsg):
+    type = Msg.Types.KMD
 
 
 class _SystemMsg(Msg):

@@ -6,7 +6,7 @@ from aiohttp import ClientSession, ClientResponse
 
 from .command import Command
 from .hardcoded import API_URL
-from .message import Msg
+from .message import KMarkdownMsg, Msg, TextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -61,7 +61,7 @@ class Bot:
         docstring
         """
         # logging.debug(event)
-        event['bot'] = self
+        # event['bot'] = self
         (msg, raw_cmd) = parser(event, self.cmd_prefix)
         if len(raw_cmd) == 0:
             return None
@@ -76,19 +76,24 @@ class Bot:
 
         while True:
             event = await self.net_client.event_queue.get()
+            event['bot'] = self
+            # logging.debug(event)
             try:
                 await _run_event('on_all_events')
 
                 if event['type'] == Msg.Types.SYS:
                     await _run_event('on_system_event')
-                else:
+                elif event['type'] == Msg.Types.TEXT:
+                    event = TextMsg(**event)
                     await _run_event('on_message')
-                    if event['type'] == Msg.Types.TEXT or event[
-                            'type'] == Msg.Types.KMD:
-                        await self._text_handler(event)
+                    await self._text_handler(event)
+                elif event['type'] == Msg.Types.KMD:
+                    event = KMarkdownMsg(**event)
+                    await _run_event('on_message')
+                    await self._text_handler(event)
 
             except Exception as e:
-                logging.warning(e)
+                logging.error(e)
                 pass
             self.net_client.event_queue.task_done()
 
