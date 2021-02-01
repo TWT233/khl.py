@@ -83,7 +83,7 @@ class Bot:
 
                 if event['type'] == Msg.Types.SYS:
                     event = SystemMsg(**event)
-                    logging.debug(event)
+                    # logging.debug(event)
                     await _run_event('on_system_event')
                 elif event['type'] == Msg.Types.TEXT:
                     event = TextMsg(**event)
