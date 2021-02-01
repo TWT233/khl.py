@@ -12,12 +12,13 @@ class User():
     including other bots
     """
     id: str
-    roles: Sequence[str]
+    roles: Sequence[str] = []
     bot: 'Bot'
 
     def __init__(self, data: Mapping[str, Any], bot: 'Bot'):
         self.id = data['id']
-        self.roles = data['roles'] if data['roles'] else []
+        if data.get('roles'):
+            self.roles = data['roles']
         self.bot = bot
         pass
 
