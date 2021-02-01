@@ -34,13 +34,46 @@ cert = Cert(client_id=config['client_id'],
 bot = Bot(cmd_prefix=['.', '。'], cert=cert)
 logging.basicConfig(level=logging.DEBUG)
 
+card = [{
+    "type":
+    "card",
+    "theme":
+    "secondary",
+    "size":
+    "lg",
+    "modules": [{
+        "type":
+        "action-group",
+        "elements": [{
+            "type": "button",
+            "theme": "primary",
+            "value": "ok",
+            "click": "return-val",
+            "text": {
+                "type": "plain-text",
+                "content": "确定"
+            }
+        }, {
+            "type": "button",
+            "theme": "danger",
+            "value": "cancel",
+            "click": "return-val",
+            "text": {
+                "type": "plain-text",
+                "content": "取消"
+            }
+        }]
+    }]
+}]
+
 
 # add command, accept optional arguments
 # you can invoke this command via:
 #   `.echo test`
 @bot.command(name='echo')
 async def func(msg: TextMsg, *args: str):
-    msg_sent = await msg.ctx.send(f'{args}')
+    msg_sent = await msg.ctx.send_card(str(json.dumps(card)))
+    await msg.ctx.send(f'{args}')
     logging.info(f'sent message: \n{msg_sent}')
     return None
 

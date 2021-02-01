@@ -212,16 +212,13 @@ class _SystemMsg(Msg):
         self.msg_id = kwargs['msg_id']
         self.msg_timestamp = kwargs['msg_timestamp']
         self.extra = kwargs['extra']
+        self.event = kwargs['extra']['type']
 
 
 class SystemMsg(_SystemMsg):
-    event: _SystemMsg.EventTypes
-
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-
-        self.event = kwargs['extra']['type']
-        if self.event == self.EventTypes.button:
+        if self.event == self.EventTypes.button.value:
             self.button_value = self.extra['body']['value']
             self.ctx = MsgCtx(
                 guild=None,

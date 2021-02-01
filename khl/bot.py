@@ -6,7 +6,7 @@ from aiohttp import ClientSession, ClientResponse
 
 from .command import Command
 from .hardcoded import API_URL
-from .message import KMarkdownMsg, Msg, TextMsg
+from .message import KMarkdownMsg, Msg, SystemMsg, TextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -82,6 +82,8 @@ class Bot:
                 await _run_event('on_all_events')
 
                 if event['type'] == Msg.Types.SYS:
+                    event = SystemMsg(**event)
+                    logging.debug(event)
                     await _run_event('on_system_event')
                 elif event['type'] == Msg.Types.TEXT:
                     event = TextMsg(**event)
