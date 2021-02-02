@@ -1,8 +1,7 @@
 from abc import ABC
 from enum import Enum, IntEnum
-import re
 
-from typing import Coroutine, List, Any, Mapping, NamedTuple, Optional, Sequence, TYPE_CHECKING
+from typing import List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
 
 from aiohttp import ClientResponse
 
@@ -204,12 +203,11 @@ class KMarkdownMsg(TextMsg):
     type = Msg.Types.KMD
 
 
-class _SystemMsg(Msg):
-    # __slots__ = 'event'
-    event: str
+class SystemMsg(Msg):
+    sys_event_type: str
 
     class EventTypes(Enum):
-        button = 'message_btn_click'
+        BTN_CLICK = 'message_btn_click'
 
     def __init__(self, **kwargs: Any) -> None:
         self.type = Msg.Types.SYS
@@ -219,15 +217,9 @@ class _SystemMsg(Msg):
         self.msg_id = kwargs['msg_id']
         self.msg_timestamp = kwargs['msg_timestamp']
         self.extra = kwargs['extra']
-        self.event = kwargs['extra']['type']
+        self.sys_event_type = kwargs['extra']['type']
 
-
-class SystemMsg(_SystemMsg):
-    # __slots__ = 'button_value'
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        if self.event == self.EventTypes.button.value:
+        if self.sys_event_type == self.EventTypes.BTN_CLICK.value:
             self.button_value: str = self.extra['body']['value']
             self.ctx = MsgCtx(
                 guild=None,
@@ -236,3 +228,23 @@ class SystemMsg(_SystemMsg):
                 author=User({'id': self.extra['body']['user_id']},
                             kwargs['bot']),
                 msg_ids=[self.extra['body']['msg_id']])
+
+
+class BtnClickMsg(SystemMsg):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+
+        self.ret_val: str = self.extra['body']['value']
+        self.ori_msg_id = self.extra['body']['msg_id']
+        self.exe_user_id = self.extra['body']['user_id']
+        self.exe_target_id = self.extra['body']['target_id']
+        self.ctx = MsgCtx(guild=None,
+                          channel=Channel(self.extra['body']['target_id']),
+                          bot=kwargs['bot'],
+                          author=User({'id': self.extra['body']['user_id']},
+                                      kwargs['bot']),
+                          msg_ids=[self.extra['body']['msg_id']])
+
+    @property
+    def channel_id(self) -> str:
+        return self.exe_target_id
