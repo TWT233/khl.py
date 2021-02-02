@@ -46,10 +46,16 @@ class MsgCtx:
         return await self.send(content, False, False, 10)
 
     async def send_card_temp(self, content: str):
-        return await self.send(content, True, False, 10, None, self.user_id)
+        return await self.send(content, False, False, 10, None, self.user_id)
 
     async def mention(self, content: str):
-        return await self.send(content, True, False)
+        return await self.send(content, mention=True, reply=False)
+
+    async def mention_temp(self, content: str):
+        return await self.send(content,
+                               mention=True,
+                               reply=False,
+                               temp_target_id=self.user_id)
 
     async def reply_card_temp(self, content: str):
         return await self.send(content, False, True, 10, None, self.user_id)
@@ -199,7 +205,8 @@ class KMarkdownMsg(TextMsg):
 
 
 class _SystemMsg(Msg):
-    __slots__ = ['event']
+    # __slots__ = 'event'
+    event: str
 
     class EventTypes(Enum):
         button = 'message_btn_click'
@@ -216,10 +223,12 @@ class _SystemMsg(Msg):
 
 
 class SystemMsg(_SystemMsg):
+    # __slots__ = 'button_value'
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if self.event == self.EventTypes.button.value:
-            self.button_value = self.extra['body']['value']
+            self.button_value: str = self.extra['body']['value']
             self.ctx = MsgCtx(
                 guild=None,
                 channel=Channel(self.extra['body']['target_id']),
