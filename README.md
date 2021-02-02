@@ -64,7 +64,6 @@ please install certi manually, turning to this post for guide:
 
 ### T1:
 - [ ] command & arg parse system(long term design needed)
-- [ ] add alias while reg command(active @TWT233ß)
 - [x] event listener for bot
   - [x] find another approach to handle msg
   - [x] utilize event listener
@@ -74,7 +73,7 @@ please install certi manually, turning to this post for guide:
 - [ ] `on_textMsg()`
 
 ### T2:
-- [ ] log system
+- [ ] log system(active @TWT233)
 - [x] `MsgCtx` design
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
