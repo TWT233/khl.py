@@ -48,30 +48,38 @@ please install certi manually, turning to this post for guide:
 
 ## refactor
 
+### T1:
+- [ ] btn handler
+
+### T2:
 - [x] rename files according to PEP8
+- [ ] wrap functions for convenient
 
 ## perf:
 
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-    - [x] introduce `MsgCtx` with this
+  - [x] introduce `MsgCtx` with this
 
 ## feat:
 
 ### T1:
-
-- [ ] command & arg parse system
+- [ ] command & arg parse system(long term design needed)
+- [ ] add alias while reg command(active @TWT233ß)
 - [x] event listener for bot
-    - [x] find another approach to handle msg
-    - [x] utilize event listener
+  - [x] find another approach to handle msg
+  - [x] utilize event listener
 - [x] add get for net client
 - [x] command group
+- [ ] event class(interface)
+- [ ] `on_textMsg()`
 
 ### T2:
-
 - [ ] log system
 - [x] `MsgCtx` design
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
+- [ ] no prefix commands
+- [ ] more kinds of msg
 
 # commit message rules
 
