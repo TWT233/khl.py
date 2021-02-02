@@ -16,6 +16,7 @@ class Command:
     trigger = ['']
     help = ''
     desc = ''
+
     def __init__(self, func: Callable[..., Coroutine], name: str,
                  aliases: Iterable[str], help_doc: str, desc_doc: str):
         self.name: str
