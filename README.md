@@ -49,9 +49,11 @@ please install certi manually, turning to this post for guide:
 ## refactor
 
 ### T1:
-- [ ] btn handler
+
+- [ ] btn handler(ongoing)
 
 ### T2:
+
 - [x] rename files according to PEP8
 - [ ] wrap functions for convenient
 
@@ -63,6 +65,8 @@ please install certi manually, turning to this post for guide:
 ## feat:
 
 ### T1:
+
+- [ ] `on_textMsg()`(want @fi6)
 - [ ] command & arg parse system(long term design needed)
 - [x] event listener for bot
   - [x] find another approach to handle msg
@@ -70,9 +74,9 @@ please install certi manually, turning to this post for guide:
 - [x] add get for net client
 - [x] command group
 - [ ] event class(interface)
-- [ ] `on_textMsg()`
 
 ### T2:
+
 - [ ] log system(active @TWT233)
 - [x] `MsgCtx` design
 - [x] command alias
