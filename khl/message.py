@@ -1,7 +1,7 @@
 from abc import ABC
 from enum import Enum, IntEnum
 
-from typing import List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
+from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
 
 from aiohttp import ClientResponse
 
@@ -131,6 +131,15 @@ class Msg(ABC):
     nonce: str
     extra: Mapping[str, Any]
     ctx: 'MsgCtx'
+
+    @staticmethod
+    def event_to_msg(event: Dict[Any, Any]):
+        if event['type'] == Msg.Types.SYS:
+            return SysMsg(**event)
+        elif event['type'] == Msg.Types.TEXT:
+            return TextMsg(**event)
+        elif event['type'] == Msg.Types.KMD:
+            return KMDMsg(**event)
 
 
 class TextMsg(Msg):

@@ -52,13 +52,13 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
-        self.__event_list: Dict[str, List[Callable[..., Coroutine]]] = {
-            'on_all_events': [],
-            'on_message': [],
-            'on_system_event': []
+        self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
+            'on_all_Msg': [],
+            'on_TextMsg': [],
+            'on_SysMsg': []
         }
 
-    async def _text_handler(self, event: Dict[Any, Any]):
+    async def _text_handler(self, event: TextMsg):
         """
         docstring
         """
@@ -71,28 +71,26 @@ class Bot:
             return await inst.execute(msg, *raw_cmd[1:])
 
     async def _event_handler(self):
-        async def _run_event(which: str, event: dict):
-            for i in self.__event_list[which]:
-                asyncio.ensure_future(i(event))
+        async def _run_event(which: str, msg: Msg):
+            for i in self.__msg_listener[which]:
+                asyncio.ensure_future(i(msg))
+
+        async def _dispatch_event(msg: Msg):
+            await _run_event('on_all_Msg', msg)
+
+            if msg.type == Msg.Types.SYS:
+                await _run_event('on_SysMsg', msg)
+            elif msg.type in [Msg.Types.TEXT, Msg.Types.KMD]:
+                await _run_event('on_TextMsg', msg)
 
         while True:
             event = await self.net_client.event_queue.get()
             event['bot'] = self
             self.logger.debug(f'upcoming event:{event}')
             try:
-                await _run_event('on_all_events')
 
-                if event['type'] == Msg.Types.SYS:
-                    event = SysMsg(**event)
-                    await _run_event('on_system_event', event)
-                elif event['type'] == Msg.Types.TEXT:
-                    event = TextMsg(**event)
-                    await _run_event('on_message', event)
-                    await self._text_handler(event)
-                elif event['type'] == Msg.Types.KMD:
-                    event = KMDMsg(**event)
-                    await _run_event('on_message', event)
-                    await self._text_handler(event)
+                msg = Msg.event_to_msg(event)
+                await _dispatch_event(msg)
 
             except Exception as e:
                 self.logger.error(e)
@@ -127,19 +125,19 @@ class Bot:
 
         return decorator
 
-    def add_event_listener(self, type: str, func: Callable[..., Coroutine]):
-        if type not in self.__event_list.keys():
+    def add_msg_listener(self, type: str, func: Callable[..., Coroutine]):
+        if type not in self.__msg_listener.keys():
             raise ValueError('event not found')
-        self.__event_list[type].append(func)
+        self.__msg_listener[type].append(func)
 
-    def on_all_events(self, func):
-        self.add_event_listener('on_all_events', func)
+    def on_all_Msg(self, func):
+        self.add_msg_listener('on_all_Msg', func)
 
-    def on_message(self, func):
-        self.add_event_listener('on_message', func)
+    def on_TextMsg(self, func):
+        self.add_msg_listener('on_TextMsg', func)
 
-    def on_system_event(self, func):
-        self.add_event_listener('on_system_event', func)
+    def on_SysMsg(self, func):
+        self.add_msg_listener('on_SysMsg', func)
 
     async def get(self, url, **kwargs) -> ClientResponse:
         headers = kwargs.get('headers', {})
