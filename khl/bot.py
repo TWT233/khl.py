@@ -20,6 +20,8 @@ class Bot:
     """
     Entity that interacts with user/environment
     """
+    logger = logging.getLogger('khl.Bot')
+
     def __init__(self,
                  *,
                  cmd_prefix: Union[List[str], str, tuple] = ('!', '！'),
@@ -60,42 +62,40 @@ class Bot:
         """
         docstring
         """
-        # logging.debug(event)
-        # event['bot'] = self
         (msg, raw_cmd) = parser(event, self.cmd_prefix)
         if len(raw_cmd) == 0:
             return None
         inst = self.__cmd_index.get(raw_cmd[0], None)
         if inst:
+            self.logger.info(f'cmd triggered: {inst.name} with {raw_cmd}')
             return await inst.execute(msg, *raw_cmd[1:])
 
     async def _event_handler(self):
-        async def _run_event(which: str):
+        async def _run_event(which: str, event: dict):
             for i in self.__event_list[which]:
                 asyncio.ensure_future(i(event))
 
         while True:
             event = await self.net_client.event_queue.get()
             event['bot'] = self
-            # logging.debug(event)
+            self.logger.debug(f'upcoming event:{event}')
             try:
                 await _run_event('on_all_events')
 
                 if event['type'] == Msg.Types.SYS:
                     event = SystemMsg(**event)
-                    # logging.debug(event)
-                    await _run_event('on_system_event')
+                    await _run_event('on_system_event', event)
                 elif event['type'] == Msg.Types.TEXT:
                     event = TextMsg(**event)
-                    await _run_event('on_message')
+                    await _run_event('on_message', event)
                     await self._text_handler(event)
                 elif event['type'] == Msg.Types.KMD:
                     event = KMarkdownMsg(**event)
-                    await _run_event('on_message')
+                    await _run_event('on_message', event)
                     await self._text_handler(event)
 
             except Exception as e:
-                logging.error(e)
+                self.logger.error(e)
                 pass
             self.net_client.event_queue.task_done()
 
@@ -105,6 +105,7 @@ class Bot:
                 raise ValueError('Command trigger already exists')
         for i in cmd.trigger:
             self.__cmd_index[i] = cmd
+        self.logger.debug(f'cmd added:{cmd.name}')
 
     def command(self,
                 name: str = '',
@@ -195,6 +196,7 @@ class Bot:
                                })
 
     def run(self):
+        self.logger.info('launching')
         asyncio.ensure_future(self.net_client.run())
         asyncio.ensure_future(self._event_handler())
         asyncio.get_event_loop().run_forever()

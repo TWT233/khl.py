@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Coroutine, Iterable, Callable, TYPE_CHECKING, Set, List
 
 from khl.message import Msg
@@ -16,6 +17,7 @@ class Command:
     trigger = ['']
     help = ''
     desc = ''
+    logger = logging.getLogger('khl.Command')
 
     def __init__(self, func: Callable[..., Coroutine], name: str,
                  aliases: Iterable[str], help_doc: str, desc_doc: str):
@@ -45,6 +47,7 @@ class Command:
             raise TypeError('desc_doc must be a string.')
 
     async def execute(self, msg: Msg, *args):
+        self.logger.debug(f'msg.content={msg.content} args={args}')
         return await self.handler(msg, *args)
 
     @staticmethod
