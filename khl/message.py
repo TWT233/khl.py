@@ -199,11 +199,11 @@ class TextMsg(Msg):
             type=Msg.Types.KMD)
 
 
-class KMarkdownMsg(TextMsg):
+class KMDMsg(TextMsg):
     type = Msg.Types.KMD
 
 
-class SystemMsg(Msg):
+class SysMsg(Msg):
     sys_event_type: str
 
     class EventTypes(Enum):
@@ -230,7 +230,7 @@ class SystemMsg(Msg):
                 msg_ids=[self.extra['body']['msg_id']])
 
 
-class BtnClickMsg(SystemMsg):
+class BtnClickMsg(SysMsg):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
