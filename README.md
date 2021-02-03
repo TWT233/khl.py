@@ -77,7 +77,7 @@ please install certi manually, turning to this post for guide:
 
 ### T2:
 
-- [ ] log system(active @TWT233)
+- [x] log system
 - [x] `MsgCtx` design
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
