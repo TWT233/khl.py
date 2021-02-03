@@ -53,9 +53,10 @@ class Bot:
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
-            'on_all_Msg': [],
-            'on_TextMsg': [],
-            'on_SysMsg': []
+            'on_raw_event': [],
+            'on_all_msg': [],
+            'on_text_msg': [],
+            'on_sys_msg': []
         }
 
     async def _text_handler(self, event: TextMsg):
@@ -88,7 +89,8 @@ class Bot:
             event['bot'] = self
             self.logger.debug(f'upcoming event:{event}')
             try:
-
+                for i in self.__msg_listener['on_raw_event']:
+                    asyncio.ensure_future(i(event))
                 msg = Msg.event_to_msg(event)
                 await _dispatch_event(msg)
 
