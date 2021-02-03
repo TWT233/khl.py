@@ -95,7 +95,6 @@ class Bot:
 
             except Exception as e:
                 self.logger.error(e)
-                pass
             self.net_client.event_queue.task_done()
 
     def add_command(self, cmd: 'Command'):
