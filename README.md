@@ -66,7 +66,7 @@ please install certi manually, turning to this post for guide:
 
 ### T1:
 
-- [ ] `on_textMsg()`(want @fi6)
+- [x] `on_textMsg()`
 - [ ] command & arg parse system(long term design needed)
 - [x] event listener for bot
   - [x] find another approach to handle msg
