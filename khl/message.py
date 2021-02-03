@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class MsgCtx:
-    command: Optional['Command'] = None
+    logger = logging.getLogger('khl.MsgCtx')
     """
     represents a context of a msg
     """
@@ -76,6 +76,7 @@ class MsgCtx:
 
     async def send(self,
                    content: str,
+                   *,
                    mention: bool = False,
                    reply: bool = False,
                    type: int = 9,
@@ -86,13 +87,13 @@ class MsgCtx:
             content = f'(met){self.user_id}(met) ' + content
         if reply:
             if kwargs.get('quote'):
-                logging.debug(
+                self.logger.debug(
                     'reply is true but already defined in kwargs. use kwargs.')
             else:
                 kwargs['quote'] = self.msg_ids[-1]
         if type:
             if kwargs.get('type'):
-                logging.debug(
+                self.logger.debug(
                     'type is used but already defined in kwargs. use kwargs.')
             else:
                 kwargs['type'] = type
@@ -100,8 +101,7 @@ class MsgCtx:
         channel_id = channel_id if channel_id else self.channel.id
 
         if mention and type == 10:
-            logging.warning(
-                f'used card message with mention in {self.command.name}')
+            self.logger.warning(f'used card message with mention')
             mention = False
 
         if temp_target_id:
