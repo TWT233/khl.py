@@ -76,12 +76,12 @@ class Bot:
                 asyncio.ensure_future(i(msg))
 
         async def _dispatch_event(msg: Msg):
-            await _run_event('on_all_Msg', msg)
+            await _run_event('on_all_msg', msg)
 
             if msg.type == Msg.Types.SYS:
-                await _run_event('on_SysMsg', msg)
+                await _run_event('on_sys_msg', msg)
             elif msg.type in [Msg.Types.TEXT, Msg.Types.KMD]:
-                await _run_event('on_TextMsg', msg)
+                await _run_event('on_text_msg', msg)
 
         while True:
             event = await self.net_client.event_queue.get()
@@ -130,14 +130,14 @@ class Bot:
             raise ValueError('event not found')
         self.__msg_listener[type].append(func)
 
-    def on_all_Msg(self, func):
-        self.add_msg_listener('on_all_Msg', func)
+    def on_all_msg(self, func):
+        self.add_msg_listener('on_all_msg', func)
 
-    def on_TextMsg(self, func):
-        self.add_msg_listener('on_TextMsg', func)
+    def on_text_msg(self, func):
+        self.add_msg_listener('on_text_msg', func)
 
-    def on_SysMsg(self, func):
-        self.add_msg_listener('on_SysMsg', func)
+    def on_sys_msg(self, func):
+        self.add_msg_listener('on_sys_msg', func)
 
     async def get(self, url, **kwargs) -> ClientResponse:
         headers = kwargs.get('headers', {})
