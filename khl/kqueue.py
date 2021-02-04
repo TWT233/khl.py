@@ -12,7 +12,9 @@ class KQueue:
     async def get(self, key: str) -> Any:
         if key not in self._listeners.keys():
             self._listeners[key] = Queue()
-        return await self._listeners[key].get()
+        res = await self._listeners[key].get()
+        self._listeners[key].task_done()
+        return res
 
     async def put(self, key: str, item: Any):
         if key in self._listeners.keys():
