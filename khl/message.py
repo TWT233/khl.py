@@ -34,13 +34,6 @@ class MsgCtx:
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
 
-    # async def set_reply_trigger(self, condition: re.Pattern[Any],
-    #                             callback):
-    #     async def trigger(msg: Any):
-    #         if condition.search(msg.content):
-    #             callback(msg.content)
-    #     self.bot.on_message(trigger)
-
     async def send_card(self, content: str):
         return await self.send(content, False, False, 10)
 
