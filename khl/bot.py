@@ -1,12 +1,14 @@
 import asyncio
+from khl.kqueue import KQueue
 import logging
+import json
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
 from aiohttp import ClientSession, ClientResponse
 
 from .command import Command
 from .hardcoded import API_URL
-from .message import Msg, TextMsg
+from .message import BtnClickMsg, Msg, SysMsg, TextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -52,12 +54,20 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
+        self.btn_msg_queue: KQueue = KQueue()
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
             'on_all_msg': [],
             'on_text_msg': [],
             'on_system_msg': []
         }
+
+    async def _sys_msg_watcher(self, msg: SysMsg):
+        async def _btn_handler(btn_msg: BtnClickMsg):
+            await self.btn_msg_queue.put(btn_msg.ori_msg_id, btn_msg)
+
+        if msg.event_type == SysMsg.EventTypes.BTN_CLICK:
+            await _btn_handler(msg)
 
     async def _text_handler(self, msg: TextMsg):
         """
@@ -76,26 +86,27 @@ class Bot:
             for i in self.__msg_listener[which]:
                 asyncio.ensure_future(i(msg))
 
-        async def _dispatch_event(msg: Msg):
-            await _run_event('on_all_msg', msg)
+        async def _dispatch_event(m: Msg):
+            await _run_event('on_all_msg', m)
 
-            if msg.type == Msg.Types.SYS:
-                await _run_event('on_system_msg', msg)
-            elif msg.type in [Msg.Types.TEXT, Msg.Types.KMD]:
-                await _run_event('on_text_msg', msg)
-                await self._text_handler(msg)
+            if m.type == Msg.Types.SYS:
+                await _run_event('on_system_msg', m)
+                await self._sys_msg_watcher(m)
+            elif m.type in [Msg.Types.TEXT, Msg.Types.KMD]:
+                await _run_event('on_text_msg', m)
+                await self._text_handler(m)
 
         while True:
             event = await self.net_client.event_queue.get()
-            event['bot'] = self
-            self.logger.debug(f'upcoming event:{event}')
-            try:
-                await _run_event('on_raw_event', event)
-                msg = Msg.event_to_msg(event)
-                await _dispatch_event(msg)
 
-            except Exception as e:
-                self.logger.error(e)
+            event['bot'] = self
+            self.logger.debug(f'upcoming event:\n{event}')
+            for i in self.__msg_listener['on_raw_event']:
+                asyncio.ensure_future(i(event))
+
+            msg = Msg.event_to_msg(event)
+            asyncio.ensure_future(_dispatch_event(msg))
+
             self.net_client.event_queue.task_done()
 
     def add_command(self, cmd: 'Command'):

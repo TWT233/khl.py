@@ -1,19 +1,17 @@
+import json
+import logging
 from abc import ABC
 from enum import Enum, IntEnum
-import json
-
-from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING, Text
+from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
 
 from aiohttp import ClientResponse
 
-from khl.channel import Channel
-from khl.guild import Guild
-from khl.user import User
-import logging
+from .channel import Channel
+from .guild import Guild
+from .user import User
 
 if TYPE_CHECKING:
-    from khl.bot import Bot
-    from khl.command import Command
+    from .bot import Bot
 
 
 class MsgCtx:
@@ -34,6 +32,9 @@ class MsgCtx:
         self.author: 'User' = author
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
+
+    async def wait_btn(self, ori_msg_id: str):
+        return await self.bot.btn_msg_queue.get(ori_msg_id)
 
     async def send(self, content: str, **kwargs: Any) -> ClientResponse:
         return await self.bot.send(self.channel.id, content, **kwargs)
