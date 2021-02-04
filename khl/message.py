@@ -2,7 +2,7 @@ from abc import ABC
 from enum import Enum, IntEnum
 import json
 
-from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
+from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING, Text
 
 from aiohttp import ClientResponse
 
@@ -83,6 +83,8 @@ class Msg(ABC):
             return TextMsg(**event)
         elif event['type'] == Msg.Types.KMD:
             return KMDMsg(**event)
+        elif event['type'] == Msg.Types.CARD:
+            return CardMsg(**event)
 
     async def reply(self, content: str, **kwargs):
         kwargs['quote'] = self.msg_id
@@ -160,6 +162,10 @@ class TextMsg(Msg):
 
 class KMDMsg(TextMsg):
     type = Msg.Types.KMD
+
+
+class CardMsg(TextMsg):
+    type = Msg.Types.CARD
 
 
 class SysMsg(Msg):
