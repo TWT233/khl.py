@@ -59,11 +59,11 @@ class Bot:
             'on_system_msg': []
         }
 
-    async def _text_handler(self, event: TextMsg):
+    async def _text_handler(self, msg: TextMsg):
         """
         docstring
         """
-        (msg, raw_cmd) = parser(event, self.cmd_prefix)
+        (msg, raw_cmd) = parser(msg, self.cmd_prefix)
         if len(raw_cmd) == 0:
             return None
         inst = self.__cmd_index.get(raw_cmd[0], None)
@@ -83,6 +83,7 @@ class Bot:
                 await _run_event('on_system_msg', msg)
             elif msg.type in [Msg.Types.TEXT, Msg.Types.KMD]:
                 await _run_event('on_text_msg', msg)
+                await self._text_handler(msg)
 
         while True:
             event = await self.net_client.event_queue.get()
