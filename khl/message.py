@@ -76,7 +76,7 @@ class Msg(ABC):
     @staticmethod
     def event_to_msg(event: Dict[Any, Any]):
         if event['type'] == Msg.Types.SYS:
-            if event['body']['type'] == SysMsg.EventTypes.BTN_CLICK.value:
+            if event['extra']['type'] == SysMsg.EventTypes.BTN_CLICK.value:
                 return BtnClickMsg(**event)
             return SysMsg(**event)
         elif event['type'] == Msg.Types.TEXT:
