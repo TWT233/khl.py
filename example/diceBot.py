@@ -29,5 +29,13 @@ async def roll(msg: TextMsg, r_min: str, r_max: str, n: str = 1):
     )
 
 
+# add event listener
+# now support: on_text_msg, on_all_msg, on_system_msg
+@bot.on_text_msg
+async def greeter(msg: TextMsg):
+    if (msg.content == 'hello'):
+        await bot.send(msg.target_id, f'hi')
+
+
 # everything done, go ahead now!
 bot.run()
