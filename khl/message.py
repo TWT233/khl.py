@@ -163,7 +163,7 @@ class TextMsg(Msg):
         self.nonce = kwargs['nonce']
         self.extra = kwargs['extra']
 
-        self.author: User = User(self.extra['author'], kwargs['bot'])
+        self.author: User = User(self.extra['author'])
         self.ctx = MsgCtx(guild=Guild(self.guild_id),
                           channel=Channel(self.target_id),
                           bot=kwargs['bot'],
@@ -230,13 +230,12 @@ class SysMsg(Msg):
 
         if self.sys_event_type == self.EventTypes.BTN_CLICK.value:
             self.button_value: str = self.extra['body']['value']
-            self.ctx = MsgCtx(
-                guild=None,
-                channel=Channel(self.extra['body']['target_id']),
-                bot=kwargs['bot'],
-                author=User({'id': self.extra['body']['user_id']},
-                            kwargs['bot']),
-                msg_ids=[self.extra['body']['msg_id']])
+            self.ctx = MsgCtx(guild=None,
+                              channel=Channel(self.extra['body']['target_id']),
+                              bot=kwargs['bot'],
+                              author=User(
+                                  {'id': self.extra['body']['user_id']}),
+                              msg_ids=[self.extra['body']['msg_id']])
 
 
 class BtnClickMsg(SysMsg):
@@ -250,8 +249,7 @@ class BtnClickMsg(SysMsg):
         self.ctx = MsgCtx(guild=None,
                           channel=Channel(self.extra['body']['target_id']),
                           bot=kwargs['bot'],
-                          author=User({'id': self.extra['body']['user_id']},
-                                      kwargs['bot']),
+                          author=User({'id': self.extra['body']['user_id']}),
                           msg_ids=[self.extra['body']['msg_id']])
 
     @property
