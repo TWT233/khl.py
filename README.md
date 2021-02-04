@@ -83,6 +83,7 @@ please install certi manually, turning to this post for guide:
 - [ ] bot send args (done by @fi6, waiting for merge)
 - [ ] no prefix commands
 - [ ] more kinds of msg
+- [ ] action result
 
 # commit message rules
 
