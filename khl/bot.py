@@ -6,7 +6,7 @@ from aiohttp import ClientSession, ClientResponse
 
 from .command import Command
 from .hardcoded import API_URL
-from .message import KMDMsg, Msg, SysMsg, TextMsg
+from .message import Msg, TextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -198,7 +198,11 @@ class Bot:
                                })
 
     def run(self):
-        self.logger.info('launching')
-        asyncio.ensure_future(self.net_client.run())
-        asyncio.ensure_future(self._event_handler())
-        asyncio.get_event_loop().run_forever()
+        try:
+            self.logger.info('launching')
+            asyncio.ensure_future(self.net_client.run())
+            asyncio.ensure_future(self._event_handler())
+            asyncio.get_event_loop().run_forever()
+        except KeyboardInterrupt:
+            asyncio.get_event_loop().run_until_complete(self.__cs.close())
+            self.logger.info('see you next time')
