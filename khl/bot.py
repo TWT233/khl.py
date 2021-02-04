@@ -184,7 +184,7 @@ class Bot:
                                json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
-                              role_id: str) -> Any:
+                              role_id: int) -> Any:
         return await self.post(f'{API_URL}/guild-role/grant?compress=0',
                                json={
                                    'user_id': user_id,
@@ -193,7 +193,7 @@ class Bot:
                                })
 
     async def user_revoke_role(self, user_id: str, guild_id: str,
-                               role_id: str) -> Any:
+                               role_id: int) -> Any:
         return await self.post(f'{API_URL}/guild-role/revoke?compress=0',
                                json={
                                    'user_id': user_id,
