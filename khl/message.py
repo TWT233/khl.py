@@ -76,6 +76,8 @@ class Msg(ABC):
     @staticmethod
     def event_to_msg(event: Dict[Any, Any]):
         if event['type'] == Msg.Types.SYS:
+            if event['body']['type'] == SysMsg.EventTypes.BTN_CLICK.value:
+                return BtnClickMsg(**event)
             return SysMsg(**event)
         elif event['type'] == Msg.Types.TEXT:
             return TextMsg(**event)
@@ -165,9 +167,11 @@ class SysMsg(Msg):
 
     class EventTypes(Enum):
         BTN_CLICK = 'message_btn_click'
+        NOTSET = ''
 
     def __init__(self, **kwargs: Any) -> None:
         self.type = Msg.Types.SYS
+        self.event_type = SysMsg.EventTypes.NOTSET
         self.target_id = kwargs['target_id']
         self.author_id = kwargs['author_id']
         self.content = kwargs['content']
@@ -176,19 +180,11 @@ class SysMsg(Msg):
         self.extra = kwargs['extra']
         self.sys_event_type = kwargs['extra']['type']
 
-        if self.sys_event_type == self.EventTypes.BTN_CLICK.value:
-            self.button_value: str = self.extra['body']['value']
-            self.ctx = MsgCtx(guild=None,
-                              channel=Channel(self.extra['body']['target_id']),
-                              bot=kwargs['bot'],
-                              author=User(
-                                  {'id': self.extra['body']['user_id']}),
-                              msg_ids=[self.extra['body']['msg_id']])
-
 
 class BtnClickMsg(SysMsg):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.event_type = SysMsg.EventTypes.BTN_CLICK
 
         self.ret_val: str = self.extra['body']['value']
         self.ori_msg_id = self.extra['body']['msg_id']
