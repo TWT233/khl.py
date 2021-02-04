@@ -22,6 +22,10 @@ class User():
         self.roles = data['roles'] if data.get('roles') else []
         pass
 
+    @property
+    def mention(self):
+        return f'(met){self.id}(met)'
+
     async def grant_role(self, bot: 'Bot', guild_id: str,
                          role_id: int) -> bool:
         return await bot.post(f'{API_URL}/guild-role/grant?compress=0',
