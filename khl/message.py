@@ -33,7 +33,7 @@ class MsgCtx:
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
 
-    async def wait_btn(self, ori_msg_id: str):
+    async def wait_btn(self, ori_msg_id: str) -> 'BtnClickMsg':
         return await self.bot.btn_msg_queue.get(ori_msg_id)
 
     async def send(self, content: str, **kwargs: Any) -> ClientResponse:
