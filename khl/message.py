@@ -1,5 +1,6 @@
 from abc import ABC
 from enum import Enum, IntEnum
+import json
 
 from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
 
@@ -34,73 +35,20 @@ class MsgCtx:
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
 
-    async def send_card(self, content: str):
-        return await self.send(content, False, False, 10)
+    async def send(self, content: str, **kwargs: Any) -> ClientResponse:
+        return await self.bot.send(self.channel.id, content, **kwargs)
 
-    async def send_card_temp(self, content: str):
-        return await self.send(content, False, False, 10, None, self.user_id)
+    async def send_card(self, content: str, **kwargs):
+        kwargs['type'] = Msg.Types.CARD
+        return await self.send(content, **kwargs)
 
-    async def mention(self, content: str):
-        return await self.send(content, mention=True, reply=False)
+    async def send_temp(self, card: dict, temp_target_id: str, **kwargs):
+        kwargs['temp_target_id'] = temp_target_id
+        return await self.send(json.dumps(card), **kwargs)
 
-    async def mention_temp(self, content: str):
-        return await self.send(content,
-                               mention=True,
-                               reply=False,
-                               temp_target_id=self.user_id)
-
-    async def reply_card_temp(self, content: str):
-        return await self.send(content, False, True, 10, None, self.user_id)
-
-    async def reply_card(self, content: str):
-        return await self.send(content, False, True, 10)
-
-    async def reply(self, content: str):
-        """
-        reply with mention
-        """
-        return await self.send(content, True, True)
-
-    async def reply_only(self, content: str):
-        """
-        reply without mention
-        """
-        return await self.send(content, False, True)
-
-    async def send(self,
-                   content: str,
-                   *,
-                   mention: bool = False,
-                   reply: bool = False,
-                   type: int = 9,
-                   channel_id: Optional[str] = None,
-                   temp_target_id: Optional[str] = None,
-                   **kwargs: Any) -> ClientResponse:
-        if mention:
-            content = f'(met){self.user_id}(met) ' + content
-        if reply:
-            if kwargs.get('quote'):
-                self.logger.debug(
-                    'reply is true but already defined in kwargs. use kwargs.')
-            else:
-                kwargs['quote'] = self.msg_ids[-1]
-        if type:
-            if kwargs.get('type'):
-                self.logger.debug(
-                    'type is used but already defined in kwargs. use kwargs.')
-            else:
-                kwargs['type'] = type
-
-        channel_id = channel_id if channel_id else self.channel.id
-
-        if mention and type == 10:
-            self.logger.warning(f'used card message with mention')
-            mention = False
-
-        if temp_target_id:
-            kwargs['temp_target_id'] = temp_target_id
-
-        return await self.bot.send(channel_id, content, **kwargs)
+    async def send_card_temp(self, card: dict, temp_target_id: str, **kwargs):
+        kwargs['temp_target_id'] = temp_target_id
+        return await self.send_card(json.dumps(card), **kwargs)
 
 
 class Msg(ABC):
@@ -133,6 +81,22 @@ class Msg(ABC):
             return TextMsg(**event)
         elif event['type'] == Msg.Types.KMD:
             return KMDMsg(**event)
+
+    async def reply(self, content: str, **kwargs):
+        kwargs['quote'] = self.msg_id
+        return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
+
+    async def reply_temp(self, content: str, **kwargs):
+        kwargs['temp_target_id'] = self.author_id
+        return await self.reply(content, **kwargs)
+
+    async def reply_card(self, card: dict, **kwargs):
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply(json.dumps(card), **kwargs)
+
+    async def reply_card_temp(self, card: dict, **kwargs):
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply_temp(json.dumps(card), **kwargs)
 
 
 class TextMsg(Msg):
@@ -190,15 +154,6 @@ class TextMsg(Msg):
     @property
     def mention_here(self) -> bool:
         return self.extra['mention_heres']
-
-    async def reply(self,
-                    content: str,
-                    use_quote: bool = True,
-                    use_mention: bool = False):
-        return await self.ctx.send(
-            (f"(met){self.author_id}(met)" if use_mention else '') + content,
-            quote=self.msg_id if use_quote else '',
-            type=Msg.Types.KMD)
 
 
 class KMDMsg(TextMsg):
