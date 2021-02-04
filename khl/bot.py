@@ -148,8 +148,10 @@ class Bot:
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
-            await res.read()
-            return res
+            rsp = await res.json()
+            if rsp['code'] != 0:
+                self.logger.error(f'request failed: {rsp}')
+            return rsp['data']
 
     async def post(self, url, **kwargs) -> ClientResponse:
         headers = kwargs.get('headers', {})
@@ -157,8 +159,10 @@ class Bot:
         headers['Content-type'] = 'application/json'
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
-            await res.read()
-            return res
+            rsp = await res.json()
+            if rsp['code'] != 0:
+                self.logger.error(f'request failed: {rsp}')
+            return rsp['data']
 
     async def send(self,
                    channel_id: str,
