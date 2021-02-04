@@ -1,4 +1,5 @@
 from typing import NamedTuple
+
 from khl.message import Msg
 
 

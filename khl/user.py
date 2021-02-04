@@ -1,4 +1,3 @@
-from re import VERBOSE
 from typing import Any, Mapping, Sequence, TYPE_CHECKING
 
 from .hardcoded import API_URL
@@ -7,7 +6,7 @@ if TYPE_CHECKING:
     from khl.bot import Bot
 
 
-class User():
+class User:
     __slots__ = 'id', 'roles', 'bot'
     """
     presents a User in chat/group

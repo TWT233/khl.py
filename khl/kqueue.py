@@ -1,7 +1,6 @@
+import logging
 from asyncio import Queue
 from typing import Any, Dict
-
-import logging
 
 
 class KQueue:

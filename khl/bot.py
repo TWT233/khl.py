@@ -1,11 +1,10 @@
 import asyncio
-from khl.kqueue import KQueue
 import logging
-import json
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
 from aiohttp import ClientSession, ClientResponse
 
+from .kqueue import KQueue
 from .command import Command
 from .hardcoded import API_URL
 from .message import BtnClickMsg, Msg, SysMsg, TextMsg
