@@ -42,10 +42,14 @@ class MsgCtx:
     #     self.bot.on_message(trigger)
 
     async def send_card(self, content: str):
-        return await self.send(content, False, False, 10)
+        return await self.send(content, mention=False, reply=False, type=10)
 
     async def send_card_temp(self, content: str):
-        return await self.send(content, False, False, 10, None, self.user_id)
+        return await self.send(content,
+                               mention=False,
+                               reply=False,
+                               type=10,
+                               temp_target_id=self.user_id)
 
     async def mention(self, content: str):
         return await self.send(content, mention=True, reply=False)
@@ -57,22 +61,31 @@ class MsgCtx:
                                temp_target_id=self.user_id)
 
     async def reply_card_temp(self, content: str):
-        return await self.send(content, False, True, 10, None, self.user_id)
+        return await self.send(content,
+                               mention=False,
+                               reply=True,
+                               type=10,
+                               temp_target_id=self.user_id)
 
     async def reply_card(self, content: str):
-        return await self.send(content, False, True, 10)
+        return await self.send(
+            content,
+            mention=False,
+            reply=True,
+            type=10,
+        )
 
     async def reply(self, content: str):
         """
         reply with mention
         """
-        return await self.send(content, True, True)
+        return await self.send(content, mention=True, reply=True)
 
     async def reply_only(self, content: str):
         """
         reply without mention
         """
-        return await self.send(content, False, True)
+        return await self.send(content, mention=False, reply=True)
 
     async def send(self,
                    content: str,
