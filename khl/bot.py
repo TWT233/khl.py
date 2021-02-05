@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
-from aiohttp import ClientSession, ClientResponse
+from aiohttp import ClientSession
 
 from .kqueue import KQueue
 from .command import Command
