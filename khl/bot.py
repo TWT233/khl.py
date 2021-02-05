@@ -153,7 +153,7 @@ class Bot:
     def on_raw_event(self, func):
         self.add_msg_listener('on_raw_event', func)
 
-    async def get(self, url, **kwargs) -> ClientResponse:
+    async def get(self, url, **kwargs) -> dict:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
@@ -163,7 +163,7 @@ class Bot:
                 self.logger.error(f'request failed: {rsp}')
             return rsp['data']
 
-    async def post(self, url, **kwargs) -> ClientResponse:
+    async def post(self, url, **kwargs) -> dict:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
         headers['Content-type'] = 'application/json'
