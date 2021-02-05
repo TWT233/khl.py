@@ -181,7 +181,7 @@ class Bot:
                    quote: str = '',
                    type: int = Msg.Types.KMD,
                    nonce: str = '',
-                   temp_target_id: str = '') -> ClientResponse:
+                   temp_target_id: str = '') -> dict:
         data = {
             'channel_id': channel_id,
             'content': content,
