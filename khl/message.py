@@ -45,12 +45,20 @@ class MsgCtx:
         kwargs['type'] = Msg.Types.CARD
         return await self.send(card, **kwargs)
 
-    async def send_temp(self, content: str, temp_target_id: str, **kwargs):
-        kwargs['temp_target_id'] = temp_target_id
+    async def send_temp(self,
+                        content: str,
+                        temp_target_id: Optional[str] = None,
+                        **kwargs):
+        kwargs[
+            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
         return await self.send(content, **kwargs)
 
-    async def send_card_temp(self, card: Union[dict, str], temp_target_id: str,
+    async def send_card_temp(self,
+                             card: Union[dict, str],
+                             temp_target_id: Optional[str] = None,
                              **kwargs):
+        kwargs[
+            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
         if isinstance(card, dict):
             card = json.dumps(card)
         kwargs['temp_target_id'] = temp_target_id
