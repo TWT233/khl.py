@@ -73,6 +73,7 @@ please install certi manually, turning to this post for guide:
   - [x] utilize event listener
 - [x] add get for net client
 - [x] command group
+- [ ] upload assets
 - [ ] event class(interface)
 
 ### T2:
@@ -83,6 +84,7 @@ please install certi manually, turning to this post for guide:
 - [ ] bot send args (done by @fi6, waiting for merge)
 - [ ] no prefix commands
 - [ ] more kinds of msg
+- [ ] action result
 
 # commit message rules
 

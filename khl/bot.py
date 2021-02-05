@@ -4,9 +4,10 @@ from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_C
 
 from aiohttp import ClientSession, ClientResponse
 
+from .kqueue import KQueue
 from .command import Command
 from .hardcoded import API_URL
-from .message import KMDMsg, Msg, SysMsg, TextMsg
+from .message import BtnClickMsg, Msg, SysMsg, TextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -52,6 +53,7 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
+        self.btn_msg_queue: KQueue = KQueue()
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
             'on_all_msg': [],
@@ -59,11 +61,18 @@ class Bot:
             'on_system_msg': []
         }
 
-    async def _text_handler(self, event: TextMsg):
+    async def _sys_msg_watcher(self, msg: SysMsg):
+        async def _btn_handler(btn_msg: BtnClickMsg):
+            await self.btn_msg_queue.put(btn_msg.ori_msg_id, btn_msg)
+
+        if msg.event_type == SysMsg.EventTypes.BTN_CLICK:
+            await _btn_handler(msg)
+
+    async def _text_handler(self, msg: TextMsg):
         """
         docstring
         """
-        (msg, raw_cmd) = parser(event, self.cmd_prefix)
+        (msg, raw_cmd) = parser(msg, self.cmd_prefix)
         if len(raw_cmd) == 0:
             return None
         inst = self.__cmd_index.get(raw_cmd[0], None)
@@ -76,25 +85,27 @@ class Bot:
             for i in self.__msg_listener[which]:
                 asyncio.ensure_future(i(msg))
 
-        async def _dispatch_event(msg: Msg):
-            await _run_event('on_all_msg', msg)
+        async def _dispatch_event(m: Msg):
+            await _run_event('on_all_msg', m)
 
-            if msg.type == Msg.Types.SYS:
-                await _run_event('on_system_msg', msg)
-            elif msg.type in [Msg.Types.TEXT, Msg.Types.KMD]:
-                await _run_event('on_text_msg', msg)
+            if m.type == Msg.Types.SYS:
+                await _run_event('on_system_msg', m)
+                await self._sys_msg_watcher(m)
+            elif m.type in [Msg.Types.TEXT, Msg.Types.KMD]:
+                await _run_event('on_text_msg', m)
+                await self._text_handler(m)
 
         while True:
             event = await self.net_client.event_queue.get()
-            event['bot'] = self
-            self.logger.debug(f'upcoming event:{event}')
-            try:
-                await _run_event('on_raw_event', event)
-                msg = Msg.event_to_msg(event)
-                await _dispatch_event(msg)
 
-            except Exception as e:
-                self.logger.error(e)
+            event['bot'] = self
+            self.logger.debug(f'upcoming event:\n{event}')
+            for i in self.__msg_listener['on_raw_event']:
+                asyncio.ensure_future(i(event))
+
+            msg = Msg.event_to_msg(event)
+            asyncio.ensure_future(_dispatch_event(msg))
+
             self.net_client.event_queue.task_done()
 
     def add_command(self, cmd: 'Command'):
@@ -147,8 +158,10 @@ class Bot:
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
-            await res.read()
-            return res
+            rsp = await res.json()
+            if rsp['code'] != 0:
+                self.logger.error(f'request failed: {rsp}')
+            return rsp['data']
 
     async def post(self, url, **kwargs) -> ClientResponse:
         headers = kwargs.get('headers', {})
@@ -156,8 +169,10 @@ class Bot:
         headers['Content-type'] = 'application/json'
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
-            await res.read()
-            return res
+            rsp = await res.json()
+            if rsp['code'] != 0:
+                self.logger.error(f'request failed: {rsp}')
+            return rsp['data']
 
     async def send(self,
                    channel_id: str,
@@ -179,7 +194,7 @@ class Bot:
                                json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
-                              role_id: str) -> Any:
+                              role_id: int) -> Any:
         return await self.post(f'{API_URL}/guild-role/grant?compress=0',
                                json={
                                    'user_id': user_id,
@@ -188,7 +203,7 @@ class Bot:
                                })
 
     async def user_revoke_role(self, user_id: str, guild_id: str,
-                               role_id: str) -> Any:
+                               role_id: int) -> Any:
         return await self.post(f'{API_URL}/guild-role/revoke?compress=0',
                                json={
                                    'user_id': user_id,
@@ -197,7 +212,11 @@ class Bot:
                                })
 
     def run(self):
-        self.logger.info('launching')
-        asyncio.ensure_future(self.net_client.run())
-        asyncio.ensure_future(self._event_handler())
-        asyncio.get_event_loop().run_forever()
+        try:
+            self.logger.info('launching')
+            asyncio.ensure_future(self.net_client.run())
+            asyncio.ensure_future(self._event_handler())
+            asyncio.get_event_loop().run_forever()
+        except KeyboardInterrupt:
+            asyncio.get_event_loop().run_until_complete(self.__cs.close())
+            self.logger.info('see you next time')

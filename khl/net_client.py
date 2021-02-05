@@ -1,8 +1,5 @@
 from abc import abstractmethod, ABC
 from asyncio import Queue
-from typing import Dict, Union
-
-from aiohttp.client_reqrep import ClientResponse
 
 from .cert import Cert
 

@@ -29,5 +29,47 @@ async def roll(msg: TextMsg, r_min: str, r_max: str, n: str = 1):
     )
 
 
+@bot.command(name='dd')
+async def dd(msg: TextMsg):
+    card = [{
+        "type": "card",
+        "theme": "secondary",
+        "size": "lg",
+        "modules": [{
+            "type": "section",
+            "text": "每日 sancheck"
+        }, {
+            "type":
+                "action-group",
+            "elements": [{
+                "type": "button",
+                "theme": "primary",
+                "value": "100",
+                "click": "return-val",
+                "text": "1D100"
+            }, {
+                "type": "button",
+                "theme": "primary",
+                "value": "20",
+                "click": "return-val",
+                "text": "1D20"
+            }]
+        }]
+    }]
+    rsp = await msg.reply_card(card)
+    while True:
+        res = await msg.ctx.wait_btn(rsp['msg_id'])
+        await bot.send(msg.target_id,
+                       f'you got：{random.randint(1, int(res.ret_val))}')
+
+
+# add event listener
+# now support: on_text_msg, on_all_msg, on_system_msg
+@bot.on_text_msg
+async def greeter(msg: TextMsg):
+    if msg.content == 'hello':
+        await bot.send(msg.target_id, f'hi')
+
+
 # everything done, go ahead now!
 bot.run()
