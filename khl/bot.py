@@ -99,7 +99,7 @@ class Bot:
             event = await self.net_client.event_queue.get()
 
             event['bot'] = self
-            self.logger.debug(f'upcoming event:\n{event}')
+            self.logger.debug(f'upcoming event:\n\t{event}')
             for i in self.__msg_listener['on_raw_event']:
                 asyncio.ensure_future(i(event))
 
