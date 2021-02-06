@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 from .command import Command
 from .hardcoded import API_URL
 from .kqueue import KQueue
-from .message import BtnClickMsg, Msg, SysMsg, TextMsg
+from .message import BtnClickMsg, Msg, SysMsg, TextMsg, BtnTextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -76,30 +76,9 @@ class Bot:
                     break
             if not cmd:
                 cmd = self.cmd_prefix[0] + json.loads(b['value'])['cmd']
-            trans_msg = {
-                "type": 1,
-                "channel_type": "GROUP",
-                "target_id": b['target_id'],
-                "author_id": b['user_id'],
-                "content": cmd,
-                "msg_id": msg.msg_id,
-                "msg_timestamp": msg.msg_timestamp,
-                "nonce": "",
-                "extra": {
-                    "type": 1,
-                    "guild_id": "",
-                    "channel_name": "",
-                    "mention": [],
-                    "mention_all": "False",
-                    "mention_roles": [],
-                    "mention_here": "False",
-                    "nav_channels": [],
-                    "code": "",
-                    "author": b['user_info'],
-                },
-                "bot": self
-            }
-            await self._text_handler(Msg.event_to_msg(trans_msg))
+
+            msg.ret_val = cmd
+            await self._text_handler(BtnTextMsg(msg))
         except json.JSONDecodeError:
             await self.btn_msg_queue.put(msg.ori_msg_id, msg)
 

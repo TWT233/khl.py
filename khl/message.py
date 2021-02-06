@@ -57,7 +57,8 @@ class MsgCtx:
                              card: Union[list, str],
                              temp_target_id: Optional[str] = None,
                              **kwargs):
-        kwargs['temp_target_id'] = temp_target_id if temp_target_id else self.user_id
+        kwargs[
+            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
         if isinstance(card, dict):
             card = json.dumps(card)
         kwargs['temp_target_id'] = temp_target_id
@@ -125,27 +126,24 @@ class TextMsg(Msg):
     """
     represents a msg, recv from/send to server
     """
-
     def __init__(self, **kwargs):
         """
         all fields origin from server event object
         corresponding to official doc
         """
-        self.channel_type = kwargs['channel_type']
-        if self.type != kwargs['type']:
-            raise ValueError(f'wrong type found in message: {kwargs}')
-        self.target_id = kwargs['target_id']
-        self.author_id = kwargs['author_id']
-        self.content = kwargs['content']
-        self.msg_id = kwargs['msg_id']
-        self.msg_timestamp = kwargs['msg_timestamp']
-        self.nonce = kwargs['nonce']
-        self.extra = kwargs['extra']
+        self.channel_type = kwargs.get('channel_type')
+        self.target_id = kwargs.get('target_id')
+        self.author_id = kwargs.get('author_id')
+        self.content = kwargs.get('content')
+        self.msg_id = kwargs.get('msg_id')
+        self.msg_timestamp = kwargs.get('msg_timestamp')
+        self.nonce = kwargs.get('nonce')
+        self.extra = kwargs.get('extra')
 
         self.author: User = User(self.extra['author'])
         self.ctx = MsgCtx(guild=Guild(self.guild_id),
                           channel=Channel(self.target_id),
-                          bot=kwargs['bot'],
+                          bot=kwargs.get('bot'),
                           author=self.author,
                           msg_ids=[self.msg_id])
 
@@ -184,6 +182,57 @@ class KMDMsg(TextMsg):
 
 class CardMsg(TextMsg):
     type = Msg.Types.CARD
+
+
+class BtnTextMsg(TextMsg):
+    def __init__(self, btn: 'BtnClickMsg'):
+        """
+        all fields origin from server event object
+        corresponding to official doc
+        """
+        trans_msg = {
+            "type": 1,
+            "channel_type": "GROUP",
+            "target_id": btn.exe_target_id,
+            "author_id": btn.author_id,
+            "content": btn.ret_val,
+            "msg_id": btn.msg_id,
+            "msg_timestamp": btn.msg_timestamp,
+            "nonce": "",
+            "extra": {
+                "type": 1,
+                "guild_id": "",
+                "channel_name": "",
+                "mention": [],
+                "mention_all": "False",
+                "mention_roles": [],
+                "mention_here": "False",
+                "nav_channels": [],
+                "code": "",
+                "author": btn.extra['body']['user_info'],
+            },
+            "bot": btn.ctx.bot
+        }
+        super().__init__(**trans_msg)
+
+    async def reply(self, content: str, **kwargs):
+        return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
+
+    async def reply_temp(self, content: str, **kwargs):
+        kwargs['temp_target_id'] = self.author_id
+        return await self.reply(content, **kwargs)
+
+    async def reply_card(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply(card, **kwargs)
+
+    async def reply_card_temp(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply_temp(card, **kwargs)
 
 
 class SysMsg(Msg):
