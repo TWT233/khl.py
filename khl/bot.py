@@ -1,12 +1,13 @@
 import asyncio
+import json
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
 from aiohttp import ClientSession
 
-from .kqueue import KQueue
 from .command import Command
 from .hardcoded import API_URL
+from .kqueue import KQueue
 from .message import BtnClickMsg, Msg, SysMsg, TextMsg
 from .parser import parser
 from .webhook import WebhookClient
@@ -61,12 +62,46 @@ class Bot:
             'on_system_msg': []
         }
 
-    async def _sys_msg_watcher(self, msg: SysMsg):
-        async def _btn_handler(btn_msg: BtnClickMsg):
-            await self.btn_msg_queue.put(btn_msg.ori_msg_id, btn_msg)
+    async def _btn_watcher(self, msg: SysMsg):
+        if msg.event_type != SysMsg.EventTypes.BTN_CLICK:
+            return
 
-        if msg.event_type == SysMsg.EventTypes.BTN_CLICK:
-            await _btn_handler(msg)
+        msg: BtnClickMsg
+        try:
+            b = msg.extra['body']
+            cmd = ''
+            for i in self.cmd_prefix:
+                if b['value'].startswith(i):
+                    cmd = b['value']
+                    break
+            if not cmd:
+                cmd = self.cmd_prefix[0] + json.loads(b['value'])['cmd']
+            trans_msg = {
+                "type": 1,
+                "channel_type": "GROUP",
+                "target_id": b['target_id'],
+                "author_id": b['user_id'],
+                "content": cmd,
+                "msg_id": msg.msg_id,
+                "msg_timestamp": msg.msg_timestamp,
+                "nonce": "",
+                "extra": {
+                    "type": 1,
+                    "guild_id": "",
+                    "channel_name": "",
+                    "mention": [],
+                    "mention_all": "False",
+                    "mention_roles": [],
+                    "mention_here": "False",
+                    "nav_channels": [],
+                    "code": "",
+                    "author": b['user_info'],
+                },
+                "bot": self
+            }
+            await self._text_handler(Msg.event_to_msg(trans_msg))
+        except json.JSONDecodeError:
+            await self.btn_msg_queue.put(msg.ori_msg_id, msg)
 
     async def _text_handler(self, msg: TextMsg):
         """
@@ -91,9 +126,11 @@ class Bot:
             await _run_event('on_all_msg', m)
 
             if m.type == Msg.Types.SYS:
+                m: SysMsg
                 await _run_event('on_system_msg', m)
-                await self._sys_msg_watcher(m)
-            elif m.type in [Msg.Types.TEXT, Msg.Types.KMD]:
+                await self._btn_watcher(m)
+            elif m.type in [Msg.Types.TEXT, Msg.Types.KMD, Msg.Types.CARD]:
+                m: TextMsg
                 await _run_event('on_text_msg', m)
                 await self._text_handler(m)
 
