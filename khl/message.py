@@ -93,11 +93,11 @@ class Msg(ABC):
         kwargs['temp_target_id'] = self.author_id
         return await self.reply(content, **kwargs)
 
-    async def reply_card(self, card: dict, **kwargs):
+    async def reply_card(self, card: List, **kwargs):
         kwargs['type'] = Msg.Types.CARD
         return await self.reply(json.dumps(card), **kwargs)
 
-    async def reply_card_temp(self, card: dict, **kwargs):
+    async def reply_card_temp(self, card: List, **kwargs):
         kwargs['type'] = Msg.Types.CARD
         return await self.reply_temp(json.dumps(card), **kwargs)
 
