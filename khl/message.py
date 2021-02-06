@@ -34,7 +34,10 @@ class MsgCtx:
     async def wait_btn(self,
                        ori_msg_id: str,
                        timeout: float = 30) -> 'BtnClickMsg':
-        return await self.bot.btn_msg_queue.get(ori_msg_id, timeout)
+        return await self.bot.kq['btn'].get(ori_msg_id, timeout)
+
+    async def wait_user(self, user_id: str, timeout: float = 30) -> 'TextMsg':
+        return await self.bot.kq['user'].get(user_id, timeout)
 
     async def send(self, content: str, **kwargs: Any) -> dict:
         return await self.bot.send(self.channel.id, content, **kwargs)

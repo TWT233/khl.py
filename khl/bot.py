@@ -54,7 +54,7 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
-        self.btn_msg_queue: KQueue = KQueue()
+        self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
             'on_all_msg': [],
@@ -78,11 +78,11 @@ class Bot:
                 cmd = self.cmd_prefix[0] + json.loads(b['value'])['cmd']
 
             msg.ret_val = cmd
-            await self._text_handler(BtnTextMsg(msg))
+            await self._cmd_handler(BtnTextMsg(msg))
         except json.JSONDecodeError:
-            await self.btn_msg_queue.put(msg.ori_msg_id, msg)
+            await self.kq['btn'].put(msg.ori_msg_id, msg)
 
-    async def _text_handler(self, msg: TextMsg):
+    async def _cmd_handler(self, msg: TextMsg):
         """
         docstring
         """
@@ -111,7 +111,8 @@ class Bot:
             elif m.type in [Msg.Types.TEXT, Msg.Types.KMD, Msg.Types.CARD]:
                 m: TextMsg
                 await _run_event('on_text_msg', m)
-                await self._text_handler(m)
+                await self.kq['user'].put(m.author_id, m)
+                await self._cmd_handler(m)
 
         while True:
             event = await self.net_client.event_queue.get()
