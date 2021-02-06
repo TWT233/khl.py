@@ -6,7 +6,7 @@
 
 ## 跑代码
 
-样例代码已经写好了，就是这个文件夹中的 `ex01_helloworld.py`，我们先下载一下代码：
+样例代码已经写好了，就是这个文件夹中的 `ex01.py`，我们先下载一下代码：
 
 ```shell
 github clone https://github.com/TWT233/khl.py.git
@@ -16,7 +16,7 @@ cd khl.py/example
 运行代码也很简单，不过要注意，别用错了 python 版本：
 
 ```shell
-python ex01_helloworld/ex01_helloworld.py
+python ex01_helloworld/ex01.py
 ```
 
 正常来说，输出应该是这样的：
@@ -33,7 +33,7 @@ python ex01_helloworld/ex01_helloworld.py
 
 ## 填凭证
 
-我们看到 `ex01_helloworld.py` 的第 3~4 行：
+我们看到 `ex01.py` 的第 3~4 行：
 
 ```python
 # init Cert for Bot OAuth
@@ -45,7 +45,7 @@ cert = Cert(client_id='xxxxxxxx', client_secret='xxxxxxxx', token='xxxxxxxx')
 填完之后保存一下代码，然后我们再来一把：
 
 ```shell
-python ex01_helloworld/ex01_helloworld.py
+python ex01_helloworld/ex01.py
 ```
 
 这个时候输出应该就只有一行：

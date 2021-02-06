@@ -2,7 +2,7 @@
 
 啥叫别把米洒了？我们来想想，ex01 里我们是怎么填凭证的：
 
-> 我们看到 `ex01_helloworld.py` 的第 3~4 行：
+> 我们看到 `ex01.py` 的第 3~4 行：
 >
 > ```python
 > # init Cert for Bot OAuth
@@ -36,7 +36,7 @@ A: 这两项是为 webhook 准备的，我们现在留空即可
 
 ### 怎么在代码中读取 `config.json`？
 
-看 `ex02_config_file.py` 第 5 ~ 13 行：
+看 `ex02.py` 第 5 ~ 13 行：
 
 ```python
 # 用 json 读取 config.json，装载到 config 里
@@ -50,14 +50,14 @@ cert = Cert(client_id=config['client_id'],
             token=config['token'])
 ```
 
-其他部分都大同小异，就不再 copy 过来水行数了，水太多也不好
+其他部分都一样，就不再 copy 过来水行数了，水太多也不好
 
 ## 用配置文件的话，运行代码的方式要变吗
 
 是需要的，但也很简单：保证你的工作目录在 `example` 文件夹下即可，然后：
 
 ```shell
-python ex02_config_file/ex02_config_file.py
+python ex02_config_file/ex02.py
 ```
 
 怎么看工作目录？
