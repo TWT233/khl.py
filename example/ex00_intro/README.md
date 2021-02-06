@@ -12,6 +12,10 @@
 2. 来 [服务器：「开黑啦」开发者内测](https://kaihei.co/RzFIH8) 申请开发者内测权限
 3. 在 [网页后台：开发者中心 - 机器人](https://developer.kaiheila.cn/bot/index) 创建一个 bot
    - 大家应该能在「设置 - 概况」选项卡中看到「Client Id」「Token」「Client Secret」等信息了
+   - 注意一下「机器人连接模式」的右边有个选项列表，请把这个选项设为「websocket」
+     - 如果你只看到「Client Id」「Token」「Client Secret」那就是 websocket
+     - 如果你还能看到「Verify Token」「Encrypt Key」「Callback Url」那就是 webhook，改一下
+     - 在我们的教程中，大部分时候都是使用 websocket 的，webhook 相关内容在教程后半段会讲
    - 这些信息是机器人的身份凭证，**请不要上传到任何地方、告诉其他人、直接写进代码并上传到代码托管平台**
 
 ## 准备口锅：搭个机器人的运行环境
