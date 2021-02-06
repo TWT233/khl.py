@@ -255,6 +255,8 @@ class Bot:
         event_handler = asyncio.ensure_future(self._event_handler())
         try:
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
+        except KeyboardInterrupt:
+            pass
         finally:
             asyncio.get_event_loop().run_until_complete(self.__cs.close())
             event_handler.cancel()
