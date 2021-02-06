@@ -4,8 +4,6 @@ from abc import ABC
 from enum import Enum, IntEnum
 from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
 
-from aiohttp import ClientResponse
-
 from .channel import Channel
 from .guild import Guild
 from .user import User
@@ -36,12 +34,12 @@ class MsgCtx:
     async def wait_btn(self, ori_msg_id: str) -> 'BtnClickMsg':
         return await self.bot.btn_msg_queue.get(ori_msg_id)
 
-    async def send(self, content: str, **kwargs: Any) -> ClientResponse:
+    async def send(self, content: str, **kwargs: Any) -> dict:
         return await self.bot.send(self.channel.id, content, **kwargs)
 
-    async def send_card(self, content: str, **kwargs):
+    async def send_card(self, card: dict, **kwargs):
         kwargs['type'] = Msg.Types.CARD
-        return await self.send(content, **kwargs)
+        return await self.send(json.dumps(card), **kwargs)
 
     async def send_temp(self, card: dict, temp_target_id: str, **kwargs):
         kwargs['temp_target_id'] = temp_target_id
@@ -49,7 +47,7 @@ class MsgCtx:
 
     async def send_card_temp(self, card: dict, temp_target_id: str, **kwargs):
         kwargs['temp_target_id'] = temp_target_id
-        return await self.send_card(json.dumps(card), **kwargs)
+        return await self.send_card(card, **kwargs)
 
 
 class Msg(ABC):
