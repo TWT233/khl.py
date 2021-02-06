@@ -8,7 +8,7 @@
 
 巧妇难为无米之炊，所以首先要做的事儿当然是整个机器人来啦，流程也很简单，只要三部
 
-1. 准备一个 [kaiheila.cn](kaiheila.cn) 的账号
+1. 准备一个 [kaiheila.cn](https://kaiheila.cn/) 的账号
 2. 来 [服务器：「开黑啦」开发者内测](https://kaihei.co/RzFIH8) 申请开发者内测权限
 3. 在 [网页后台：开发者中心 - 机器人](https://developer.kaiheila.cn/bot/index) 创建一个 bot
    - 大家应该能在「设置 - 概况」选项卡中看到「Client Id」「Token」「Client Secret」等信息了
