@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from asyncio import Queue
 from typing import Any, Dict
@@ -9,11 +10,16 @@ class KQueue:
     def __init__(self) -> None:
         self._listeners: Dict[str, Queue] = {}
 
-    async def get(self, key: str) -> Any:
+    async def get(self, key: str, timeout: float = 30) -> Any:
         if key not in self._listeners.keys():
             self._listeners[key] = Queue()
-        res = await self._listeners[key].get()
-        self._listeners[key].task_done()
+        try:
+            res = await asyncio.wait_for(self._listeners[key].get(), timeout)
+            self._listeners[key].task_done()
+        except asyncio.TimeoutError:
+            res = None
+        if self._listeners[key].empty():
+            del self._listeners[key]
         return res
 
     async def put(self, key: str, item: Any):
