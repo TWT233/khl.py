@@ -2,7 +2,7 @@ import json
 import logging
 from abc import ABC
 from enum import Enum, IntEnum
-from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING
+from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING, Union
 
 from .channel import Channel
 from .guild import Guild
@@ -39,15 +39,27 @@ class MsgCtx:
     async def send(self, content: str, **kwargs: Any) -> dict:
         return await self.bot.send(self.channel.id, content, **kwargs)
 
-    async def send_card(self, card: dict, **kwargs):
+    async def send_card(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
         kwargs['type'] = Msg.Types.CARD
-        return await self.send(json.dumps(card), **kwargs)
+        return await self.send(card, **kwargs)
 
-    async def send_temp(self, card: dict, temp_target_id: str, **kwargs):
-        kwargs['temp_target_id'] = temp_target_id
-        return await self.send(json.dumps(card), **kwargs)
+    async def send_temp(self,
+                        content: str,
+                        temp_target_id: Optional[str] = None,
+                        **kwargs):
+        kwargs[
+            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
+        return await self.send(content, **kwargs)
 
-    async def send_card_temp(self, card: dict, temp_target_id: str, **kwargs):
+    async def send_card_temp(self,
+                             card: Union[list, str],
+                             temp_target_id: Optional[str] = None,
+                             **kwargs):
+        kwargs['temp_target_id'] = temp_target_id if temp_target_id else self.user_id
+        if isinstance(card, dict):
+            card = json.dumps(card)
         kwargs['temp_target_id'] = temp_target_id
         return await self.send_card(card, **kwargs)
 
@@ -95,13 +107,17 @@ class Msg(ABC):
         kwargs['temp_target_id'] = self.author_id
         return await self.reply(content, **kwargs)
 
-    async def reply_card(self, card: List, **kwargs):
+    async def reply_card(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
         kwargs['type'] = Msg.Types.CARD
-        return await self.reply(json.dumps(card), **kwargs)
+        return await self.reply(card, **kwargs)
 
-    async def reply_card_temp(self, card: List, **kwargs):
+    async def reply_card_temp(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
         kwargs['type'] = Msg.Types.CARD
-        return await self.reply_temp(json.dumps(card), **kwargs)
+        return await self.reply_temp(card, **kwargs)
 
 
 class TextMsg(Msg):
@@ -109,6 +125,7 @@ class TextMsg(Msg):
     """
     represents a msg, recv from/send to server
     """
+
     def __init__(self, **kwargs):
         """
         all fields origin from server event object
