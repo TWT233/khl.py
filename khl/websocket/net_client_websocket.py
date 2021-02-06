@@ -1,20 +1,22 @@
 import asyncio
 import json
+import logging
 import zlib
 
 from aiohttp import ClientSession, ClientWebSocketResponse
-from aiohttp.client_reqrep import ClientResponse
 
+from ..cert import Cert
 from ..hardcoded import API_URL
 from ..net_client import BaseClient
-from ..cert import Cert
 
 
 class WebsocketClient(BaseClient):
-    __slots__ = 'cert', 'compress', 'event_queue', 'NEWEST_SN', 'RAW_GATEWAY'
     """
     implements BaseClient with websocket protocol
     """
+    __slots__ = 'cert', 'compress', 'event_queue', 'NEWEST_SN', 'RAW_GATEWAY'
+    logger = logging.getLogger('khl.WebsocketClient')
+
     def __init__(self, cert: Cert, compress: bool = True):
         super().__init__()
         self.cert = cert
@@ -40,7 +42,6 @@ class WebsocketClient(BaseClient):
         """
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
-        # return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
         return data
 
     async def _main(self):
@@ -53,7 +54,12 @@ class WebsocketClient(BaseClient):
             async with cs.get(f"{API_URL}/gateway/index",
                               headers=headers,
                               params=params) as res:
-                self.RAW_GATEWAY = json.loads(await res.text())['data']['url']
+                res_json = await res.json()
+                if res_json['code'] != 0:
+                    self.logger.error(f'error getting gateway: {res_json}')
+                    return
+
+                self.RAW_GATEWAY = res_json['data']['url']
 
             async with cs.ws_connect(self.RAW_GATEWAY) as ws_conn:
                 asyncio.ensure_future(self.heartbeater(ws_conn))
@@ -66,4 +72,4 @@ class WebsocketClient(BaseClient):
                         await self.event_queue.put(event)
 
     async def run(self):
-        asyncio.ensure_future(self._main())
+        await self._main()
