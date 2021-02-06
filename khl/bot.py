@@ -79,6 +79,8 @@ class Bot:
         if inst:
             self.logger.info(f'cmd triggered: {inst.name} with {raw_cmd}')
             return await inst.execute(msg, *raw_cmd[1:])
+        else:
+            return None
 
     async def _event_handler(self):
         async def _run_event(which: str, msg: Msg):
