@@ -83,6 +83,7 @@ please install certi manually, turning to this post for guide:
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
 - [ ] no prefix commands
+  - [ ] fix `cmd_prefix=[]`
 - [ ] more kinds of msg
 - [ ] action result
 
