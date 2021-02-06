@@ -251,12 +251,11 @@ class Bot:
                                })
 
     def run(self):
+        self.logger.info('launching')
+        event_handler = asyncio.ensure_future(self._event_handler())
         try:
-            self.logger.info('launching')
-            asyncio.ensure_future(self._event_handler())
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         finally:
             asyncio.get_event_loop().run_until_complete(self.__cs.close())
-            for task in asyncio.Task.all_tasks():
-                task.cancel()
+            event_handler.cancel()
             self.logger.info('see you next time')
