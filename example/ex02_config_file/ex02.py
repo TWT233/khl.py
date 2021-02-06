@@ -11,6 +11,7 @@ with open('./config/config.json', 'r', encoding='utf-8') as f:
 cert = Cert(client_id=config['client_id'],
             client_secret=config['client_secret'],
             token=config['token'])
+
 # init Bot
 bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
