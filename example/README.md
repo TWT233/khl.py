@@ -1,10 +1,10 @@
 # 目录
 
-1. [example 00 引言](./README.md#example-00-引言)
-2. [example 01 Hello, World!](./ex01_helloworld/README.md)
-3. [example 02 别把米洒了](./ex02_config_file/README.md)
-4. [example 03 加点辣酱：指令参数](./ex03_cmd_args/README.md)
-5. [example 04 好看的菜盘：向用户发消息的各种花活](./ex04_reply/README.md)
+1. [example 00 引言](#example-00-引言)
+2. [example 01 Hello, World!](./ex01_helloworld)
+3. [example 02 别把米洒了](./ex02_config_file)
+4. [example 03 加点辣酱：指令参数](./ex03_cmd_args)
+5. [example 04 好看的菜盘：向用户发消息的各种花活](./ex04_reply)
 
 # example 00 引言
 
