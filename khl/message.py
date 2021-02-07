@@ -1,7 +1,71 @@
+import json
+import logging
 from abc import ABC
-from enum import IntEnum
-from typing import List
+from enum import Enum, IntEnum
+from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING, Union
+
+from .channel import Channel
+from .guild import Guild
 from .user import User
+
+if TYPE_CHECKING:
+    from .bot import Bot
+
+
+class MsgCtx:
+    logger = logging.getLogger('khl.MsgCtx')
+    """
+    represents a context of a msg
+    """
+    def __init__(self,
+                 guild: 'Guild',
+                 channel: 'Channel',
+                 bot: 'Bot',
+                 author: 'User',
+                 user_id: Optional[str] = None,
+                 msg_ids: Sequence[str] = []):
+        self.guild: 'Guild' = guild
+        self.channel: 'Channel' = channel
+        self.bot: 'Bot' = bot
+        self.author: 'User' = author
+        self.user_id: str = user_id if user_id else author.id
+        self.msg_ids: Sequence[str] = msg_ids
+
+    async def wait_btn(self,
+                       ori_msg_id: str,
+                       timeout: float = 30) -> 'BtnClickMsg':
+        return await self.bot.kq['btn'].get(ori_msg_id, timeout)
+
+    async def wait_user(self, user_id: str, timeout: float = 30) -> 'TextMsg':
+        return await self.bot.kq['user'].get(user_id, timeout)
+
+    async def send(self, content: str, **kwargs: Any) -> dict:
+        return await self.bot.send(self.channel.id, content, **kwargs)
+
+    async def send_card(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.send(card, **kwargs)
+
+    async def send_temp(self,
+                        content: str,
+                        temp_target_id: Optional[str] = None,
+                        **kwargs):
+        kwargs[
+            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
+        return await self.send(content, **kwargs)
+
+    async def send_card_temp(self,
+                             card: Union[list, str],
+                             temp_target_id: Optional[str] = None,
+                             **kwargs):
+        kwargs[
+            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
+        if isinstance(card, dict):
+            card = json.dumps(card)
+        kwargs['temp_target_id'] = temp_target_id
+        return await self.send_card(card, **kwargs)
 
 
 class Msg(ABC):
@@ -13,6 +77,7 @@ class Msg(ABC):
         AUDIO = 8
         KMD = 9
         CARD = 10
+        SYS = 255
 
     type: Types
     channel_type: str
@@ -22,10 +87,45 @@ class Msg(ABC):
     msg_id: str
     msg_timestamp: int
     nonce: str
-    extra: dict
+    extra: Mapping[str, Any]
+    ctx: 'MsgCtx'
+
+    @staticmethod
+    def event_to_msg(event: Dict[Any, Any]):
+        if event['type'] == Msg.Types.SYS:
+            if event['extra']['type'] == SysMsg.EventTypes.BTN_CLICK.value:
+                return BtnClickMsg(**event)
+            return SysMsg(**event)
+        elif event['type'] == Msg.Types.TEXT:
+            return TextMsg(**event)
+        elif event['type'] == Msg.Types.KMD:
+            return KMDMsg(**event)
+        elif event['type'] == Msg.Types.CARD:
+            return CardMsg(**event)
+
+    async def reply(self, content: str, **kwargs):
+        kwargs['quote'] = self.msg_id
+        return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
+
+    async def reply_temp(self, content: str, **kwargs):
+        kwargs['temp_target_id'] = self.author_id
+        return await self.reply(content, **kwargs)
+
+    async def reply_card(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply(card, **kwargs)
+
+    async def reply_card_temp(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply_temp(card, **kwargs)
 
 
 class TextMsg(Msg):
+    type = Msg.Types.TEXT
     """
     represents a msg, recv from/send to server
     """
@@ -34,41 +134,144 @@ class TextMsg(Msg):
         all fields origin from server event object
         corresponding to official doc
         """
-        self.channel_type = kwargs['channel_type']
-        self.type = self.Types.TEXT
-        if self.type != kwargs['type']:
-            raise ValueError('wrong type')
+        self.channel_type = kwargs.get('channel_type')
+        self.target_id = kwargs.get('target_id')
+        self.author_id = kwargs.get('author_id')
+        self.content = kwargs.get('content')
+        self.msg_id = kwargs.get('msg_id')
+        self.msg_timestamp = kwargs.get('msg_timestamp')
+        self.nonce = kwargs.get('nonce')
+        self.extra = kwargs.get('extra')
 
+        self.author: User = User(self.extra['author'])
+        self.ctx = MsgCtx(guild=Guild(self.guild_id),
+                          channel=Channel(self.target_id),
+                          bot=kwargs.get('bot'),
+                          author=self.author,
+                          msg_ids=[self.msg_id])
+
+    @property
+    def channel_id(self) -> str:
+        return self.target_id
+
+    @property
+    def guild_id(self) -> str:
+        return self.extra['guild_id']
+
+    @property
+    def channel_name(self) -> str:
+        return self.extra['channel_name']
+
+    @property
+    def mention(self) -> List[str]:
+        return self.extra['mention']
+
+    @property
+    def mention_all(self) -> bool:
+        return self.extra['mention_all']
+
+    @property
+    def mention_roles(self) -> List[str]:
+        return self.extra['mention_roles']
+
+    @property
+    def mention_here(self) -> bool:
+        return self.extra['mention_heres']
+
+
+class KMDMsg(TextMsg):
+    type = Msg.Types.KMD
+
+
+class CardMsg(TextMsg):
+    type = Msg.Types.CARD
+
+
+class BtnTextMsg(TextMsg):
+    def __init__(self, btn: 'BtnClickMsg'):
+        """
+        all fields origin from server event object
+        corresponding to official doc
+        """
+        trans_msg = {
+            "type": 1,
+            "channel_type": "GROUP",
+            "target_id": btn.exe_target_id,
+            "author_id": btn.author_id,
+            "content": btn.ret_val,
+            "msg_id": btn.msg_id,
+            "msg_timestamp": btn.msg_timestamp,
+            "nonce": "",
+            "extra": {
+                "type": 1,
+                "guild_id": "",
+                "channel_name": "",
+                "mention": [],
+                "mention_all": "False",
+                "mention_roles": [],
+                "mention_here": "False",
+                "nav_channels": [],
+                "code": "",
+                "author": btn.extra['body']['user_info'],
+            },
+            "bot": btn.ctx.bot
+        }
+        super().__init__(**trans_msg)
+
+    async def reply(self, content: str, **kwargs):
+        return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
+
+    async def reply_temp(self, content: str, **kwargs):
+        kwargs['temp_target_id'] = self.author_id
+        return await self.reply(content, **kwargs)
+
+    async def reply_card(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply(card, **kwargs)
+
+    async def reply_card_temp(self, card: Union[list, str], **kwargs):
+        if isinstance(card, list):
+            card = json.dumps(card)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.reply_temp(card, **kwargs)
+
+
+class SysMsg(Msg):
+    sys_event_type: str
+
+    class EventTypes(Enum):
+        BTN_CLICK = 'message_btn_click'
+        NOTSET = ''
+
+    def __init__(self, **kwargs: Any) -> None:
+        self.type = Msg.Types.SYS
+        self.event_type = SysMsg.EventTypes.NOTSET
         self.target_id = kwargs['target_id']
         self.author_id = kwargs['author_id']
         self.content = kwargs['content']
         self.msg_id = kwargs['msg_id']
         self.msg_timestamp = kwargs['msg_timestamp']
-        self.nonce = kwargs['nonce']
         self.extra = kwargs['extra']
+        self.sys_event_type = kwargs['extra']['type']
 
-        self.author: User = User(self.extra['author'])
 
-        @property
-        def guild_id(self) -> str:
-            return self.extra['guild_id']
+class BtnClickMsg(SysMsg):
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.event_type = SysMsg.EventTypes.BTN_CLICK
 
-        @property
-        def channel_name(self) -> str:
-            return self.extra['channel_name']
+        self.ret_val: str = self.extra['body']['value']
+        self.ori_msg_id = self.extra['body']['msg_id']
+        self.exe_user_id = self.extra['body']['user_id']
+        self.exe_target_id = self.extra['body']['target_id']
+        self.ctx = MsgCtx(guild=None,
+                          channel=Channel(self.extra['body']['target_id']),
+                          bot=kwargs['bot'],
+                          author=User({'id': self.extra['body']['user_id']}),
+                          msg_ids=[self.extra['body']['msg_id']])
 
-        @property
-        def mention(self) -> List[str]:
-            return self.extra['mention']
-
-        @property
-        def mention_all(self) -> bool:
-            return self.extra['mention_all']
-
-        @property
-        def mention_roles(self) -> List[str]:
-            return self.extra['mention_roles']
-
-        @property
-        def mention_here(self) -> bool:
-            return self.extra['mention_heres']
+    @property
+    def channel_id(self) -> str:
+        return self.exe_target_id

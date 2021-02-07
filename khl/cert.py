@@ -1,5 +1,5 @@
 import base64
-from enum import IntEnum
+from enum import Enum
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Util import Padding
@@ -11,18 +11,18 @@ class Cert:
 
     used in auth/data encrypt/decrypt
     """
-    class Types(IntEnum):
+    class Types(Enum):
         """
         types of :class:`Cert`
 
         used in extinguishing Cert and construct corresponding net client
         """
-        NOTSET = 0
-        WS = 1
+        NOTSET = 'not_set'
+        WEBSOCKET = 'websocket'
         """
         websocket cert
         """
-        WH = 2
+        WEBHOOK = 'webhook'
         """
         webhook cert
         """
@@ -42,9 +42,9 @@ class Cert:
             self.type = type
         else:
             if verify_token:
-                self.type = self.Types.WH
+                self.type = self.Types.WEBHOOK
             else:
-                self.type = self.Types.WS
+                self.type = self.Types.WEBSOCKET
         self.client_id = client_id
         self.client_secret = client_secret
         self.token = token

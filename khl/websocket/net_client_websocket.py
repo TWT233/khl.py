@@ -1,47 +1,31 @@
 import asyncio
 import json
+import logging
 import zlib
 
 from aiohttp import ClientSession, ClientWebSocketResponse
-from aiohttp.client_reqrep import ClientResponse
 
+from ..cert import Cert
 from ..hardcoded import API_URL
 from ..net_client import BaseClient
-from ..cert import Cert
 
 
 class WebsocketClient(BaseClient):
     """
     implements BaseClient with websocket protocol
     """
+    __slots__ = 'cert', 'compress', 'event_queue', 'NEWEST_SN', 'RAW_GATEWAY'
+    logger = logging.getLogger('khl.WebsocketClient')
+
     def __init__(self, cert: Cert, compress: bool = True):
         super().__init__()
         self.cert = cert
         self.compress = compress
 
-        self.recv = []
+        self.event_queue = asyncio.Queue()
 
         self.NEWEST_SN = 0
         self.RAW_GATEWAY = ''
-
-    async def send(self, url: str, data) -> ClientResponse:
-        headers = {
-            'Authorization': f'Bot {self.cert.token}',
-            'Content-type': 'application/json'
-        }
-        async with ClientSession() as cs:
-            async with cs.post(url, headers=headers, json=data) as res:
-                await res.read()
-                return res
-
-    def on_recv_append(self, callback):
-        self.recv.append(callback)
-        pass
-
-    # async def on_INIT(self):
-    #     headers = {'Authorization': f"Bot {self.cert.token}", 'Content-type': 'application/json'}
-    #     async with self.cs.get(f"{API_URL}/gateway/index", headers=headers, params={}) as res:
-    #         await res.read()
 
     async def heartbeater(self, ws_conn: ClientWebSocketResponse):
         while True:
@@ -58,10 +42,9 @@ class WebsocketClient(BaseClient):
         """
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
-        # return ('encrypt' in data.keys()) and json.loads(self.cert.decrypt(data['encrypt'])) or data
         return data
 
-    async def __main(self):
+    async def _main(self):
         async with ClientSession() as cs:
             headers = {
                 'Authorization': f"Bot {self.cert.token}",
@@ -71,7 +54,12 @@ class WebsocketClient(BaseClient):
             async with cs.get(f"{API_URL}/gateway/index",
                               headers=headers,
                               params=params) as res:
-                self.RAW_GATEWAY = json.loads(await res.text())['data']['url']
+                res_json = await res.json()
+                if res_json['code'] != 0:
+                    self.logger.error(f'error getting gateway: {res_json}')
+                    return
+
+                self.RAW_GATEWAY = res_json['data']['url']
 
             async with cs.ws_connect(self.RAW_GATEWAY) as ws_conn:
                 asyncio.ensure_future(self.heartbeater(ws_conn))
@@ -80,10 +68,8 @@ class WebsocketClient(BaseClient):
                     req_json = self.__raw_2_req(msg.data)
                     if req_json['s'] == 0:
                         self.NEWEST_SN = req_json['sn']
-                        d = req_json['d']
-                        if d['type'] == 1:
-                            for i in self.recv:
-                                await asyncio.ensure_future(i(d))
+                        event = req_json['d']
+                        await self.event_queue.put(event)
 
-    def run(self):
-        asyncio.get_event_loop().run_until_complete(self.__main())
+    async def run(self):
+        await self._main()

@@ -1,10 +1,9 @@
 import json
-import random
 
 from khl import TextMsg, Bot, Cert
 
 # load config from config/config.json, replace `path` points to your own config file
-# config template: `./config/config.json`
+# config template: `./config/config.json.example`
 with open('./config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
@@ -17,16 +16,11 @@ cert = Cert(client_id=config['client_id'],
 bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
-# add command, accept optional arguments
-# you can invoke this command via:
-#   `!roll 1 100`
-#   `!roll 1 100 3` (param `n` is optional as set below)
-@bot.command(name='roll')
-async def roll(msg: TextMsg, r_min: str, r_max: str, n: str = 1):
-    await bot.send(
-        msg.target_id,
-        f'you got：{[random.randint(int(r_min), int(r_max)) for i in range(int(n))]}'
-    )
+# register command
+# invoke this via saying `!hello` in channel
+@bot.command(name='hello')
+async def roll(msg: TextMsg):
+    await msg.reply('world!')
 
 
 # everything done, go ahead now!

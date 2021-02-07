@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
-from typing import Any, Callable, Coroutine, Dict, Union
+from asyncio import Queue
 
-from aiohttp.client_reqrep import ClientResponse
+from .cert import Cert
 
 
 class BaseClient(ABC):
@@ -13,38 +13,19 @@ class BaseClient(ABC):
         2. resolve request data and msg data from raw
         3. pass it to inner context such as bot
     """
+    type: str
+    event_queue: Queue
+    cert: Cert
+
     def __init__(self):
-        self.type = ""
-
-    @abstractmethod
-    async def send(self, url: str,
-                   data: Dict[str, Union[str, int]]) -> ClientResponse:
-        """
-        send `data` to `url` with POST
-
-        :param url: the destination
-        :param data: payload
-        :type data: dict or array
-        :return: request result
-        """
         pass
 
     @abstractmethod
-    def on_recv_append(self, callback: Callable[[Dict[Any, Any]],
-                                                Coroutine[Any, Any, Any]]):
+    async def run(self):
         """
-        append callback to on_recv listener list
+        run client to listen req from server
 
-        :param callback: handler that will be called on msg recv
-        :type callback: function(e)->Any
-        :return: None
-        """
-        pass
-
-    @abstractmethod
-    def run(self):
-        """
-        run client
+        and push req into `req_queue`
 
         :return: None
         """

@@ -13,51 +13,78 @@ pip install khl.py
 # quickly enroll
 
 ```python
-import random
+from khl import TextMsg, Bot, Cert
 
-from khl import Bot, Cert
-
-cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx')
+# init Cert and Bot
+cert = Cert(client_id='xxxxxxxx', client_secret='xxxxxxxx', token='xxxxxxxx')
 bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
-@bot.command(name='roll')
-async def roll(session):
-    await session.reply(f'{random.randint(int(session.args[0]), int(session.args[1]))}')
+@bot.command(name='hello')
+async def roll(msg: TextMsg):
+    await msg.reply('world!')
 
 
 bot.run()
 # now invite the bot to ur server,
-# and type '!roll 1 100'(in any channel) to check ur san today!
+# and type '!hello'(in any channel) to check ur san today!
 # (remember to grant read & send permissions to the bot first)
 ```
+
+## notes for Mac OSX users:
+
+if you encounter this error:
+
+```
+ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)
+```
+
+please install certi manually, turning to this post for guide:
+
+[certificate verify failed: unable to get local issuer certificate](https://stackoverflow.com/a/58525755)
 
 # short-term roadmap
 
 ## refactor
 
-- [ ] rename files according to PEP8 (active @TWT233)
+### T1:
+
+- [ ] btn handler(ongoing)
+
+### T2:
+
+- [x] rename files according to PEP8
+- [ ] wrap functions for convenient
 
 ## perf:
 
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-    - [ ] introduce `MsgCtx` with this
-- [ ] check
+    - [x] introduce `MsgCtx` with this
 
 ## feat:
 
 ### T1:
 
-- [ ] command & arg parse system
-- [ ] event listener for bot
-    - [ ] find another approach to handle msg
-- [ ] command group
+- [x] `on_textMsg()`
+- [ ] command & arg parse system(long term design needed)
+- [x] event listener for bot
+    - [x] find another approach to handle msg
+    - [x] utilize event listener
+- [x] add get for net client
+- [x] command group
+- [ ] upload assets
+- [ ] event class(interface)
 
 ### T2:
 
-- [ ] log system
-- [ ] `MsgCtx` design
-- [ ] command alias
+- [x] log system
+- [x] `MsgCtx` design
+- [x] command alias
+- [ ] bot send args (done by @fi6, waiting for merge)
+- [ ] no prefix commands
+    - [ ] fix `cmd_prefix=[]`
+- [ ] more kinds of msg
+- [ ] action result
 
 # commit message rules
 

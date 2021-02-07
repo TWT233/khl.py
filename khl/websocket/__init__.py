@@ -1,1 +1,1 @@
-from .WebsocketClient import WebsocketClient
+from .net_client_websocket import WebsocketClient
