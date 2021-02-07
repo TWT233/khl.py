@@ -13,22 +13,21 @@ pip install khl.py
 # quickly enroll
 
 ```python
-import random
+from khl import TextMsg, Bot, Cert
 
-from khl import Bot, Cert
-
-cert = Cert(client_id='xxxxxx', client_secret='xxxxxx', token='xxxxxx')
+# init Cert and Bot
+cert = Cert(client_id='xxxxxxxx', client_secret='xxxxxxxx', token='xxxxxxxx')
 bot = Bot(cmd_prefix=['!', '！'], cert=cert)
 
 
-@bot.command(name='roll')
-async def roll(session):
-    await session.reply(f'{random.randint(int(session.args[0]), int(session.args[1]))}')
+@bot.command(name='hello')
+async def roll(msg: TextMsg):
+    await msg.reply('world!')
 
 
 bot.run()
 # now invite the bot to ur server,
-# and type '!roll 1 100'(in any channel) to check ur san today!
+# and type '!hello'(in any channel) to check ur san today!
 # (remember to grant read & send permissions to the bot first)
 ```
 
@@ -60,7 +59,7 @@ please install certi manually, turning to this post for guide:
 ## perf:
 
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-  - [x] introduce `MsgCtx` with this
+    - [x] introduce `MsgCtx` with this
 
 ## feat:
 
@@ -69,8 +68,8 @@ please install certi manually, turning to this post for guide:
 - [x] `on_textMsg()`
 - [ ] command & arg parse system(long term design needed)
 - [x] event listener for bot
-  - [x] find another approach to handle msg
-  - [x] utilize event listener
+    - [x] find another approach to handle msg
+    - [x] utilize event listener
 - [x] add get for net client
 - [x] command group
 - [ ] upload assets
@@ -83,7 +82,7 @@ please install certi manually, turning to this post for guide:
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
 - [ ] no prefix commands
-  - [ ] fix `cmd_prefix=[]`
+    - [ ] fix `cmd_prefix=[]`
 - [ ] more kinds of msg
 - [ ] action result
 
