@@ -49,17 +49,25 @@ please install certi manually, turning to this post for guide:
 
 ### T1:
 
-- [ ] btn handler(ongoing)
+- [x] btn handler
 
 ### T2:
 
 - [x] rename files according to PEP8
 - [ ] wrap functions for convenient
 
+## docs
+
+- [ ] examples & tutorials (active @TWT233)
+- [ ] docstring (v0.0.10)
+
 ## perf:
 
 - [ ] refactor `Msg`, support multimedia msg (active @TWT233)
     - [x] introduce `MsgCtx` with this
+    - [x] refactor `Msg`
+    - [ ] add kinds of multimedia msg (v0.0.10)
+- [ ] async bot.run() (v0.0.10)
 
 ## feat:
 
@@ -72,7 +80,7 @@ please install certi manually, turning to this post for guide:
     - [x] utilize event listener
 - [x] add get for net client
 - [x] command group
-- [ ] upload assets
+- [ ] upload assets (v0.0.10)
 - [ ] event class(interface)
 
 ### T2:
@@ -81,10 +89,10 @@ please install certi manually, turning to this post for guide:
 - [x] `MsgCtx` design
 - [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
-- [ ] no prefix commands
+    - [ ] needs more practice and design
+- [ ] no prefix commands (v0.0.10)
     - [ ] fix `cmd_prefix=[]`
-- [ ] more kinds of msg
-- [ ] action result
+- [x] action result
 
 # commit message rules
 
