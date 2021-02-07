@@ -149,6 +149,7 @@ class Bot:
         :param desc_doc: short introduction
         :return: wrapped Command
         """
+
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
@@ -231,13 +232,23 @@ class Bot:
                                })
 
     def run(self):
-        self.logger.info('launching')
-        event_handler = asyncio.ensure_future(self._event_handler())
+        async def _cleanup():
+            await self.__cs.close()
+            try:
+                for task in asyncio.Task.all_tasks():
+                    task.cancel()
+            except AttributeError:
+                for task in asyncio.all_tasks():
+                    task.cancel()
+
         try:
+            self.logger.info('launching')
+            asyncio.ensure_future(self._event_handler())
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
             pass
-        finally:
-            asyncio.get_event_loop().run_until_complete(self.__cs.close())
-            event_handler.cancel()
-            self.logger.info('see you next time')
+        try:
+            asyncio.get_event_loop().run_until_complete(_cleanup())
+        except asyncio.CancelledError:
+            pass
+        self.logger.info('see you next time')
