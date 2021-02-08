@@ -23,6 +23,7 @@ class Bot:
     Entity that interacts with user/environment
     """
     logger = logging.getLogger('khl.Bot')
+    use_btn_command = True
 
     def __init__(self,
                  *,
@@ -63,7 +64,7 @@ class Bot:
         }
 
     async def _btn_watcher(self, msg: SysMsg):
-        if msg.event_type != SysMsg.EventTypes.BTN_CLICK:
+        if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
             return
 
         msg: BtnClickMsg
@@ -149,7 +150,6 @@ class Bot:
         :param desc_doc: short introduction
         :return: wrapped Command
         """
-
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
