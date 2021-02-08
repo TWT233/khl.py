@@ -62,7 +62,7 @@ class MsgCtx:
                              **kwargs):
         kwargs[
             'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
-        if isinstance(card, dict):
+        if isinstance(card, list):
             card = json.dumps(card)
         kwargs['temp_target_id'] = temp_target_id
         return await self.send_card(card, **kwargs)
