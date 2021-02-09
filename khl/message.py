@@ -60,12 +60,10 @@ class MsgCtx:
                              card: Union[list, str],
                              temp_target_id: Optional[str] = None,
                              **kwargs):
-        kwargs[
-            'temp_target_id'] = temp_target_id if temp_target_id else self.user_id
         if isinstance(card, list):
             card = json.dumps(card)
-        # kwargs['temp_target_id'] = temp_target_id
-        return await self.send_card(card, **kwargs)
+        kwargs['type'] = Msg.Types.CARD
+        return await self.send_temp(card, temp_target_id, **kwargs)
 
 
 class Msg(ABC):
