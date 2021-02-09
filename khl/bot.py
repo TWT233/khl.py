@@ -215,7 +215,7 @@ class Bot:
 
     async def delete(self, msg_id: str):
         data = {'msg_id': msg_id}
-        return await self.post(f'{API_URL}/channel/delete?compress=0',
+        return await self.post(f'{API_URL}/message/delete?compress=0',
                                json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
