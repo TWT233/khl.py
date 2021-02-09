@@ -121,6 +121,9 @@ class Msg(ABC):
         kwargs['type'] = Msg.Types.CARD
         return await self.reply_temp(card, **kwargs)
 
+    async def delete(self):
+        return await self.ctx.bot.delete(self.msg_id)
+
 
 class TextMsg(Msg):
     type = Msg.Types.TEXT
