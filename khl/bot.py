@@ -218,6 +218,11 @@ class Bot:
         return await self.post(f'{API_URL}/message/delete?compress=0',
                                json=data)
 
+    async def update(self, msg_id, content, *, quote=''):
+        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+        return await self.post(f'{API_URL}/message/update?compress=0',
+                               json=data)
+
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: int) -> Any:
         return await self.post(f'{API_URL}/guild-role/grant?compress=0',
