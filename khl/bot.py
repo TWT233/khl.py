@@ -214,13 +214,11 @@ class Bot:
             'nonce': nonce,
             'temp_target_id': temp_target_id
         }
-        return await self.post(f'{API_URL}/message/create?compress=0',
-                               json=data)
+        return await self.post(f'{API_URL}/message/create', json=data)
 
     async def delete(self, msg_id: str):
         data = {'msg_id': msg_id}
-        return await self.post(f'{API_URL}/message/delete?compress=0',
-                               json=data)
+        return await self.post(f'{API_URL}/message/delete', json=data)
 
     async def update(self, msg_id, content, *, quote=''):
         data = {'msg_id': msg_id, 'content': content, 'quote': quote}
@@ -229,21 +227,13 @@ class Bot:
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: int) -> Any:
-        return await self.post(f'{API_URL}/guild-role/grant?compress=0',
-                               json={
-                                   'user_id': user_id,
-                                   'guild_id': guild_id,
-                                   'role_id': role_id
-                               })
+        data = {'user_id': user_id, 'guild_id': guild_id, 'role_id': role_id}
+        return await self.post(f'{API_URL}/guild-role/grant', json=data)
 
     async def user_revoke_role(self, user_id: str, guild_id: str,
                                role_id: int) -> Any:
-        return await self.post(f'{API_URL}/guild-role/revoke?compress=0',
-                               json={
-                                   'user_id': user_id,
-                                   'guild_id': guild_id,
-                                   'role_id': role_id
-                               })
+        data = {'user_id': user_id, 'guild_id': guild_id, 'role_id': role_id}
+        return await self.post(f'{API_URL}/guild-role/revoke', json=data)
 
     def run(self):
         try:
