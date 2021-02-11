@@ -177,7 +177,7 @@ class Bot:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
-        async with self.__cs.post(url, headers=headers, **kwargs) as res:
+        async with self.__cs.get(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
             if rsp['code'] != 0:
                 self.logger.error(f'request failed: {rsp}')
