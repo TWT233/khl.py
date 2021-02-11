@@ -62,6 +62,7 @@ please install certi manually, turning to this post for guide:
 
 ### T1:
 
+- [ ] private messages
 - [ ] new events, new handler system (v0.0.10)
 - [ ] upload assets (v0.0.10)
 - [ ] no prefix commands (v0.0.10)
