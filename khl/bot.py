@@ -188,7 +188,8 @@ class Bot:
     async def post(self, url, **kwargs) -> dict:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
-        headers['Content-type'] = 'application/json'
+        headers['Content-type'] = kwargs.get('content_type',
+                                             'application/json')
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
