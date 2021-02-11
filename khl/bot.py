@@ -246,23 +246,11 @@ class Bot:
                                })
 
     def run(self):
-        async def _cleanup():
-            await self.__cs.close()
-            try:
-                for task in asyncio.Task.all_tasks():
-                    task.cancel()
-            except AttributeError:
-                for task in asyncio.all_tasks():
-                    task.cancel()
-
         try:
             self.logger.info('launching')
             asyncio.ensure_future(self._event_handler())
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
             pass
-        try:
-            asyncio.get_event_loop().run_until_complete(_cleanup())
-        except asyncio.CancelledError:
-            pass
+        asyncio.get_event_loop().run_until_complete(self.__cs.close())
         self.logger.info('see you next time')
