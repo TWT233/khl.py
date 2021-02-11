@@ -210,7 +210,7 @@ class Bot:
             'nonce': nonce,
             'temp_target_id': temp_target_id
         }
-        return await self.post(f'{API_URL}/channel/message?compress=0',
+        return await self.post(f'{API_URL}/message/create?compress=0',
                                json=data)
 
     async def delete(self, msg_id: str):
