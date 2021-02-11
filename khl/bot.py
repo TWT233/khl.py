@@ -179,10 +179,11 @@ class Bot:
 
         async with self.__cs.get(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
+            log_str = f'{url}\n\tparams: {kwargs}\n\tresult: {rsp}'
             if rsp['code'] != 0:
-                self.logger.error(f'request failed:\n\t{rsp}')
+                self.logger.error(f'request failed: {log_str}')
             else:
-                self.logger.debug(f'req done:\n\t{rsp}')
+                self.logger.debug(f'req done: {log_str}')
             return rsp['data']
 
     async def post(self, url, **kwargs) -> dict:
@@ -193,10 +194,11 @@ class Bot:
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
+            log_str = f'{url}\n\tparams: {kwargs}\n\tresult: {rsp}'
             if rsp['code'] != 0:
-                self.logger.error(f'request failed:\n\t{rsp}')
+                self.logger.error(f'request failed: {log_str}')
             else:
-                self.logger.debug(f'req done:\n\t{rsp}')
+                self.logger.debug(f'req done: {log_str}')
             return rsp['data']
 
     async def send(self,
