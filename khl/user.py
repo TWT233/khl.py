@@ -26,7 +26,7 @@ class User:
         return f'(met){self.id}(met)'
 
     async def grant_role(self, bot: 'Bot', guild_id: str,
-                         role_id: int) -> bool:
+                         role_id: int) -> dict:
         return await bot.post(f'{API_URL}/guild-role/grant?compress=0',
                               json={
                                   'user_id': self.id,
@@ -35,7 +35,7 @@ class User:
                               })
 
     async def revoke_role(self, bot: 'Bot', guild_id: str,
-                          role_id: int) -> bool:
+                          role_id: int) -> dict:
         return await bot.post(f'{API_URL}/guild-role/revoke?compress=0',
                               json={
                                   'user_id': self.id,
