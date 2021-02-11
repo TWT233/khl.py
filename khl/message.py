@@ -154,11 +154,11 @@ class TextMsg(Msg):
 
     @property
     def guild_id(self) -> str:
-        return self.extra['guild_id']
+        return self.extra.get('guild_id', None)
 
     @property
     def channel_name(self) -> str:
-        return self.extra['channel_name']
+        return self.extra.get('channel_name', None)
 
     @property
     def mention(self) -> List[str]:

@@ -102,7 +102,8 @@ class Bot:
             for i in self.__msg_listener[which]:
                 asyncio.ensure_future(i(msg))
 
-        async def _dispatch_msg(m: Msg):
+        async def _dispatch_event(e: dict):
+            m = Msg.event_to_msg(e)
             await _run_event('on_all_msg', m)
 
             if m.type == Msg.Types.SYS:
@@ -123,8 +124,7 @@ class Bot:
             for i in self.__msg_listener['on_raw_event']:
                 asyncio.ensure_future(i(event))
 
-            msg = Msg.event_to_msg(event)
-            asyncio.ensure_future(_dispatch_msg(msg))
+            asyncio.ensure_future(_dispatch_event(event))
 
             self.net_client.event_queue.task_done()
 
