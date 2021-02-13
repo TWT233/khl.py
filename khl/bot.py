@@ -55,6 +55,7 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
+        self.__pm_code_map: Dict[str, str] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
@@ -227,6 +228,34 @@ class Bot:
         data = {'msg_id': msg_id, 'content': content, 'quote': quote}
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
+
+    async def send_pm(self,
+                      target_id: str,
+                      content: str,
+                      *,
+                      quote: str = '',
+                      type: int = Msg.Types.KMD,
+                      nonce: str = ''):
+        if target_id not in self.__pm_code_map.keys():
+            create_ret = await self.get(f'{API_URL}/user-chat/create',
+                                        json={'target_id': target_id})
+            self.__pm_code_map[target_id] = create_ret['code']
+        data = {
+            'chat_code': self.__pm_code_map[target_id],
+            'content': content,
+            'type': type,
+            'quote': quote,
+            'nonce': nonce
+        }
+        return await self.post(f'{API_URL}/user-chat/create-msg', json=data)
+
+    async def update_pm(self, msg_id: str, content: str, quote: str = ''):
+        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+        return await self.post(f'{API_URL}/user-chat/update-msg', json=data)
+
+    async def delete_pm(self, msg_id: str):
+        data = {'msg_id': msg_id}
+        return await self.post(f'{API_URL}/user-chat/delete-msg', json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: int) -> Any:

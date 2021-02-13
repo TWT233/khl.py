@@ -25,6 +25,15 @@ class User:
     def mention(self):
         return f'(met){self.id}(met)'
 
+    async def send_pm(self, bot: 'Bot', content: str, **kwargs):
+        return await bot.send_pm(self.id, content, **kwargs)
+
+    async def update_pm(self, bot: 'Bot', msg_id: str, content: str, **kwargs):
+        return await bot.update_pm(msg_id, content, **kwargs)
+
+    async def delete_pm(self, bot: 'Bot', msg_id: str):
+        return await bot.delete_pm(msg_id)
+
     async def grant_role(self, bot: 'Bot', guild_id: str,
                          role_id: int) -> dict:
         return await bot.post(f'{API_URL}/guild-role/grant?compress=0',
