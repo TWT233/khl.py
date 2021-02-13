@@ -31,9 +31,7 @@ class MsgCtx:
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
 
-    async def wait_btn(self,
-                       ori_msg_id: str,
-                       timeout: float = 30) -> 'BtnClickMsg':
+    async def wait_btn(self, ori_msg_id: str, timeout: float = 30) -> 'SysMsg':
         return await self.bot.kq['btn'].get(ori_msg_id, timeout)
 
     async def wait_user(self, user_id: str, timeout: float = 30) -> 'TextMsg':
@@ -91,10 +89,6 @@ class Msg(ABC):
     @staticmethod
     def event_to_msg(event: Dict[Any, Any]):
         if event['type'] == Msg.Types.SYS:
-            if event['extra'][
-                    'type'] == SysMsg.EventTypes.BTN_CLICK.value or event[
-                        'extra']['type'] == 0:
-                return BtnClickMsg(**event)
             return SysMsg(**event)
         elif event['type'] == Msg.Types.TEXT:
             return TextMsg(**event)
@@ -191,7 +185,7 @@ class CardMsg(TextMsg):
 
 
 class BtnTextMsg(TextMsg):
-    def __init__(self, btn: 'BtnClickMsg'):
+    def __init__(self, btn: 'SysMsg'):
         """
         all fields origin from server event object
         corresponding to official doc
@@ -199,9 +193,9 @@ class BtnTextMsg(TextMsg):
         trans_msg = {
             "type": 1,
             "channel_type": "GROUP",
-            "target_id": btn.exe_target_id,
+            "target_id": btn.extra['body']['target_id'],
             "author_id": btn.author_id,
-            "content": btn.ret_val,
+            "content": btn.extra['body']['value'],
             "msg_id": btn.msg_id,
             "msg_timestamp": btn.msg_timestamp,
             "nonce": "",
@@ -217,8 +211,9 @@ class BtnTextMsg(TextMsg):
                 "code": "",
                 "author": btn.extra['body']['user_info'],
             },
-            "bot": btn.ctx.bot
+            "bot": btn.bot
         }
+        self.ori_sys_msg = btn
         super().__init__(**trans_msg)
 
     async def reply(self, content: str, **kwargs):
@@ -246,11 +241,37 @@ class SysMsg(Msg):
 
     class EventTypes(Enum):
         BTN_CLICK = 'message_btn_click'
+
+        ADDED_REACTION_GROUP = 'added_reaction'
+        DELETED_REACTION_GROUP = 'deleted_reaction'
+        UPDATED_MSG_GROUP = 'updated_message'
+        DELETED_MSG_GROUP = 'deleted_message'
+
+        PRIVATE_ADDED_REACTION = 'private_added_reaction'
+        PRIVATE_DELETED_REACTION = 'private_deleted_reaction'
+        UPDATED_PRIVATE_MSG = 'updated_private_message'
+        DELETED_PRIVATE_MSG = 'deleted_private_message'
+
+        UPDATED_GUILD = 'updated_guild'
+
+        JOINED_GUILD_MEMBER = 'joined_guild'
+        EXITED_GUILD_MEMBER = 'exited_guild'
+        GUILD_MEMBER_ONLINE = 'guild_member_online'
+        GUILD_MEMBER_OFFLINE = 'guild_member_offline'
+
+        JOINED_CHANNEL_MEMBER = 'joined_channel'
+        EXITED_CHANNEL_MEMBER = 'exited_channel'
+        UPDATED_GUILD_MEMBER = 'updated_guild_member'
+
+        UPDATED_CHANNEL = 'updated_channel'
+        ADDED_CHANNEL = 'added_channel'
+        DELETED_CHANNEL = 'deleted_channel'
+
         NOTSET = ''
 
     def __init__(self, **kwargs: Any) -> None:
         self.type = Msg.Types.SYS
-        self.event_type = SysMsg.EventTypes.NOTSET
+        self.event_type = SysMsg.EventTypes(kwargs['extra']['type'])
         self.target_id = kwargs['target_id']
         self.author_id = kwargs['author_id']
         self.content = kwargs['content']
@@ -258,23 +279,9 @@ class SysMsg(Msg):
         self.msg_timestamp = kwargs['msg_timestamp']
         self.extra = kwargs['extra']
         self.sys_event_type = kwargs['extra']['type']
-
-
-class BtnClickMsg(SysMsg):
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.event_type = SysMsg.EventTypes.BTN_CLICK
-
-        self.ret_val: str = self.extra['body']['value']
-        self.ori_msg_id = self.extra['body']['msg_id']
-        self.exe_user_id = self.extra['body']['user_id']
-        self.exe_target_id = self.extra['body']['target_id']
-        self.ctx = MsgCtx(guild=None,
-                          channel=Channel(self.extra['body']['target_id']),
-                          bot=kwargs['bot'],
-                          author=User({'id': self.extra['body']['user_id']}),
-                          msg_ids=[self.extra['body']['msg_id']])
-
-    @property
-    def channel_id(self) -> str:
-        return self.exe_target_id
+        self.bot = kwargs['bot']
+        # self.ctx = MsgCtx(guild=None,
+        #                   channel=Channel(self.extra['body']['target_id']),
+        #                   bot=kwargs['bot'],
+        #                   author=User({'id': self.extra['body']['user_id']}),
+        #                   msg_ids=[self.extra['body']['msg_id']])

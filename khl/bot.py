@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 from .command import Command
 from .hardcoded import API_URL
 from .kqueue import KQueue
-from .message import BtnClickMsg, Msg, SysMsg, TextMsg, BtnTextMsg
+from .message import Msg, SysMsg, TextMsg, BtnTextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -68,7 +68,6 @@ class Bot:
         if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
             return
 
-        msg: BtnClickMsg
         try:
             b = msg.extra['body']
             cmd = ''
@@ -82,7 +81,7 @@ class Bot:
             msg.ret_val = cmd
             await self._cmd_handler(BtnTextMsg(msg))
         except json.JSONDecodeError:
-            await self.kq['btn'].put(msg.ori_msg_id, msg)
+            await self.kq['btn'].put(msg.extra['body']['msg_id'], msg)
 
     async def _cmd_handler(self, msg: TextMsg):
         """
