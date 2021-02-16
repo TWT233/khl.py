@@ -240,6 +240,7 @@ class SysMsg(Msg):
     sys_event_type: str
 
     class EventTypes(Enum):
+        UNKNOWN = 0
         BTN_CLICK = 'message_btn_click'
 
         ADDED_REACTION_GROUP = 'added_reaction'
