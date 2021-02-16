@@ -280,8 +280,10 @@ class SysMsg(Msg):
         self.extra = kwargs['extra']
         self.sys_event_type = kwargs['extra']['type']
         self.bot = kwargs['bot']
-        self.ctx = MsgCtx(guild=None,
-                          channel=Channel(self.extra['body']['target_id']),
-                          bot=kwargs['bot'],
-                          author=User({'id': self.extra['body']['user_id']}),
-                          msg_ids=[self.extra['body']['msg_id']])
+        if self.sys_event_type == self.EventTypes.BTN_CLICK.value:
+            self.ctx = MsgCtx(guild=None,
+                              channel=Channel(self.extra['body']['target_id']),
+                              bot=kwargs['bot'],
+                              author=User(
+                                  {'id': self.extra['body']['user_id']}),
+                              msg_ids=[self.extra['body']['msg_id']])
