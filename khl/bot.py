@@ -108,6 +108,8 @@ class Bot:
 
             if m.type == Msg.Types.SYS:
                 m: SysMsg
+                # if m.event_type.value == 'message_btn_click':
+                #     m = BtnTextMsg(m)
                 await _run_event('on_system_msg', m)
                 await self._btn_watcher(m)
             elif m.type in [Msg.Types.TEXT, Msg.Types.KMD, Msg.Types.CARD]:
