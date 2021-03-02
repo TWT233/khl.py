@@ -15,9 +15,11 @@ class User:
     """
     id: str
     roles: Sequence[str]
+    nickname: str
 
     def __init__(self, data: Mapping[str, Any]):
         self.id = data['id']
+        self.nickname = data.get('nickname')
         self.roles = data['roles'] if data.get('roles') else []
         pass
 
