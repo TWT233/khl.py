@@ -27,9 +27,17 @@ class MsgCtx:
         self.guild: 'Guild' = guild
         self.channel: 'Channel' = channel
         self.bot: 'Bot' = bot
-        self.author: 'User' = author
+        self.user: 'User' = author
         self.user_id: str = user_id if user_id else author.id
         self.msg_ids: Sequence[str] = msg_ids
+
+    @property
+    def author(self) -> 'User':
+        return self.user
+
+    @author.setter
+    def author(self, value: 'User'):
+        self.user = value
 
     async def wait_btn(self, ori_msg_id: str, timeout: float = 30) -> 'SysMsg':
         return await self.bot.kq['btn'].get(ori_msg_id, timeout)
