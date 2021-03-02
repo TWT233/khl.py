@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 class User:
-    __slots__ = 'id', 'roles', 'bot'
+    __slots__ = 'id', 'roles', 'bot', 'username'
     """
     presents a User in chat/group
 
@@ -15,11 +15,11 @@ class User:
     """
     id: str
     roles: Sequence[str]
-    nickname: str
+    username: str
 
     def __init__(self, data: Mapping[str, Any]):
         self.id = data['id']
-        self.nickname = data.get('nickname')
+        self.username = data.get('username')
         self.roles = data['roles'] if data.get('roles') else []
         pass
 

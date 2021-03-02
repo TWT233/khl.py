@@ -140,7 +140,7 @@ class TextMsg(Msg):
         self.nonce = kwargs.get('nonce')
         self.extra = kwargs.get('extra')
 
-        self.author: User = User(self.extra['author'])
+        self.author: 'User' = User(self.extra['author'])
         self.ctx = MsgCtx(guild=Guild(self.guild_id),
                           channel=Channel(self.target_id),
                           bot=kwargs.get('bot'),
@@ -285,6 +285,5 @@ class SysMsg(Msg):
             self.ctx = MsgCtx(guild=None,
                               channel=Channel(self.extra['body']['target_id']),
                               bot=kwargs['bot'],
-                              author=User(
-                                  {'id': self.extra['body']['user_id']}),
+                              author=User(self.extra['body']['user_info']),
                               msg_ids=[self.extra['body']['msg_id']])
