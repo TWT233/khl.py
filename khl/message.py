@@ -21,14 +21,14 @@ class MsgCtx:
                  guild: 'Guild',
                  channel: 'Channel',
                  bot: 'Bot',
-                 author: 'User',
+                 user: 'User',
                  user_id: Optional[str] = None,
                  msg_ids: Sequence[str] = []):
         self.guild: 'Guild' = guild
         self.channel: 'Channel' = channel
         self.bot: 'Bot' = bot
-        self.user: 'User' = author
-        self.user_id: str = user_id if user_id else author.id
+        self.user: 'User' = user
+        self.user_id: str = user_id if user_id else user.id
         self.msg_ids: Sequence[str] = msg_ids
 
     @property
@@ -152,7 +152,7 @@ class TextMsg(Msg):
         self.ctx = MsgCtx(guild=Guild(self.guild_id),
                           channel=Channel(self.target_id),
                           bot=kwargs.get('bot'),
-                          author=self.author,
+                          user=self.author,
                           msg_ids=[self.msg_id])
 
     @property
@@ -293,5 +293,5 @@ class SysMsg(Msg):
             self.ctx = MsgCtx(guild=None,
                               channel=Channel(self.extra['body']['target_id']),
                               bot=kwargs['bot'],
-                              author=User(self.extra['body']['user_info']),
+                              user=User(self.extra['body']['user_info']),
                               msg_ids=[self.extra['body']['msg_id']])
