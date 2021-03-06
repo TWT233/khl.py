@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, FormData
 
 from .command import Command
 from .hardcoded import API_URL
@@ -191,10 +191,8 @@ class Bot:
             return rsp['data']
 
     async def post(self, url, **kwargs) -> dict:
-        headers = kwargs.get('headers', {})
+        headers = kwargs.pop('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
-        headers['Content-type'] = kwargs.get('content_type',
-                                             'application/json')
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
@@ -204,6 +202,10 @@ class Bot:
             else:
                 self.logger.debug(f'req done: {log_str}')
             return rsp['data']
+
+    async def upload_asset(self, file: str):
+        return await self.post(f'{API_URL}/asset/create',
+                               data={'file': open(file, 'rb')})
 
     async def send(self,
                    channel_id: str,
