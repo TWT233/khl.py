@@ -94,6 +94,20 @@ class Msg(ABC):
     extra: Mapping[str, Any]
     ctx: 'MsgCtx'
 
+    def __init__(self, **kwargs):
+        """
+        all fields origin from server event object
+        corresponding to official doc
+        """
+        self.channel_type = kwargs.get('channel_type')
+        self.target_id = kwargs.get('target_id')
+        self.author_id = kwargs.get('author_id')
+        self.content = kwargs.get('content')
+        self.msg_id = kwargs.get('msg_id')
+        self.msg_timestamp = kwargs.get('msg_timestamp')
+        self.nonce = kwargs.get('nonce')
+        self.extra = kwargs.get('extra')
+
     @staticmethod
     def event_to_msg(event: Dict[Any, Any]):
         if event['type'] == Msg.Types.SYS:
@@ -142,19 +156,7 @@ class _NormalMsgKernel(Msg):
     fields shared between all types of msg, except SysMsg
     """
     def __init__(self, **kwargs):
-        """
-        all fields origin from server event object
-        corresponding to official doc
-        """
-        self.channel_type = kwargs.get('channel_type')
-        self.target_id = kwargs.get('target_id')
-        self.author_id = kwargs.get('author_id')
-        self.content = kwargs.get('content')
-        self.msg_id = kwargs.get('msg_id')
-        self.msg_timestamp = kwargs.get('msg_timestamp')
-        self.nonce = kwargs.get('nonce')
-        self.extra = kwargs.get('extra')
-
+        super().__init__(**kwargs)
         self.author: 'User' = User(self.extra['author'])
         self.ctx = MsgCtx(guild=Guild(self.guild_id),
                           channel=Channel(self.target_id),
@@ -344,8 +346,6 @@ class BtnTextMsg(TextMsg):
 
 
 class SysMsg(Msg):
-    sys_event_type: str
-
     class EventTypes(Enum):
         UNKNOWN = 0
         BTN_CLICK = 'message_btn_click'
@@ -378,19 +378,19 @@ class SysMsg(Msg):
         NOTSET = ''
 
     def __init__(self, **kwargs: Any) -> None:
-        self.type = Msg.Types.SYS
-        self.event_type = SysMsg.EventTypes(kwargs['extra']['type'])
-        self.target_id = kwargs['target_id']
-        self.author_id = kwargs['author_id']
-        self.content = kwargs['content']
-        self.msg_id = kwargs['msg_id']
-        self.msg_timestamp = kwargs['msg_timestamp']
-        self.extra = kwargs['extra']
-        self.sys_event_type = kwargs['extra']['type']
+        super().__init__(**kwargs)
         self.bot = kwargs['bot']
-        if self.sys_event_type == self.EventTypes.BTN_CLICK.value:
+        if self.event_type == self.EventTypes.BTN_CLICK:
             self.ctx = MsgCtx(guild=None,
                               channel=Channel(self.extra['body']['target_id']),
                               bot=kwargs['bot'],
                               user=User(self.extra['body']['user_info']),
                               msg_ids=[self.extra['body']['msg_id']])
+
+    @property
+    def event_type(self):
+        return SysMsg.EventTypes(self.extra['type'])
+
+    @property
+    def sys_event_type(self):
+        return self.event_type
