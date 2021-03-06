@@ -100,6 +100,12 @@ class Msg(ABC):
             return SysMsg(**event)
         elif event['type'] == Msg.Types.TEXT:
             return TextMsg(**event)
+        elif event['type'] == Msg.Types.IMG:
+            return ImgMsg(**event)
+        elif event['type'] == Msg.Types.VIDEO:
+            return VideoMsg(**event)
+        elif event['type'] == Msg.Types.FILE:
+            return FileMsg(**event)
         elif event['type'] == Msg.Types.KMD:
             return KMDMsg(**event)
         elif event['type'] == Msg.Types.CARD:
