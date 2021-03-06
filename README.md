@@ -67,7 +67,7 @@ please install certi manually, turning to this post for guide:
 - [x] refactor `Msg`, support multimedia msg
   - [x] add kinds of multimedia msg (v0.0.10)
 - [ ] new events, new handler system (v0.0.10)(active @TWT233)
-- [ ] upload assets (v0.0.10)
+- [x] upload assets (v0.0.10)
 - [ ] no prefix commands (v0.0.10)
   - [ ] fix `cmd_prefix=[]`
 
