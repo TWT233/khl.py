@@ -103,7 +103,11 @@ class Bot:
                 asyncio.ensure_future(i(msg))
 
         async def _dispatch_event(e: dict):
-            m = Msg.event_to_msg(e)
+            event_with_bot = {**event, 'bot': self}
+            for i in self.__msg_listener['on_raw_event']:
+                asyncio.ensure_future(i(event_with_bot))
+
+            m = Msg.event_to_msg(event_with_bot)
             if not m:
                 self.logger.warning(f'unrecognized event:\n\t{e}')
                 return
@@ -123,10 +127,6 @@ class Bot:
         while True:
             event = await self.net_client.event_queue.get()
             self.logger.debug(f'upcoming event:\n\t{event}')
-
-            event['bot'] = self
-            for i in self.__msg_listener['on_raw_event']:
-                asyncio.ensure_future(i(event))
 
             asyncio.ensure_future(_dispatch_event(event))
 
