@@ -381,7 +381,7 @@ class SysMsg(Msg):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.bot = kwargs['bot']
+        self.bot: Bot = kwargs['bot']
         if self.event_type == self.EventTypes.BTN_CLICK:
             self.ctx = MsgCtx(guild=None,
                               channel=Channel(self.extra['body']['target_id']),
@@ -391,7 +391,12 @@ class SysMsg(Msg):
 
     @property
     def event_type(self):
-        return SysMsg.EventTypes(self.extra['type'])
+        try:
+            return SysMsg.EventTypes(self.extra['type'])
+        except ValueError:
+            self.bot.logger.warning(
+                f'unsupported event type "{self.extra["type"]}"')
+            return SysMsg.EventTypes.UNKNOWN
 
     @property
     def sys_event_type(self):
