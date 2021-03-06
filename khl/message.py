@@ -261,6 +261,30 @@ class VideoMsg(_NormalMsgKernel):
         return self.detail['height']
 
 
+class FileMsg(_NormalMsgKernel):
+    type = Msg.Types.FILE
+
+    @property
+    def detail(self) -> dict:
+        return self.extra['attachments']
+
+    @property
+    def url(self) -> str:
+        return self.detail['url']
+
+    @property
+    def name(self) -> str:
+        return self.detail['name']
+
+    @property
+    def file_type(self) -> str:
+        return self.detail['file_type']
+
+    @property
+    def size(self) -> int:
+        return self.detail['size']
+
+
 class BtnTextMsg(TextMsg):
     def __init__(self, btn: 'SysMsg'):
         """
