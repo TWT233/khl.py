@@ -131,10 +131,9 @@ class Msg(ABC):
         return await self.ctx.bot.delete(self.msg_id)
 
 
-class TextMsg(Msg):
-    type = Msg.Types.TEXT
+class _NormalMsgKernel(Msg):
     """
-    represents a msg, recv from/send to server
+    fields shared between all types of msg, except SysMsg
     """
     def __init__(self, **kwargs):
         """
@@ -159,15 +158,31 @@ class TextMsg(Msg):
 
     @property
     def channel_id(self) -> str:
+        """
+        the channel where this msg sends to
+        """
         return self.target_id
 
     @property
-    def guild_id(self) -> str:
-        return self.extra.get('guild_id', None)
+    def channel_name(self) -> str:
+        """
+        the channel where this msg sends to
+        """
+        return self.extra.get('channel_name', None)
 
     @property
-    def channel_name(self) -> str:
-        return self.extra.get('channel_name', None)
+    def guild_id(self) -> str:
+        """
+        the guild of this msg
+        """
+        return self.extra.get('guild_id', None)
+
+
+class TextMsg(_NormalMsgKernel):
+    """
+    represents a msg, recv from/send to server
+    """
+    type = Msg.Types.TEXT
 
     @property
     def mention(self) -> List[str]:
