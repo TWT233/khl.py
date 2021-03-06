@@ -104,12 +104,14 @@ class Bot:
 
         async def _dispatch_event(e: dict):
             m = Msg.event_to_msg(e)
+            if not m:
+                self.logger.warning(f'unrecognized event:\n\t{e}')
+                return
+
             await _run_event('on_all_msg', m)
 
             if m.type == Msg.Types.SYS:
                 m: SysMsg
-                # if m.event_type.value == 'message_btn_click':
-                #     m = BtnTextMsg(m)
                 await _run_event('on_system_msg', m)
                 await self._btn_watcher(m)
             elif m.type in [Msg.Types.TEXT, Msg.Types.KMD, Msg.Types.CARD]:

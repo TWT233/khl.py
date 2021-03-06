@@ -104,6 +104,8 @@ class Msg(ABC):
             return KMDMsg(**event)
         elif event['type'] == Msg.Types.CARD:
             return CardMsg(**event)
+        else:
+            return None
 
     async def reply(self, content: str, **kwargs):
         kwargs['quote'] = self.msg_id
