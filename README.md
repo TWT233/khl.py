@@ -57,6 +57,7 @@ please install certi manually, turning to this post for guide:
 ## perf:
 
 - [ ] async bot.run() (v0.0.11)
+- [ ] websocket refine (v0.0.11/.12)
 
 ## feat:
 
