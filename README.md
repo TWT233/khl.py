@@ -47,6 +47,8 @@ please install certi manually, turning to this post for guide:
 
 ## refactor
 
+- [ ] move api req urls into `hardcoded` 
+
 ## docs
 
 - [ ] examples & tutorials (active @TWT233)
@@ -54,16 +56,16 @@ please install certi manually, turning to this post for guide:
 
 ## perf:
 
-- [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-  - [ ] add kinds of multimedia msg (v0.0.10)
 - [ ] async bot.run() (v0.0.11)
 
 ## feat:
 
 ### T1:
 
-- [ ] private messages
-- [ ] new events, new handler system (v0.0.10)
+- [x] private messages
+- [x] refactor `Msg`, support multimedia msg
+  - [x] add kinds of multimedia msg (v0.0.10)
+- [ ] new events, new handler system (v0.0.10)(active @TWT233)
 - [ ] upload assets (v0.0.10)
 - [ ] no prefix commands (v0.0.10)
   - [ ] fix `cmd_prefix=[]`
