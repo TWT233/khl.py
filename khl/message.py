@@ -346,6 +346,8 @@ class BtnTextMsg(TextMsg):
 
 
 class SysMsg(Msg):
+    type = Msg.Types.SYS
+
     class EventTypes(Enum):
         UNKNOWN = 0
         BTN_CLICK = 'message_btn_click'
