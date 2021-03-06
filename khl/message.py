@@ -209,6 +209,42 @@ class CardMsg(TextMsg):
     type = Msg.Types.CARD
 
 
+class VideoMsg(_NormalMsgKernel):
+    type = Msg.Types.VIDEO
+
+    @property
+    def detail(self) -> dict:
+        return self.extra['attachments']
+
+    @property
+    def url(self) -> str:
+        return self.detail['url']
+
+    @property
+    def name(self) -> str:
+        return self.detail['name']
+
+    @property
+    def file_type(self) -> str:
+        return self.detail['file_type']
+
+    @property
+    def size(self) -> int:
+        return self.detail['size']
+
+    @property
+    def duration(self) -> float:
+        return self.detail['duration']
+
+    @property
+    def width(self) -> int:
+        return self.detail['width']
+
+    @property
+    def height(self) -> int:
+        return self.detail['height']
+
+
 class BtnTextMsg(TextMsg):
     def __init__(self, btn: 'SysMsg'):
         """
