@@ -209,6 +209,22 @@ class CardMsg(TextMsg):
     type = Msg.Types.CARD
 
 
+class ImgMsg(_NormalMsgKernel):
+    type = Msg.Types.IMG
+
+    @property
+    def detail(self) -> dict:
+        return self.extra['attachments']
+
+    @property
+    def url(self):
+        return self.detail['url']
+
+    @property
+    def name(self) -> str:
+        return self.detail['name']
+
+
 class VideoMsg(_NormalMsgKernel):
     type = Msg.Types.VIDEO
 
