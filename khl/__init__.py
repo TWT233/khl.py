@@ -1,4 +1,4 @@
-from . import logger as Logger
+from .logger import *
 from .bot import Bot
 from .cert import Cert
 from .channel import Channel

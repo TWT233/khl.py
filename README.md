@@ -47,14 +47,7 @@ please install certi manually, turning to this post for guide:
 
 ## refactor
 
-### T1:
-
-- [x] btn handler
-
-### T2:
-
-- [x] rename files according to PEP8
-- [ ] wrap functions for convenient
+- [ ] move api req urls into `hardcoded` 
 
 ## docs
 
@@ -63,36 +56,27 @@ please install certi manually, turning to this post for guide:
 
 ## perf:
 
-- [ ] refactor `Msg`, support multimedia msg (active @TWT233)
-    - [x] introduce `MsgCtx` with this
-    - [x] refactor `Msg`
-    - [ ] add kinds of multimedia msg (v0.0.10)
-- [ ] async bot.run() (v0.0.10)
+- [ ] async bot.run() (v0.0.11)
+- [ ] websocket refine (v0.0.11/.12)
 
 ## feat:
 
 ### T1:
 
-- [x] `on_textMsg()`
-- [ ] command & arg parse system(long term design needed)
-- [x] event listener for bot
-    - [x] find another approach to handle msg
-    - [x] utilize event listener
-- [x] add get for net client
-- [x] command group
-- [ ] upload assets (v0.0.10)
-- [ ] event class(interface)
+- [x] private messages
+- [x] refactor `Msg`, support multimedia msg
+  - [x] add kinds of multimedia msg (v0.0.10)
+- [ ] new events, new handler system (v0.0.10)(active @TWT233)
+- [x] upload assets (v0.0.10)
+- [ ] no prefix commands (v0.0.10)
+  - [ ] fix `cmd_prefix=[]`
 
 ### T2:
 
-- [x] log system
-- [x] `MsgCtx` design
-- [x] command alias
 - [ ] bot send args (done by @fi6, waiting for merge)
-    - [ ] needs more practice and design
-- [ ] no prefix commands (v0.0.10)
-    - [ ] fix `cmd_prefix=[]`
-- [x] action result
+  - [ ] needs more practice and design
+- [ ] command & arg parse system(long term design needed)
+- [ ] event class(interface)
 
 # commit message rules
 

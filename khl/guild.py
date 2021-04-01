@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from .hardcoded import API_URL
 
@@ -10,8 +10,12 @@ if TYPE_CHECKING:
 class Guild:
     logger = logging.getLogger('khl.Guild')
 
-    def __init__(self, guild_id: str):
+    def __init__(self, guild_id: Union[str, None]):
         self.id = guild_id
+
+    @property
+    def is_user_chat(self):
+        return self.id is None
 
     async def get_roles(self, bot: 'Bot') -> list:
         return await bot.get(f'{API_URL}/guild-role/index?compress=0',

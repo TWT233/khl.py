@@ -3,12 +3,12 @@ import json
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, FormData
 
 from .command import Command
 from .hardcoded import API_URL
 from .kqueue import KQueue
-from .message import BtnClickMsg, Msg, SysMsg, TextMsg, BtnTextMsg
+from .message import Msg, SysMsg, TextMsg, BtnTextMsg
 from .parser import parser
 from .webhook import WebhookClient
 from .websocket import WebsocketClient
@@ -23,6 +23,7 @@ class Bot:
     Entity that interacts with user/environment
     """
     logger = logging.getLogger('khl.Bot')
+    use_btn_command = True
 
     def __init__(self,
                  *,
@@ -54,6 +55,7 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
+        self.__pm_code_map: Dict[str, str] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
@@ -63,10 +65,9 @@ class Bot:
         }
 
     async def _btn_watcher(self, msg: SysMsg):
-        if msg.event_type != SysMsg.EventTypes.BTN_CLICK:
+        if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
             return
 
-        msg: BtnClickMsg
         try:
             b = msg.extra['body']
             cmd = ''
@@ -80,7 +81,7 @@ class Bot:
             msg.ret_val = cmd
             await self._cmd_handler(BtnTextMsg(msg))
         except json.JSONDecodeError:
-            await self.kq['btn'].put(msg.ori_msg_id, msg)
+            await self.kq['btn'].put(msg.extra['body']['msg_id'], msg)
 
     async def _cmd_handler(self, msg: TextMsg):
         """
@@ -101,7 +102,16 @@ class Bot:
             for i in self.__msg_listener[which]:
                 asyncio.ensure_future(i(msg))
 
-        async def _dispatch_msg(m: Msg):
+        async def _dispatch_event(e: dict):
+            event_with_bot = {**event, 'bot': self}
+            for i in self.__msg_listener['on_raw_event']:
+                asyncio.ensure_future(i(event_with_bot))
+
+            m = Msg.event_to_msg(event_with_bot)
+            if not m:
+                self.logger.warning(f'unrecognized event:\n\t{e}')
+                return
+
             await _run_event('on_all_msg', m)
 
             if m.type == Msg.Types.SYS:
@@ -116,14 +126,9 @@ class Bot:
 
         while True:
             event = await self.net_client.event_queue.get()
-
-            event['bot'] = self
             self.logger.debug(f'upcoming event:\n\t{event}')
-            for i in self.__msg_listener['on_raw_event']:
-                asyncio.ensure_future(i(event))
 
-            msg = Msg.event_to_msg(event)
-            asyncio.ensure_future(_dispatch_msg(msg))
+            asyncio.ensure_future(_dispatch_event(event))
 
             self.net_client.event_queue.task_done()
 
@@ -149,7 +154,6 @@ class Bot:
         :param desc_doc: short introduction
         :return: wrapped Command
         """
-
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
@@ -177,22 +181,31 @@ class Bot:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
-        async with self.__cs.post(url, headers=headers, **kwargs) as res:
+        async with self.__cs.get(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
+            log_str = f'{url}\n\tparams: {kwargs}\n\tresult: {rsp}'
             if rsp['code'] != 0:
-                self.logger.error(f'request failed: {rsp}')
+                self.logger.error(f'request failed: {log_str}')
+            else:
+                self.logger.debug(f'req done: {log_str}')
             return rsp['data']
 
     async def post(self, url, **kwargs) -> dict:
-        headers = kwargs.get('headers', {})
+        headers = kwargs.pop('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
-        headers['Content-type'] = 'application/json'
 
         async with self.__cs.post(url, headers=headers, **kwargs) as res:
             rsp = await res.json()
+            log_str = f'{url}\n\tparams: {kwargs}\n\tresult: {rsp}'
             if rsp['code'] != 0:
-                self.logger.error(f'request failed: {rsp}')
+                self.logger.error(f'request failed: {log_str}')
+            else:
+                self.logger.debug(f'req done: {log_str}')
             return rsp['data']
+
+    async def upload_asset(self, file: str):
+        return await self.post(f'{API_URL}/asset/create',
+                               data={'file': open(file, 'rb')})
 
     async def send(self,
                    channel_id: str,
@@ -210,45 +223,61 @@ class Bot:
             'nonce': nonce,
             'temp_target_id': temp_target_id
         }
-        return await self.post(f'{API_URL}/channel/message?compress=0',
+        return await self.post(f'{API_URL}/message/create', json=data)
+
+    async def delete(self, msg_id: str):
+        data = {'msg_id': msg_id}
+        return await self.post(f'{API_URL}/message/delete', json=data)
+
+    async def update(self, msg_id, content, *, quote=''):
+        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+        return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
+
+    async def send_pm(self,
+                      target_id: str,
+                      content: str,
+                      *,
+                      quote: str = '',
+                      type: int = Msg.Types.KMD,
+                      nonce: str = ''):
+        if target_id not in self.__pm_code_map.keys():
+            create_ret = await self.get(f'{API_URL}/user-chat/create',
+                                        json={'target_id': target_id})
+            self.__pm_code_map[target_id] = create_ret['code']
+        data = {
+            'chat_code': self.__pm_code_map[target_id],
+            'content': content,
+            'type': type,
+            'quote': quote,
+            'nonce': nonce
+        }
+        return await self.post(f'{API_URL}/user-chat/create-msg', json=data)
+
+    async def update_pm(self, msg_id: str, content: str, quote: str = ''):
+        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+        return await self.post(f'{API_URL}/user-chat/update-msg', json=data)
+
+    async def delete_pm(self, msg_id: str):
+        data = {'msg_id': msg_id}
+        return await self.post(f'{API_URL}/user-chat/delete-msg', json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: int) -> Any:
-        return await self.post(f'{API_URL}/guild-role/grant?compress=0',
-                               json={
-                                   'user_id': user_id,
-                                   'guild_id': guild_id,
-                                   'role_id': role_id
-                               })
+        data = {'user_id': user_id, 'guild_id': guild_id, 'role_id': role_id}
+        return await self.post(f'{API_URL}/guild-role/grant', json=data)
 
     async def user_revoke_role(self, user_id: str, guild_id: str,
                                role_id: int) -> Any:
-        return await self.post(f'{API_URL}/guild-role/revoke?compress=0',
-                               json={
-                                   'user_id': user_id,
-                                   'guild_id': guild_id,
-                                   'role_id': role_id
-                               })
+        data = {'user_id': user_id, 'guild_id': guild_id, 'role_id': role_id}
+        return await self.post(f'{API_URL}/guild-role/revoke', json=data)
 
     def run(self):
-        async def _cleanup():
-            await self.__cs.close()
-            try:
-                for task in asyncio.Task.all_tasks():
-                    task.cancel()
-            except AttributeError:
-                for task in asyncio.all_tasks():
-                    task.cancel()
-
         try:
             self.logger.info('launching')
             asyncio.ensure_future(self._event_handler())
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
             pass
-        try:
-            asyncio.get_event_loop().run_until_complete(_cleanup())
-        except asyncio.CancelledError:
-            pass
+        asyncio.get_event_loop().run_until_complete(self.__cs.close())
         self.logger.info('see you next time')
