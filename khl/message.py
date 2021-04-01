@@ -390,6 +390,10 @@ class SysMsg(Msg):
                               msg_ids=[self.extra['body']['msg_id']])
 
     @property
+    def body(self):
+        return self.extra['body']
+
+    @property
     def event_type(self):
         try:
             return SysMsg.EventTypes(self.extra['type'])
@@ -401,3 +405,141 @@ class SysMsg(Msg):
     @property
     def sys_event_type(self):
         return self.event_type
+
+
+class SysMsgAddedReaction(SysMsg):
+    @property
+    def emoji(self) -> dict:
+        return self.body['emoji']
+
+    @property
+    def related_msg_id(self) -> str:
+        return self.body['msg_id']
+
+    @property
+    def operator_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def related_channel_id(self) -> str:
+        return self.body['channel_id']
+
+
+class SysMsgDeletedReaction(SysMsg):
+    @property
+    def emoji(self) -> dict:
+        return self.body['emoji']
+
+    @property
+    def related_msg_id(self) -> str:
+        return self.body['msg_id']
+
+    @property
+    def operator_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def related_channel_id(self) -> str:
+        return self.body['channel_id']
+
+
+class SysMsgUpdatedMessage(SysMsg):
+    @property
+    def updated_msg_id(self) -> str:
+        return self.body['msg_id']
+
+    @property
+    def new_content(self) -> str:
+        return self.body['content']
+
+    @property
+    def related_channel_id(self) -> str:
+        return self.body['channel_id']
+
+    @property
+    def mention(self) -> list:
+        return self.body['mention']
+
+    @property
+    def mention_all(self) -> bool:
+        return self.body['mention_all']
+
+    @property
+    def mention_here(self) -> bool:
+        return self.body['mention_here']
+
+    @property
+    def mention_roles(self) -> list:
+        return self.body['mention_roles']
+
+    @property
+    def updated_at(self) -> int:
+        return self.body['updated_at']
+
+
+class SysMsgDeletedMessage(SysMsg):
+    @property
+    def deleted_msg_id(self) -> str:
+        return self.body['msg_id']
+
+    @property
+    def related_channel_id(self) -> str:
+        return self.body['channel_id']
+
+
+class SysMsgAddedChannel(SysMsg):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self._channel = Channel(**self.body)
+
+    @property
+    def added_channel(self) -> Channel:
+        return self._channel
+
+
+class SysMsgUpdatedChannel(SysMsg):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self._channel = Channel(**self.body)
+
+    @property
+    def updated_channel(self) -> Channel:
+        return self._channel
+
+
+class SysMsgDeletedChannel(SysMsg):
+    @property
+    def deleted_channel_id(self):
+        return self.body['id']
+
+    @property
+    def deleted_at(self) -> int:
+        return self.body['deleted_at']
+
+
+class SysMsgPinnedMessage(SysMsg):
+    @property
+    def related_channel_id(self) -> str:
+        return self.body['channel_id']
+
+    @property
+    def operator_id(self) -> str:
+        return self.body['operator_id']
+
+    @property
+    def pinned_msg_id(self) -> str:
+        return self.body['msg_id']
+
+
+class SysMsgUnpinnedMessage(SysMsg):
+    @property
+    def related_channel_id(self) -> str:
+        return self.body['channel_id']
+
+    @property
+    def operator_id(self) -> str:
+        return self.body['operator_id']
+
+    @property
+    def unpinned_msg_id(self) -> str:
+        return self.body['msg_id']
