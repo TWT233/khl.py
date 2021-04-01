@@ -543,3 +543,61 @@ class SysMsgUnpinnedMessage(SysMsg):
     @property
     def unpinned_msg_id(self) -> str:
         return self.body['msg_id']
+
+
+class SysMsgJoinedGuild(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def joined_at(self) -> int:
+        return self.body['joined_at']
+
+
+class SysMsgExitedGuild(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def exited_at(self) -> int:
+        return self.body['exited_at']
+
+
+class SysMsgUpdatedGuildMember(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def new_nickname(self) -> str:
+        return self.body['nickname']
+
+
+class SysMsgGuildMemberOnline(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def online_at(self) -> int:
+        return self.body['event_time']
+
+    @property
+    def common_guilds(self) -> list:
+        return self.body['guilds']
+
+
+class SysMsgGuildMemberOffline(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def online_at(self) -> int:
+        return self.body['event_time']
+
+    @property
+    def common_guilds(self) -> list:
+        return self.body['guilds']
