@@ -154,6 +154,7 @@ class Bot:
         :param desc_doc: short introduction
         :return: wrapped Command
         """
+
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
@@ -177,7 +178,7 @@ class Bot:
     def on_raw_event(self, func):
         self.add_msg_listener('on_raw_event', func)
 
-    async def get(self, url, **kwargs) -> dict:
+    async def get(self, url, **kwargs) -> Union[dict, list]:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
@@ -190,7 +191,7 @@ class Bot:
                 self.logger.debug(f'req done: {log_str}')
             return rsp['data']
 
-    async def post(self, url, **kwargs) -> dict:
+    async def post(self, url, **kwargs) -> Union[dict, list]:
         headers = kwargs.pop('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
@@ -214,7 +215,7 @@ class Bot:
                    quote: str = '',
                    type: int = Msg.Types.KMD,
                    nonce: str = '',
-                   temp_target_id: str = '') -> dict:
+                   temp_target_id: str = '') -> Union[dict, list]:
         data = {
             'channel_id': channel_id,
             'content': content,
@@ -225,11 +226,11 @@ class Bot:
         }
         return await self.post(f'{API_URL}/message/create', json=data)
 
-    async def delete(self, msg_id: str):
+    async def delete(self, msg_id: str) -> Union[dict, list]:
         data = {'msg_id': msg_id}
         return await self.post(f'{API_URL}/message/delete', json=data)
 
-    async def update(self, msg_id, content, *, quote=''):
+    async def update(self, msg_id, content, *, quote='') -> Union[dict, list]:
         data = {'msg_id': msg_id, 'content': content, 'quote': quote}
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
