@@ -17,6 +17,7 @@ class MsgCtx:
     """
     represents a context of a msg
     """
+
     def __init__(self,
                  guild: 'Guild',
                  channel: 'Channel',
@@ -129,7 +130,13 @@ class Msg(ABC):
 
     async def reply(self, content: str, **kwargs):
         kwargs['quote'] = self.msg_id
-        return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
+
+        if self.channel_type == 'PERSON':
+            return await self.ctx.bot.send_pm(self.ctx.author.id, content, **kwargs)
+        elif self.channel_type == 'GROUP':
+            return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
+        else:
+            raise ValueError(f"Unacceptable channel_type: {self.channel_type}")
 
     async def reply_temp(self, content: str, **kwargs):
         kwargs['temp_target_id'] = self.author_id
@@ -155,6 +162,7 @@ class _NormalMsgKernel(Msg):
     """
     fields shared between all types of msg, except SysMsg
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.author: 'User' = User(self.extra['author'])
