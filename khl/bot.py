@@ -55,7 +55,6 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
-        self.__pm_code_map: Dict[str, str] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
@@ -242,12 +241,8 @@ class Bot:
                       quote: str = '',
                       type: int = Msg.Types.KMD,
                       nonce: str = ''):
-        if target_id not in self.__pm_code_map.keys():
-            create_ret = await self.get(f'{API_URL}/user-chat/create',
-                                        json={'target_id': target_id})
-            self.__pm_code_map[target_id] = create_ret['code']
         data = {
-            'chat_code': self.__pm_code_map[target_id],
+            'target_id': target_id,
             'content': content,
             'type': type,
             'quote': quote,
