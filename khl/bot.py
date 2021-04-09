@@ -234,7 +234,7 @@ class Bot:
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
 
-    async def send_pm(self,
+    async def send_dm(self,
                       target_id: str,
                       content: str,
                       *,
@@ -248,15 +248,15 @@ class Bot:
             'quote': quote,
             'nonce': nonce
         }
-        return await self.post(f'{API_URL}/user-chat/create-msg', json=data)
+        return await self.post(f'{API_URL}/direct-message/create', json=data)
 
-    async def update_pm(self, msg_id: str, content: str, quote: str = ''):
+    async def update_dm(self, msg_id: str, content: str, quote: str = ''):
         data = {'msg_id': msg_id, 'content': content, 'quote': quote}
-        return await self.post(f'{API_URL}/user-chat/update-msg', json=data)
+        return await self.post(f'{API_URL}/direct-message/update', json=data)
 
-    async def delete_pm(self, msg_id: str):
+    async def delete_dm(self, msg_id: str):
         data = {'msg_id': msg_id}
-        return await self.post(f'{API_URL}/user-chat/delete-msg', json=data)
+        return await self.post(f'{API_URL}/direct-message/delete', json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: int) -> Any:

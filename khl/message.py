@@ -132,7 +132,7 @@ class Msg(ABC):
         kwargs['quote'] = self.msg_id
 
         if self.channel_type == 'PERSON':
-            return await self.ctx.bot.send_pm(self.ctx.author.id, content, **kwargs)
+            return await self.ctx.bot.send_dm(self.ctx.author.id, content, **kwargs)
         elif self.channel_type == 'GROUP':
             return await self.ctx.bot.send(self.ctx.channel.id, content, **kwargs)
         else:
