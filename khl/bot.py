@@ -56,12 +56,18 @@ class Bot:
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
+        self.__me: Dict = {}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
             'on_all_msg': [],
             'on_text_msg': [],
             'on_system_msg': []
         }
+
+    async def id(self):
+        if not self.__me or 'id' not in self.__me.keys():
+            self.__me = await self.get(f'{API_URL}/user/me')
+        return self.__me['id']
 
     async def _btn_watcher(self, msg: SysMsg):
         if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
