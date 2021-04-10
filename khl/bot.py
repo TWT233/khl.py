@@ -55,14 +55,19 @@ class Bot:
 
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
-        self.__pm_code_map: Dict[str, str] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
+        self.__me: Dict = {}
         self.__msg_listener: Dict[str, List[Callable[..., Coroutine]]] = {
             'on_raw_event': [],
             'on_all_msg': [],
             'on_text_msg': [],
             'on_system_msg': []
         }
+
+    async def id(self):
+        if not self.__me or 'id' not in self.__me.keys():
+            self.__me = await self.get(f'{API_URL}/user/me')
+        return self.__me['id']
 
     async def _btn_watcher(self, msg: SysMsg):
         if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
@@ -154,6 +159,7 @@ class Bot:
         :param desc_doc: short introduction
         :return: wrapped Command
         """
+
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
@@ -177,7 +183,7 @@ class Bot:
     def on_raw_event(self, func):
         self.add_msg_listener('on_raw_event', func)
 
-    async def get(self, url, **kwargs) -> dict:
+    async def get(self, url, **kwargs) -> Union[dict, list]:
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
@@ -190,7 +196,7 @@ class Bot:
                 self.logger.debug(f'req done: {log_str}')
             return rsp['data']
 
-    async def post(self, url, **kwargs) -> dict:
+    async def post(self, url, **kwargs) -> Union[dict, list]:
         headers = kwargs.pop('headers', {})
         headers['Authorization'] = f'Bot {self.net_client.cert.token}'
 
@@ -214,7 +220,7 @@ class Bot:
                    quote: str = '',
                    type: int = Msg.Types.KMD,
                    nonce: str = '',
-                   temp_target_id: str = '') -> dict:
+                   temp_target_id: str = '') -> Union[dict, list]:
         data = {
             'channel_id': channel_id,
             'content': content,
@@ -225,42 +231,38 @@ class Bot:
         }
         return await self.post(f'{API_URL}/message/create', json=data)
 
-    async def delete(self, msg_id: str):
+    async def delete(self, msg_id: str) -> Union[dict, list]:
         data = {'msg_id': msg_id}
         return await self.post(f'{API_URL}/message/delete', json=data)
 
-    async def update(self, msg_id, content, *, quote=''):
+    async def update(self, msg_id, content, *, quote='') -> Union[dict, list]:
         data = {'msg_id': msg_id, 'content': content, 'quote': quote}
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
 
-    async def send_pm(self,
+    async def send_dm(self,
                       target_id: str,
                       content: str,
                       *,
                       quote: str = '',
                       type: int = Msg.Types.KMD,
                       nonce: str = ''):
-        if target_id not in self.__pm_code_map.keys():
-            create_ret = await self.get(f'{API_URL}/user-chat/create',
-                                        json={'target_id': target_id})
-            self.__pm_code_map[target_id] = create_ret['code']
         data = {
-            'chat_code': self.__pm_code_map[target_id],
+            'target_id': target_id,
             'content': content,
             'type': type,
             'quote': quote,
             'nonce': nonce
         }
-        return await self.post(f'{API_URL}/user-chat/create-msg', json=data)
+        return await self.post(f'{API_URL}/direct-message/create', json=data)
 
-    async def update_pm(self, msg_id: str, content: str, quote: str = ''):
+    async def update_dm(self, msg_id: str, content: str, quote: str = ''):
         data = {'msg_id': msg_id, 'content': content, 'quote': quote}
-        return await self.post(f'{API_URL}/user-chat/update-msg', json=data)
+        return await self.post(f'{API_URL}/direct-message/update', json=data)
 
-    async def delete_pm(self, msg_id: str):
+    async def delete_dm(self, msg_id: str):
         data = {'msg_id': msg_id}
-        return await self.post(f'{API_URL}/user-chat/delete-msg', json=data)
+        return await self.post(f'{API_URL}/direct-message/delete', json=data)
 
     async def user_grant_role(self, user_id: str, guild_id: str,
                               role_id: int) -> Any:

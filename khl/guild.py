@@ -7,6 +7,18 @@ if TYPE_CHECKING:
     from .bot import Bot
 
 
+class Role:
+
+    def __init__(self, **kwargs):
+        self.role_id: int = kwargs.get("role_id", 0)
+        self.name: str = kwargs.get("name", "")
+        self.color: int = kwargs.get("color", 0)
+        self.position: int = kwargs.get("position", 0)
+        self.hoist: int = kwargs.get("hoist", 0)
+        self.mentionable: int = kwargs.get("mentionable", 0)
+        self.permissions: int = kwargs.get("permissions", 0)
+
+
 class Guild:
     logger = logging.getLogger('khl.Guild')
 
@@ -21,19 +33,19 @@ class Guild:
         return await bot.get(f'{API_URL}/guild-role/index?compress=0',
                              json={'guild_id': self.id})
 
-    async def create_role(self, bot: 'Bot', name: str = None) -> bool:
+    async def create_role(self, bot: 'Bot', name: str = None) -> list:
         return await bot.post(f'{API_URL}/guild-role/create?compress=0',
                               json={
                                   'name': name,
                                   'guild_id': self.id
                               } if name else {'guild_id': self.id})
 
-    async def delete_role(self, bot: 'Bot', name: str) -> bool:
-        return await bot.post(f'{API_URL}/guild-role/delete?compress=0',
-                              json={
-                                  'name': name,
-                                  'guild_id': self.id
-                              })
+    async def delete_role(self, bot: 'Bot', name: str):
+        await bot.post(f'{API_URL}/guild-role/delete?compress=0',
+                       json={
+                           'name': name,
+                           'guild_id': self.id
+                       })
 
     async def update_role(self,
                           bot: 'Bot',
