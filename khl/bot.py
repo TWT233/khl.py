@@ -159,7 +159,6 @@ class Bot:
         :param desc_doc: short introduction
         :return: wrapped Command
         """
-
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc)
             self.add_command(cmd)
@@ -235,8 +234,19 @@ class Bot:
         data = {'msg_id': msg_id}
         return await self.post(f'{API_URL}/message/delete', json=data)
 
-    async def update(self, msg_id, content, *, quote='') -> Union[dict, list]:
-        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+    async def update(
+            self,
+            msg_id,
+            content,
+            *,
+            quote='',
+            temp_target_id: Union[str, None] = None) -> Union[dict, list]:
+        data = {
+            'msg_id': msg_id,
+            'content': content,
+            'quote': quote,
+            'temp_target_id': temp_target_id
+        }
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
 
