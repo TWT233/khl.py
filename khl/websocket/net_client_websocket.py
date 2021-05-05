@@ -65,7 +65,11 @@ class WebsocketClient(BaseClient):
                 asyncio.ensure_future(self.heartbeater(ws_conn))
 
                 async for msg in ws_conn:
-                    req_json = self.__raw_2_req(msg.data)
+                    try:
+                        req_json = self.__raw_2_req(msg.data)
+                    except Exception as e:
+                        logging.error(e)
+                        return
                     if req_json['s'] == 0:
                         self.NEWEST_SN = req_json['sn']
                         event = req_json['d']
