@@ -21,7 +21,8 @@ class Command:
     logger = logging.getLogger('khl.Command')
 
     def __init__(self, func: Callable[..., Coroutine], name: str,
-                 aliases: Iterable[str], help_doc: str, desc_doc: str, merge_args: bool):
+                 aliases: Iterable[str], help_doc: str, desc_doc: str,
+                 merge_args: bool):
         self.name: str
         self.handler: Callable[..., Coroutine]
         self.trigger: Set[str]
@@ -52,14 +53,13 @@ class Command:
         if not isinstance(self.merge_args, bool):
             raise TypeError('merge_args must be a bool.')
 
-
     def __merge_args(self, *args):
         params_count = self.handler.__code__.co_argcount - 1
         if params_count != 0:
             if len(args) > params_count:
                 last_parameter = args[params_count - 1:]
-                print(" ".join(last_parameter))
-                args = args[:params_count - 1] + tuple([" ".join(last_parameter)])
+                args = args[:params_count - 1] + tuple(
+                    [" ".join(last_parameter)])
         return args
 
     async def execute(self, msg: Msg, *args):
@@ -86,7 +86,6 @@ class Command:
         :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
         :return: wrapped Command
         """
-
         def decorator(func):
             return Command(func, name, aliases, help_doc, desc_doc, merge_args)
 
@@ -129,10 +128,9 @@ class CommandGroup(Command):
         :param aliases: the aliases, used to trigger
         :param help_doc: detailed manual
         :param desc_doc: short introduction
-        :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
+        :param merge_args: merge redundant parameters(tail), same as *tail + ' '.join(tail)
         :return: wrapped Command
         """
-
         def decorator(func):
             cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args)
             self.add_subcommand(cmd)
