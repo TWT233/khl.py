@@ -17,15 +17,17 @@ class Command:
     trigger = ['']
     help = ''
     desc = ''
+    merge_args = False
     logger = logging.getLogger('khl.Command')
 
     def __init__(self, func: Callable[..., Coroutine], name: str,
-                 aliases: Iterable[str], help_doc: str, desc_doc: str):
+                 aliases: Iterable[str], help_doc: str, desc_doc: str, merge_args: bool):
         self.name: str
         self.handler: Callable[..., Coroutine]
         self.trigger: Set[str]
         self.help: str
         self.desc: str
+        self.merge_args: bool
 
         if not asyncio.iscoroutinefunction(func):
             raise TypeError('handler must be a coroutine.')
@@ -46,15 +48,34 @@ class Command:
         if not isinstance(self.desc, str):
             raise TypeError('desc_doc must be a string.')
 
+        self.merge_args = merge_args
+        if not isinstance(self.merge_args, bool):
+            raise TypeError('merge_args must be a bool.')
+
+
+    def __merge_args(self, *args):
+        params_count = self.handler.__code__.co_argcount - 1
+        if params_count != 0:
+            if len(args) > params_count:
+                last_parameter = args[params_count - 1:]
+                print(" ".join(last_parameter))
+                args = args[:params_count - 1] + tuple([" ".join(last_parameter)])
+        return args
+
     async def execute(self, msg: Msg, *args):
         self.logger.debug(f'msg.content={msg.content} args={args}')
-        return await self.handler(msg, *args)
+        if self.merge_args:
+            args = self.__merge_args(*args)
+            return await self.handler(msg, *args)
+        else:
+            return await self.handler(msg, *args)
 
     @staticmethod
     def command(name: str = '',
                 aliases: Iterable[str] = (),
                 help_doc: str = '',
-                desc_doc: str = ''):
+                desc_doc: str = '',
+                merge_args: bool = False):
         """
         decorator to wrap a func into a Command
 
@@ -62,10 +83,12 @@ class Command:
         :param aliases: the aliases, used to trigger Command
         :param help_doc: detailed manual
         :param desc_doc: short introduction
+        :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
         :return: wrapped Command
         """
+
         def decorator(func):
-            return Command(func, name, aliases, help_doc, desc_doc)
+            return Command(func, name, aliases, help_doc, desc_doc, merge_args)
 
         return decorator
 
@@ -75,10 +98,11 @@ class CommandGroup(Command):
                  name: str,
                  aliases: Iterable[str] = (),
                  help_doc: str = '',
-                 desc_doc: str = ''):
+                 desc_doc: str = '',
+                 merge_args: bool = False):
         self._sub_commands: Set[Command] = set()
         super().__init__(self.__gen_handler(), name, aliases, help_doc,
-                         desc_doc)
+                         desc_doc, merge_args)
 
     def __gen_handler(self):
         async def __handler(msg: Msg, *args):
@@ -96,7 +120,8 @@ class CommandGroup(Command):
                    name: str = '',
                    aliases: Iterable[str] = (),
                    help_doc: str = '',
-                   desc_doc: str = ''):
+                   desc_doc: str = '',
+                   merge_args: bool = False):
         """
         decorator to wrap a func into a SubCommand
 
@@ -104,10 +129,12 @@ class CommandGroup(Command):
         :param aliases: the aliases, used to trigger
         :param help_doc: detailed manual
         :param desc_doc: short introduction
+        :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
         :return: wrapped Command
         """
+
         def decorator(func):
-            cmd = Command(func, name, aliases, help_doc, desc_doc)
+            cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args)
             self.add_subcommand(cmd)
 
         return decorator
