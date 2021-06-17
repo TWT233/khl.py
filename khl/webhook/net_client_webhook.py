@@ -99,3 +99,4 @@ class WebhookClient(BaseClient):
         await runner.setup()
         site = web.TCPSite(runner, '0.0.0.0', self.port)
         await site.start()
+        await asyncio.Event().wait()

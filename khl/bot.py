@@ -293,7 +293,7 @@ class Bot:
             asyncio.ensure_future(self._event_handler())
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
-            pass
+            self.logger.info('Keyboard Interrupt, closing connection')
         except Exception as e:
             self.logger.error(e)
         asyncio.get_event_loop().run_until_complete(self.__cs.close())
