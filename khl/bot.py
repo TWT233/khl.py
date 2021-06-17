@@ -294,5 +294,7 @@ class Bot:
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
             pass
+        except Exception as e:
+            self.logger.error(e)
         asyncio.get_event_loop().run_until_complete(self.__cs.close())
         self.logger.info('see you next time')
