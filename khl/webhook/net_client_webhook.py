@@ -78,11 +78,11 @@ class WebhookClient(BaseClient):
 
             if req_json['s'] == 0:
                 event = req_json['d']
-                await self.event_queue.put(event)
                 if event['type'] == 255:
                     if event['channel_type'] == 'WEBHOOK_CHALLENGE':
                         return web.json_response(
                             {'challenge': event['challenge']})
+                await self.event_queue.put(event)
 
             return web.Response()
 
