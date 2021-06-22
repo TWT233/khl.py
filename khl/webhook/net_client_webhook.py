@@ -99,3 +99,6 @@ class WebhookClient(BaseClient):
         await runner.setup()
         site = web.TCPSite(runner, '0.0.0.0', self.port)
         await site.start()
+
+        while True:
+            await asyncio.sleep(3600)  # sleep forever
