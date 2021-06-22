@@ -149,7 +149,8 @@ class Bot:
                 name: str = '',
                 aliases: Iterable[str] = (),
                 help_doc: str = '',
-                desc_doc: str = ''):
+                desc_doc: str = '',
+                merge_args: bool = False):
         """
         decorator to wrap a func into a Command
 
@@ -157,11 +158,12 @@ class Bot:
         :param aliases: the aliases, used to trigger Command
         :param help_doc: detailed manual
         :param desc_doc: short introduction
+        :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
         :return: wrapped Command
         """
 
         def decorator(func: Callable[..., Coroutine]):
-            cmd = Command(func, name, aliases, help_doc, desc_doc)
+            cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args)
             self.add_command(cmd)
 
         return decorator
@@ -235,8 +237,19 @@ class Bot:
         data = {'msg_id': msg_id}
         return await self.post(f'{API_URL}/message/delete', json=data)
 
-    async def update(self, msg_id, content, *, quote='') -> Union[dict, list]:
-        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+    async def update(
+            self,
+            msg_id,
+            content,
+            *,
+            quote='',
+            temp_target_id: Union[str, None] = None) -> Union[dict, list]:
+        data = {
+            'msg_id': msg_id,
+            'content': content,
+            'quote': quote,
+            'temp_target_id': temp_target_id
+        }
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
 
@@ -280,6 +293,8 @@ class Bot:
             asyncio.ensure_future(self._event_handler())
             asyncio.get_event_loop().run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
-            pass
+            self.logger.info('Keyboard Interrupt, closing connection')
+        except Exception as e:
+            self.logger.error(e)
         asyncio.get_event_loop().run_until_complete(self.__cs.close())
         self.logger.info('see you next time')
