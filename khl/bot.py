@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.events import AbstractEventLoop
 import json
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
@@ -24,6 +25,7 @@ class Bot:
     """
     logger = logging.getLogger('khl.Bot')
     use_btn_command = True
+    __loop = asyncio.get_event_loop()
 
     def __init__(self,
                  *,
@@ -52,7 +54,6 @@ class Bot:
         else:
             self.net_client: 'BaseClient' = WebsocketClient(cert=cert,
                                                             compress=compress)
-
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
@@ -67,6 +68,13 @@ class Bot:
     @property
     async def client_session(self):
         return self.__cs
+
+    def _setup_event_loop(self, loop: AbstractEventLoop):
+        """
+        never use this after running the client!!
+        """
+        self.__loop = loop
+        self.net_client.setup_event_loop(loop)
 
     async def id(self):
         if not self.__me or 'id' not in self.__me.keys():
@@ -109,12 +117,12 @@ class Bot:
     async def _event_handler(self):
         async def _run_event(which: str, msg: Msg):
             for i in self.__msg_listener[which]:
-                asyncio.ensure_future(i(msg))
+                asyncio.ensure_future(i(msg), loop=self.__loop)
 
         async def _dispatch_event(e: dict):
             event_with_bot = {**event, 'bot': self}
             for i in self.__msg_listener['on_raw_event']:
-                asyncio.ensure_future(i(event_with_bot))
+                asyncio.ensure_future(i(event_with_bot), loop=self.__loop)
 
             m = Msg.event_to_msg(event_with_bot)
             if not m:
@@ -137,7 +145,7 @@ class Bot:
             event = await self.net_client.event_queue.get()
             self.logger.debug(f'upcoming event:\n\t{event}')
 
-            asyncio.ensure_future(_dispatch_event(event))
+            asyncio.ensure_future(_dispatch_event(event), loop=self.__loop)
 
             self.net_client.event_queue.task_done()
 
@@ -293,11 +301,11 @@ class Bot:
     def run(self):
         try:
             self.logger.info('launching')
-            asyncio.ensure_future(self._event_handler())
-            asyncio.get_event_loop().run_until_complete(self.net_client.run())
+            asyncio.ensure_future(self._event_handler(), loop=self.__loop)
+            self.__loop.run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
             self.logger.info('Keyboard Interrupt, closing connection')
         except Exception as e:
             self.logger.error(e)
-        asyncio.get_event_loop().run_until_complete(self.__cs.close())
+        self.__loop.run_until_complete(self.__cs.close())
         self.logger.info('see you next time')

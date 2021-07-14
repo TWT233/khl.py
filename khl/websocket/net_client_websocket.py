@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.events import AbstractEventLoop
 import json
 import logging
 import zlib
@@ -16,6 +17,7 @@ class WebsocketClient(BaseClient):
     """
     __slots__ = 'cert', 'compress', 'event_queue', 'NEWEST_SN', 'RAW_GATEWAY'
     logger = logging.getLogger('khl.WebsocketClient')
+    __loop = asyncio.get_event_loop()
 
     def __init__(self, cert: Cert, compress: bool = True):
         super().__init__()
@@ -31,6 +33,11 @@ class WebsocketClient(BaseClient):
         while True:
             await asyncio.sleep(26)
             await ws_conn.send_json({'s': 2, 'sn': self.NEWEST_SN})
+
+    def setup_event_loop(self, loop: AbstractEventLoop):
+        self.__loop = loop
+        self.event_queue = asyncio.Queue(loop=loop)
+        return
 
     def __raw_2_req(self, data: bytes) -> dict:
         """
@@ -62,7 +69,8 @@ class WebsocketClient(BaseClient):
                 self.RAW_GATEWAY = res_json['data']['url']
 
             async with cs.ws_connect(self.RAW_GATEWAY) as ws_conn:
-                asyncio.ensure_future(self.heartbeater(ws_conn))
+                asyncio.ensure_future(self.heartbeater(ws_conn),
+                                      loop=self.__loop)
 
                 async for msg in ws_conn:
                     try:

@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.events import AbstractEventLoop
 import json
 import time
 import zlib
@@ -35,6 +36,9 @@ class WebhookClient(BaseClient):
         self.compress = compress
         self.event_queue = asyncio.Queue()
         self.sn_dup_map = {}
+
+    def setup_event_loop(self, loop: AbstractEventLoop):
+        self.event_queue = asyncio.Queue(loop=loop)
 
     def __raw_2_req(self, data: bytes) -> dict:
         """
