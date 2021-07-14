@@ -64,6 +64,10 @@ class Bot:
             'on_system_msg': []
         }
 
+    @property
+    async def client_session(self):
+        return self.__cs
+
     async def id(self):
         if not self.__me or 'id' not in self.__me.keys():
             self.__me = await self.get(f'{API_URL}/user/me')
@@ -161,7 +165,6 @@ class Bot:
         :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
         :return: wrapped Command
         """
-
         def decorator(func: Callable[..., Coroutine]):
             cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args)
             self.add_command(cmd)
