@@ -75,6 +75,7 @@ class Bot:
         """
         self.__loop = loop
         self.net_client.setup_event_loop(loop)
+        self.__cs = ClientSession(loop=loop)
 
     async def id(self):
         if not self.__me or 'id' not in self.__me.keys():
