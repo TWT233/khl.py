@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.events import AbstractEventLoop
 import json
 import time
 import zlib
@@ -35,6 +36,9 @@ class WebhookClient(BaseClient):
         self.compress = compress
         self.event_queue = asyncio.Queue()
         self.sn_dup_map = {}
+
+    def setup_event_loop(self, loop: AbstractEventLoop):
+        self.event_queue = asyncio.Queue(loop=loop)
 
     def __raw_2_req(self, data: bytes) -> dict:
         """
@@ -95,10 +99,19 @@ class WebhookClient(BaseClient):
 
     async def run(self):
         self.__init_app()
-        runner = web.AppRunner(self.app)
+        runner = web.AppRunner(self.app, access_log_class=None)
         await runner.setup()
         site = web.TCPSite(runner, '0.0.0.0', self.port)
         await site.start()
 
         while True:
             await asyncio.sleep(3600)  # sleep forever
+
+
+# from aiohttp.abc import AbstractAccessLogger
+
+# class __AccessLogger(AbstractAccessLogger):
+#     def log(self, request, response, time):
+#         self.logger.debug(f'{request.remote} '
+#                           f'"{request.method} {request.path} '
+#                           f'done in {time}s: {response.status}')
