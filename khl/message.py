@@ -371,6 +371,9 @@ class SysMsg(Msg):
         DELETED_PRIVATE_MSG = 'deleted_private_message'
 
         UPDATED_GUILD = 'updated_guild'
+        DELETED_GUILD = 'deleted_guild'
+        ADDED_BLOCK_LIST = 'added_block_list'
+        DELETED_BLOCK_LIST = 'deleted_block_list'
 
         JOINED_GUILD_MEMBER = 'joined_guild'
         EXITED_GUILD_MEMBER = 'exited_guild'
@@ -609,3 +612,77 @@ class SysMsgGuildMemberOffline(SysMsg):
     @property
     def common_guilds(self) -> list:
         return self.body['guilds']
+
+
+class SysMsgGuild(SysMsg):
+    @property
+    def guild_id(self) -> str:
+        return self.body['id']
+
+    @property
+    def guild_name(self) -> str:
+        return self.body['name']
+
+    @property
+    def master_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def guild_icon(self) -> str:
+        return self.body['icon']
+
+    @property
+    def notify_type(self) -> int:
+        return self.body['notify_type']
+
+    @property
+    def region(self) -> str:
+        return self.body['region']
+
+    @property
+    def enable_open(self) -> int:
+        return self.body['enable_open']
+
+    @property
+    def open_id(self) -> int:
+        return self.body['open_id']
+
+    @property
+    def default_channel_id(self) -> str:
+        return self.body['default_channel_id']
+
+    @property
+    def welcome_channel_id(self) -> str:
+        return self.body['welcome_channel_id']
+
+
+class SysMsgUpdatedGuild(SysMsgGuild):
+    pass
+
+
+class SysMsgDeletedGuild(SysMsgGuild):
+    pass
+
+
+class SysMsgAddedBlockList(SysMsg):
+    @property
+    def operator_id(self) -> str:
+        return self.body['operator_id']
+
+    @property
+    def remark(self) -> str:
+        return self.body['remark']
+
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+
+class SysMsgDeletedBlockList(SysMsg):
+    @property
+    def operator_id(self) -> str:
+        return self.body['operator_id']
+
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']

@@ -71,7 +71,7 @@ please install certi manually, turning to this post for guide:
     - [ ] [direct-message](https://developer.kaiheila.cn/doc/event/direct-message)
     - [x] [guild-member](https://developer.kaiheila.cn/doc/event/guild-member)
     - [ ] [guild-role](https://developer.kaiheila.cn/doc/event/guild-role)
-    - [ ] [guild](https://developer.kaiheila.cn/doc/event/guild)
+    - [x] [guild](https://developer.kaiheila.cn/doc/event/guild)
     - [x] [message](https://developer.kaiheila.cn/doc/event/message)
     - [ ] [user](https://developer.kaiheila.cn/doc/event/user)
 - [x] upload assets (v0.0.10)
