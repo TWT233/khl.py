@@ -5,7 +5,7 @@ from enum import Enum, IntEnum
 from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING, Union
 
 from .channel import Channel
-from .guild import Guild
+from .guild import Guild, Role
 from .user import User
 
 if TYPE_CHECKING:
@@ -375,6 +375,10 @@ class SysMsg(Msg):
         ADDED_BLOCK_LIST = 'added_block_list'
         DELETED_BLOCK_LIST = 'deleted_block_list'
 
+        ADDED_ROLE = 'added_role'
+        DELETED_ROLE = 'deleted_role'
+        UPDATED_ROLE = 'update_role'
+
         JOINED_GUILD_MEMBER = 'joined_guild'
         EXITED_GUILD_MEMBER = 'exited_guild'
         GUILD_MEMBER_ONLINE = 'guild_member_online'
@@ -686,3 +690,33 @@ class SysMsgDeletedBlockList(SysMsg):
     @property
     def user_id(self) -> str:
         return self.body['user_id']
+
+
+class SysMsgAddedRole(SysMsg):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self._role = Role(**self.body)
+
+    @property
+    def role(self):
+        return self._role
+
+
+class SysMsgDeletedRole(SysMsg):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self._role = Role(**self.body)
+
+    @property
+    def role(self):
+        return self._role
+
+
+class SysMsgUpdatedRole(SysMsg):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self._role = Role(**self.body)
+
+    @property
+    def role(self):
+        return self._role

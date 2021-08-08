@@ -70,7 +70,7 @@ please install certi manually, turning to this post for guide:
     - [x] [channel](https://developer.kaiheila.cn/doc/event/channel)
     - [ ] [direct-message](https://developer.kaiheila.cn/doc/event/direct-message)
     - [x] [guild-member](https://developer.kaiheila.cn/doc/event/guild-member)
-    - [ ] [guild-role](https://developer.kaiheila.cn/doc/event/guild-role)
+    - [x] [guild-role](https://developer.kaiheila.cn/doc/event/guild-role)
     - [x] [guild](https://developer.kaiheila.cn/doc/event/guild)
     - [x] [message](https://developer.kaiheila.cn/doc/event/message)
     - [ ] [user](https://developer.kaiheila.cn/doc/event/user)
