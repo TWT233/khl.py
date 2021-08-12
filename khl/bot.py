@@ -83,7 +83,7 @@ class Bot:
         return self.__me['id']
 
     async def _btn_watcher(self, msg: SysMsg):
-        if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
+        if msg.event_type != SysMsg.EventTypes.MESSAGE_BTN_CLICK or self.use_btn_command is False:
             return
 
         try:

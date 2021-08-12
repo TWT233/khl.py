@@ -73,7 +73,7 @@ please install certi manually, turning to this post for guide:
     - [x] [guild-role](https://developer.kaiheila.cn/doc/event/guild-role)
     - [x] [guild](https://developer.kaiheila.cn/doc/event/guild)
     - [x] [message](https://developer.kaiheila.cn/doc/event/message)
-    - [ ] [user](https://developer.kaiheila.cn/doc/event/user)
+    - [x] [user](https://developer.kaiheila.cn/doc/event/user)
 - [x] upload assets (v0.0.10)
 - [ ] no prefix commands (v0.0.10)
   - [ ] fix `cmd_prefix=[]`
