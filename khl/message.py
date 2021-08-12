@@ -5,7 +5,7 @@ from enum import Enum, IntEnum
 from typing import Dict, List, Any, Mapping, Optional, Sequence, TYPE_CHECKING, Union
 
 from .channel import Channel
-from .guild import Guild
+from .guild import Guild, Role
 from .user import User
 
 if TYPE_CHECKING:
@@ -358,39 +358,50 @@ class SysMsg(Msg):
 
     class EventTypes(Enum):
         UNKNOWN = 0
-        BTN_CLICK = 'message_btn_click'
+        MESSAGE_BTN_CLICK = 'message_btn_click'
 
-        ADDED_REACTION_GROUP = 'added_reaction'
-        DELETED_REACTION_GROUP = 'deleted_reaction'
-        UPDATED_MSG_GROUP = 'updated_message'
-        DELETED_MSG_GROUP = 'deleted_message'
+        ADDED_REACTION = 'added_reaction'
+        DELETED_REACTION = 'deleted_reaction'
+        UPDATED_MESSAGE = 'updated_message'
+        DELETED_MESSAGE = 'deleted_message'
 
         PRIVATE_ADDED_REACTION = 'private_added_reaction'
         PRIVATE_DELETED_REACTION = 'private_deleted_reaction'
-        UPDATED_PRIVATE_MSG = 'updated_private_message'
-        DELETED_PRIVATE_MSG = 'deleted_private_message'
+        UPDATED_PRIVATE_MESSAGE = 'updated_private_message'
+        DELETED_PRIVATE_MESSAGE = 'deleted_private_message'
 
         UPDATED_GUILD = 'updated_guild'
+        DELETED_GUILD = 'deleted_guild'
+        ADDED_BLOCK_LIST = 'added_block_list'
+        DELETED_BLOCK_LIST = 'deleted_block_list'
 
-        JOINED_GUILD_MEMBER = 'joined_guild'
-        EXITED_GUILD_MEMBER = 'exited_guild'
+        ADDED_ROLE = 'added_role'
+        DELETED_ROLE = 'deleted_role'
+        UPDATED_ROLE = 'update_role'
+
+        JOINED_GUILD = 'joined_guild'
+        EXITED_GUILD = 'exited_guild'
         GUILD_MEMBER_ONLINE = 'guild_member_online'
         GUILD_MEMBER_OFFLINE = 'guild_member_offline'
 
-        JOINED_CHANNEL_MEMBER = 'joined_channel'
-        EXITED_CHANNEL_MEMBER = 'exited_channel'
         UPDATED_GUILD_MEMBER = 'updated_guild_member'
 
         UPDATED_CHANNEL = 'updated_channel'
         ADDED_CHANNEL = 'added_channel'
         DELETED_CHANNEL = 'deleted_channel'
 
+        JOINED_CHANNEL = 'joined_channel'
+        EXITED_CHANNEL = 'exited_channel'
+        USER_UPDATE = 'user_update'
+        SELF_JOINED_GUILD = 'self_joined_guild'
+        SELF_EXITED_GUILD = 'self_exited_guild'
+
         NOTSET = ''
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.bot: Bot = kwargs['bot']
-        if self.event_type == self.EventTypes.BTN_CLICK:
+        if self.event_type == self.EventTypes.MESSAGE_BTN_CLICK:
             self.ctx = MsgCtx(guild=None,
                               channel=Channel(self.extra['body']['target_id']),
                               bot=kwargs['bot'],
@@ -609,3 +620,153 @@ class SysMsgGuildMemberOffline(SysMsg):
     @property
     def common_guilds(self) -> list:
         return self.body['guilds']
+
+
+class SysMsgGuild(SysMsg):
+    @property
+    def guild_id(self) -> str:
+        return self.body['id']
+
+    @property
+    def guild_name(self) -> str:
+        return self.body['name']
+
+    @property
+    def master_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def guild_icon(self) -> str:
+        return self.body['icon']
+
+    @property
+    def notify_type(self) -> int:
+        return self.body['notify_type']
+
+    @property
+    def region(self) -> str:
+        return self.body['region']
+
+    @property
+    def enable_open(self) -> int:
+        return self.body['enable_open']
+
+    @property
+    def open_id(self) -> int:
+        return self.body['open_id']
+
+    @property
+    def default_channel_id(self) -> str:
+        return self.body['default_channel_id']
+
+    @property
+    def welcome_channel_id(self) -> str:
+        return self.body['welcome_channel_id']
+
+
+class SysMsgUpdatedGuild(SysMsgGuild):
+    pass
+
+
+class SysMsgDeletedGuild(SysMsgGuild):
+    pass
+
+
+class SysMsgAddedBlockList(SysMsg):
+    @property
+    def operator_id(self) -> str:
+        return self.body['operator_id']
+
+    @property
+    def remark(self) -> str:
+        return self.body['remark']
+
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+
+class SysMsgDeletedBlockList(SysMsg):
+    @property
+    def operator_id(self) -> str:
+        return self.body['operator_id']
+
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+
+class SysMsgRole(SysMsg):
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        self._role = Role(**self.body)
+
+    @property
+    def role(self):
+        return self._role
+
+
+class SysMsgAddedRole(SysMsgRole):
+    pass
+
+
+class SysMsgDeletedRole(SysMsgRole):
+    pass
+
+
+class SysMsgUpdatedRole(SysMsgRole):
+    pass
+
+
+class SysMsgJoinedChannel(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def channel_id(self) -> str:
+        return self.body['channel_id']
+
+    @property
+    def joined_at(self) -> int:
+        return self.body['joined_at']
+
+
+class SysMsgExitedChannel(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def channel_id(self) -> str:
+        return self.body['channel_id']
+
+    @property
+    def exited_at(self) -> int:
+        return self.body['exited_at']
+
+
+class SysMsgUserUpdated(SysMsg):
+    @property
+    def user_id(self) -> str:
+        return self.body['user_id']
+
+    @property
+    def user_name(self) -> str:
+        return self.body['user_name']
+
+    @property
+    def avatar(self) -> str:
+        return self.body['avatar']
+
+
+class SysMsgSelfJoinGuild(SysMsg):
+    @property
+    def guild_id(self) -> str:
+        return self.body['guild_id']
+
+
+class SysMsgSelfExitedGuild(SysMsg):
+    @property
+    def guild_id(self) -> str:
+        return self.body['guild_id']

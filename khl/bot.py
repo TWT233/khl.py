@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.events import AbstractEventLoop
 import json
 import logging
 from typing import Any, Dict, List, Union, Iterable, Callable, Coroutine, TYPE_CHECKING
@@ -24,6 +25,7 @@ class Bot:
     """
     logger = logging.getLogger('khl.Bot')
     use_btn_command = True
+    __loop = asyncio.get_event_loop()
 
     def __init__(self,
                  *,
@@ -52,7 +54,6 @@ class Bot:
         else:
             self.net_client: 'BaseClient' = WebsocketClient(cert=cert,
                                                             compress=compress)
-
         self.__cs: ClientSession = ClientSession()
         self.__cmd_index: Dict[str, 'Command'] = {}
         self.kq: Dict[str, KQueue] = {'btn': KQueue(), 'user': KQueue()}
@@ -64,13 +65,25 @@ class Bot:
             'on_system_msg': []
         }
 
+    @property
+    async def client_session(self):
+        return self.__cs
+
+    def _setup_event_loop(self, loop: AbstractEventLoop):
+        """
+        never use this after running the client!!
+        """
+        self.__loop = loop
+        self.net_client.setup_event_loop(loop)
+        self.__cs = ClientSession(loop=loop)
+
     async def id(self):
         if not self.__me or 'id' not in self.__me.keys():
             self.__me = await self.get(f'{API_URL}/user/me')
         return self.__me['id']
 
     async def _btn_watcher(self, msg: SysMsg):
-        if msg.event_type != SysMsg.EventTypes.BTN_CLICK or self.use_btn_command is False:
+        if msg.event_type != SysMsg.EventTypes.MESSAGE_BTN_CLICK or self.use_btn_command is False:
             return
 
         try:
@@ -105,12 +118,12 @@ class Bot:
     async def _event_handler(self):
         async def _run_event(which: str, msg: Msg):
             for i in self.__msg_listener[which]:
-                asyncio.ensure_future(i(msg))
+                asyncio.ensure_future(i(msg), loop=self.__loop)
 
         async def _dispatch_event(e: dict):
             event_with_bot = {**event, 'bot': self}
             for i in self.__msg_listener['on_raw_event']:
-                asyncio.ensure_future(i(event_with_bot))
+                asyncio.ensure_future(i(event_with_bot), loop=self.__loop)
 
             m = Msg.event_to_msg(event_with_bot)
             if not m:
@@ -133,7 +146,7 @@ class Bot:
             event = await self.net_client.event_queue.get()
             self.logger.debug(f'upcoming event:\n\t{event}')
 
-            asyncio.ensure_future(_dispatch_event(event))
+            asyncio.ensure_future(_dispatch_event(event), loop=self.__loop)
 
             self.net_client.event_queue.task_done()
 
@@ -149,7 +162,8 @@ class Bot:
                 name: str = '',
                 aliases: Iterable[str] = (),
                 help_doc: str = '',
-                desc_doc: str = ''):
+                desc_doc: str = '',
+                merge_args: bool = False):
         """
         decorator to wrap a func into a Command
 
@@ -157,11 +171,11 @@ class Bot:
         :param aliases: the aliases, used to trigger Command
         :param help_doc: detailed manual
         :param desc_doc: short introduction
+        :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
         :return: wrapped Command
         """
-
         def decorator(func: Callable[..., Coroutine]):
-            cmd = Command(func, name, aliases, help_doc, desc_doc)
+            cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args)
             self.add_command(cmd)
 
         return decorator
@@ -235,8 +249,19 @@ class Bot:
         data = {'msg_id': msg_id}
         return await self.post(f'{API_URL}/message/delete', json=data)
 
-    async def update(self, msg_id, content, *, quote='') -> Union[dict, list]:
-        data = {'msg_id': msg_id, 'content': content, 'quote': quote}
+    async def update(
+            self,
+            msg_id,
+            content,
+            *,
+            quote='',
+            temp_target_id: Union[str, None] = None) -> Union[dict, list]:
+        data = {
+            'msg_id': msg_id,
+            'content': content,
+            'quote': quote,
+            'temp_target_id': temp_target_id
+        }
         return await self.post(f'{API_URL}/message/update?compress=0',
                                json=data)
 
@@ -277,9 +302,11 @@ class Bot:
     def run(self):
         try:
             self.logger.info('launching')
-            asyncio.ensure_future(self._event_handler())
-            asyncio.get_event_loop().run_until_complete(self.net_client.run())
+            asyncio.ensure_future(self._event_handler(), loop=self.__loop)
+            self.__loop.run_until_complete(self.net_client.run())
         except KeyboardInterrupt:
-            pass
-        asyncio.get_event_loop().run_until_complete(self.__cs.close())
+            self.logger.info('Keyboard Interrupt, closing connection')
+        except Exception as e:
+            self.logger.error(e)
+        self.__loop.run_until_complete(self.__cs.close())
         self.logger.info('see you next time')
