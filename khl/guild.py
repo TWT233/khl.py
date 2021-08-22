@@ -34,10 +34,11 @@ class Guild:
         return await self.bot.get(f'{API_URL}/channel/list?compress=0',
                              json={'guild_id': self.id})
     
-    async def create_channel(self, name: str = None, parent_id: str = '') -> list:
+    async def create_channel(self, name: str = None, parent_id: str = '', type: str = '1') -> list:
         return await self.bot.post(f'{API_URL}/channel/create?compress=0',
                               json={
                                   'name': name,
+                                  'type': type,
                                   'parent_id': parent_id,
                                   'guild_id': self.id
                               } if name else {'guild_id': self.id})
