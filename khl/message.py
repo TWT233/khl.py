@@ -166,7 +166,7 @@ class _NormalMsgKernel(Msg):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.author: 'User' = User(self.extra['author'])
-        self.ctx = MsgCtx(guild=Guild(self.guild_id),
+        self.ctx = MsgCtx(guild=Guild(self.guild_id, kwargs.get('bot')),
                           channel=Channel(self.target_id),
                           bot=kwargs.get('bot'),
                           user=self.author,

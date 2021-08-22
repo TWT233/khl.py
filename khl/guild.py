@@ -22,39 +22,58 @@ class Role:
 class Guild:
     logger = logging.getLogger('khl.Guild')
 
-    def __init__(self, guild_id: Union[str, None]):
+    def __init__(self, guild_id: Union[str, None], bot: 'Bot'):
         self.id = guild_id
+        self.bot = bot
 
     @property
     def is_user_chat(self):
         return self.id is None
+    
+    async def get_channels(self) -> list:
+        return await self.bot.get(f'{API_URL}/channel/list?compress=0',
+                             json={'guild_id': self.id})
+    
+    async def create_channel(self, name: str = None, parent_id: str = '') -> list:
+        return await self.bot.post(f'{API_URL}/channel/create?compress=0',
+                              json={
+                                  'name': name,
+                                  'parent_id': parent_id,
+                                  'guild_id': self.id
+                              } if name else {'guild_id': self.id})
+    
+    async def delete_channel(self, channel_id: str = None):
+        await self.bot.post(f'{API_URL}/channel/delete?compress=0',
+                       json={
+                           'channel_id': channel_id
+                       })
+    
 
-    async def get_roles(self, bot: 'Bot') -> list:
-        return await bot.get(f'{API_URL}/guild-role/index?compress=0',
+    async def get_roles(self) -> list:
+        return await self.bot.get(f'{API_URL}/guild-role/index?compress=0',
                              json={'guild_id': self.id})
 
-    async def create_role(self, bot: 'Bot', name: str = None) -> list:
-        return await bot.post(f'{API_URL}/guild-role/create?compress=0',
+    async def create_role(self, name: str = None) -> list:
+        return await self.bot.post(f'{API_URL}/guild-role/create?compress=0',
                               json={
                                   'name': name,
                                   'guild_id': self.id
                               } if name else {'guild_id': self.id})
 
-    async def delete_role(self, bot: 'Bot', name: str):
-        await bot.post(f'{API_URL}/guild-role/delete?compress=0',
+    async def delete_role(self, name: str):
+        await self.bot.post(f'{API_URL}/guild-role/delete?compress=0',
                        json={
                            'name': name,
                            'guild_id': self.id
                        })
 
     async def update_role(self,
-                          bot: 'Bot',
                           *,
                           role_id: int,
                           mentionable: bool,
                           permissions: int,
                           hoist: bool = False) -> bool:
-        return await bot.post(f'{API_URL}/guild-role/update?compress=0',
+        return await self.bot.post(f'{API_URL}/guild-role/update?compress=0',
                               json={
                                   'guild_id': self.id,
                                   'role_id': role_id,
