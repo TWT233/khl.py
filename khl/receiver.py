@@ -8,9 +8,10 @@ from abc import ABC, abstractmethod
 from aiohttp import ClientWebSocketResponse, ClientSession, web
 
 from .cert import Cert
-from .hardcoded import API_URL
 
 log = logging.getLogger(__name__)
+
+API = f'https://www.kaiheila.cn/api/v3'
 
 
 class Receiver(ABC):
@@ -59,7 +60,7 @@ class WebsocketReceiver(Receiver):
                 'Content-type': 'application/json'
             }
             params = {'compress': self.compress and 1 or 0}
-            async with cs.get(f"{API_URL}/gateway/index",
+            async with cs.get(f"{API}/gateway/index",
                               headers=headers,
                               params=params) as res:
                 res_json = await res.json()
