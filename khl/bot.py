@@ -163,7 +163,8 @@ class Bot:
                 aliases: Iterable[str] = (),
                 help_doc: str = '',
                 desc_doc: str = '',
-                merge_args: bool = False):
+                merge_args: bool = False,
+                rule: Callable[..., Coroutine] = None):
         """
         decorator to wrap a func into a Command
 
@@ -172,10 +173,12 @@ class Bot:
         :param help_doc: detailed manual
         :param desc_doc: short introduction
         :param merge_args: merge redundant parameters,useful when the number of parameters is uncertain
+        :param rule: restrictions are triggered only under certain rule
         :return: wrapped Command
         """
+
         def decorator(func: Callable[..., Coroutine]):
-            cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args)
+            cmd = Command(func, name, aliases, help_doc, desc_doc, merge_args, rule)
             self.add_command(cmd)
 
         return decorator
