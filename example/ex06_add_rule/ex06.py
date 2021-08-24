@@ -1,6 +1,6 @@
 import json
 
-from khl import TextMsg, Bot, Cert, Msg
+from khl import TextMsg, Bot, Cert, Msg, Rule
 
 # load config from config/config.json, replace `path` points to your own config file
 # config template: `./config/config.json.example`
@@ -32,5 +32,14 @@ async def roll(msg: TextMsg, *args):
 
 # now you can send "!hello zhangsan bot"
 
+
+# please at your bot
+async def angry_bot(msg: TextMsg, *args):
+    await msg.reply(f'dont at me!')
+
+
+bot.on_text_msg(angry_bot, rule=Rule.at_me())
+
 # everything done, go ahead now!
+
 bot.run()

@@ -183,22 +183,30 @@ class Bot:
 
         return decorator
 
-    def add_msg_listener(self, type: str, func: Callable[..., Coroutine]):
+    def add_msg_listener(self, type: str, func: Callable[..., Coroutine], rule: Callable[..., Coroutine]):
         if type not in self.__msg_listener.keys():
             raise ValueError('event not found')
-        self.__msg_listener[type].append(func)
 
-    def on_all_msg(self, func):
-        self.add_msg_listener('on_all_msg', func)
+        if rule is None:
+            self.__msg_listener[type].append(func)
+        else:
+            async def t(*args):
+                if await rule(*args):
+                    await func(*args)
 
-    def on_text_msg(self, func):
-        self.add_msg_listener('on_text_msg', func)
+            self.__msg_listener[type].append(t)
 
-    def on_system_msg(self, func):
-        self.add_msg_listener('on_system_msg', func)
+    def on_all_msg(self, func, rule=None):
+        self.add_msg_listener('on_all_msg', func, rule)
 
-    def on_raw_event(self, func):
-        self.add_msg_listener('on_raw_event', func)
+    def on_text_msg(self, func, rule=None):
+        self.add_msg_listener('on_text_msg', func, rule)
+
+    def on_system_msg(self, func, rule=None):
+        self.add_msg_listener('on_system_msg', func, rule)
+
+    def on_raw_event(self, func, rule=None):
+        self.add_msg_listener('on_raw_event', func, rule)
 
     async def get(self, url, **kwargs) -> Union[dict, list]:
         headers = kwargs.get('headers', {})
