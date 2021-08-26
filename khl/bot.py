@@ -227,6 +227,9 @@ class Bot:
         return await self.post(f'{API_URL}/asset/create',
                                data={'file': open(file, 'rb')})
 
+    async def create_asset(self, file):
+        return await self.post(f'{API_URL}/asset/create', data={'file': file})
+
     async def send(self,
                    channel_id: str,
                    content: str,
