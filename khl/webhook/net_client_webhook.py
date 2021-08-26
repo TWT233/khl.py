@@ -100,7 +100,10 @@ class WebhookClient(BaseClient):
     async def run(self):
         self.__init_app()
         runner = web.AppRunner(self.app, access_log_class=None)
-        await runner.setup()
+        try:
+            await runner.setup()
+        except Exception as e:
+            runner._server = runner._make_server()
         site = web.TCPSite(runner, '0.0.0.0', self.port)
         await site.start()
 
