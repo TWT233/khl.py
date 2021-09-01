@@ -80,6 +80,7 @@ class WebsocketReceiver(Receiver):
                         log.error(e)
                         return
                     if req_json['s'] == 0:
+                        log.debug(f'upcoming pkg: {req_json}')
                         self._NEWEST_SN = req_json['sn']
                         event = req_json['d']
                         await event_queue.put(event)
