@@ -31,7 +31,7 @@ class BaseMessage(Requestable, ABC):
         CARD = 10
         SYS = 255
 
-    type: int
+    _type: int
     channel_type: str
     target_id: str
     author_id: str
@@ -44,7 +44,7 @@ class BaseMessage(Requestable, ABC):
     _ctx: Context
 
     def __init__(self, **kwargs):
-        self.type = kwargs.get('type', 0)
+        self._type = kwargs.get('type', 0)
         self.channel_type = kwargs.get('channel_type', '')
         self.target_id = kwargs.get('target_id', '')
         self.author_id = kwargs.get('author_id', '')
@@ -54,9 +54,12 @@ class BaseMessage(Requestable, ABC):
         self.nonce = kwargs.get('nonce', '')
         self.extra = kwargs.get('extra', {})
 
+        self._gate = kwargs.get('_gate_', None)
         self._ctx = Context(channel=Channel(id=self.target_id), _gate_=self.gate)
 
-        self._gate = kwargs.get('_gate_', None)
+    @property
+    def type(self) -> Types:
+        return BaseMessage.Types(self._type)
 
 
 class Message(BaseMessage):
@@ -64,10 +67,6 @@ class Message(BaseMessage):
         super().__init__(**kwargs)
         self._ctx.guild = Guild(id=self.extra['guild_id'])
         self._ctx.channel.name = self.extra['channel_name']
-
-    @property
-    def type(self) -> BaseMessage.Types:
-        return BaseMessage.Types(self.extra['type'])
 
     @property
     def guild(self) -> Guild:
