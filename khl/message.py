@@ -1,8 +1,8 @@
-from abc import ABC
+from interface import ABC
 from enum import IntEnum
 from typing import Any, List, Dict
 
-from .abc import Requestable
+from .gateway import Requestable
 from .channel import Channel
 from .context import Context
 from .guild import Guild

@@ -1,4 +1,4 @@
-from .abc import Requestable
+from .gateway import Requestable
 from .channel import Channel
 from .guild import Guild
 

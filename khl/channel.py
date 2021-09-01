@@ -1,4 +1,4 @@
-from .abc import LazyLoadable
+from .gateway import LazyLoadable
 
 
 class Channel(LazyLoadable):

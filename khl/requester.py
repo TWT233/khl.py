@@ -5,7 +5,7 @@ from typing import Union
 from aiohttp import ClientSession
 
 from .cert import Cert
-from .infra.abc import AsyncRunnable
+from .interface import AsyncRunnable
 
 log = logging.getLogger(__name__)
 

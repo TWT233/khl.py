@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 
 from aiohttp import ClientWebSocketResponse, ClientSession, web
 
-from infra.abc import AsyncRunnable
+from .interface import AsyncRunnable
 from .cert import Cert
 
 log = logging.getLogger(__name__)
@@ -20,7 +20,6 @@ class Receiver(AsyncRunnable, ABC):
     def __init__(self):
         raise NotImplementedError
 
-    @abstractmethod
     @property
     def type(self) -> str:
         raise NotImplementedError
@@ -33,7 +32,6 @@ class Receiver(AsyncRunnable, ABC):
 class WebsocketReceiver(Receiver):
 
     def __init__(self, cert: Cert, compress: bool = True):
-        super().__init__()
         self._cert = cert
         self.compress = compress
 
@@ -89,7 +87,6 @@ class WebsocketReceiver(Receiver):
 
 class WebhookReceiver(Receiver):
     def __init__(self, cert: Cert, *, port=5000, route='/khl-wh', compress: bool = True):
-        super().__init__()
         self._cert = cert
         self.port = port
         self.route = route

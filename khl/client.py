@@ -3,8 +3,9 @@ import logging
 from typing import Dict, List, Callable
 
 from .gateway import Gateway
-from .infra.abc import Requestable, AsyncRunnable
-from .infra.message import BaseMessage, Event, Message
+from .interface import AsyncRunnable
+from .gateway import Requestable
+from .message import BaseMessage, Event, Message
 
 log = logging.getLogger(__name__)
 

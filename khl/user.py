@@ -1,6 +1,6 @@
 from typing import List
 
-from .abc import LazyLoadable
+from .gateway import LazyLoadable
 from .role import Role
 
 
