@@ -8,7 +8,7 @@ from .requester import HTTPRequester
 # concepts
 from .role import Role
 from .user import User
-from .channel import Channel
+from .channel import Channel, TextChannel, PrivateChannel
 from .guild import Guild
 from .context import Context
 from .message import RawMessage, ChannelMessage, PrivateMessage, Event

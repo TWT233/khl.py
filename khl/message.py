@@ -1,10 +1,10 @@
 from abc import ABC
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import Any, List, Dict
 
-from .gateway import Requestable
-from .channel import Channel
+from .channel import TextChannel, PrivateChannel
 from .context import Context
+from .gateway import Requestable
 from .guild import Guild
 from .user import User
 
@@ -31,8 +31,15 @@ class RawMessage(ABC):
         CARD = 10
         SYS = 255
 
+    class ChannelTypes(Enum):
+        """
+        types of channel
+        """
+        GROUP = 'GROUP'
+        PERSON = 'PERSON'
+
     _type: int
-    channel_type: str
+    _channel_type: str
     target_id: str
     author_id: str
     content: str
@@ -42,19 +49,23 @@ class RawMessage(ABC):
     extra: Any
 
     def __init__(self, **kwargs):
-        self._type = kwargs.get('type', 0)
-        self.channel_type = kwargs.get('channel_type', '')
-        self.target_id = kwargs.get('target_id', '')
-        self.author_id = kwargs.get('author_id', '')
-        self.content = kwargs.get('content', '')
-        self.msg_id = kwargs.get('msg_id', '')
-        self.msg_timestamp = kwargs.get('msg_timestamp', 0)
-        self.nonce = kwargs.get('nonce', '')
+        self._type = kwargs.get('type')
+        self._channel_type = kwargs.get('channel_type')
+        self.target_id = kwargs.get('target_id')
+        self.author_id = kwargs.get('author_id')
+        self.content = kwargs.get('content')
+        self.msg_id = kwargs.get('msg_id')
+        self.msg_timestamp = kwargs.get('msg_timestamp')
+        self.nonce = kwargs.get('nonce')
         self.extra = kwargs.get('extra', {})
 
     @property
     def type(self) -> Types:
         return RawMessage.Types(self._type)
+
+    @property
+    def channel_type(self) -> ChannelTypes:
+        return RawMessage.ChannelTypes(self._channel_type)
 
 
 class Message(RawMessage, Requestable, ABC):
@@ -71,15 +82,22 @@ class Message(RawMessage, Requestable, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._gate = kwargs.get('_gate_', None)
-        self._ctx = Context(channel=TextChannel(id=self.target_id), _gate_=self.gate)
-        # TODO: init ctx.channel from channel_type
+        self._author = User(**self.extra['author'], _gate_=self._gate, _lazy_loaded_=True)
+
+    @property
+    def author(self) -> User:
+        return self._author
 
 
 class ChannelMessage(Message):
+    """
+    Messages sent in a `TextChannel`
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._ctx.guild = Guild(id=self.extra['guild_id'])
-        self._ctx.channel.name = self.extra['channel_name']
+        self._channel = TextChannel(id=self.target_id, name=self.extra['channel_name'])
+        self._ctx = Context(channel=self._channel, guild=Guild(id=self.extra['guild_id']), _gate_=self.gate)
 
     @property
     def guild(self) -> Guild:
@@ -87,7 +105,7 @@ class ChannelMessage(Message):
 
     @property
     def channel(self) -> TextChannel:
-        return self._ctx.channel
+        return self._channel
 
     @property
     def mention(self) -> List[str]:
@@ -105,19 +123,24 @@ class ChannelMessage(Message):
     def mention_here(self) -> bool:
         return self.extra['mention_here']
 
-    @property
-    def author(self) -> User:
-        return User(**self.extra['author'], _gate_=self._gate, _lazy_loaded_=True)
-
 
 class PrivateMessage(Message):
+    """
+    Messages sent in a `PrivateChannel`
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._channel = PrivateChannel(code=self.extra['code'], target_info=self.extra['author'])
+        self._ctx = Context(channel=self._channel, _gate_=self.gate)
+
     @property
     def chat_code(self) -> str:
         return self.extra['code']
 
     @property
-    def author(self) -> User:
-        return User(**self.extra['author'], _gate_=self._gate, _lazy_loaded_=True)
+    def channel(self) -> PrivateChannel:
+        return self._channel
 
 
 class Event(RawMessage):

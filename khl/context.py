@@ -1,4 +1,4 @@
-from .channel import TextChannel
+from .channel import Channel
 from .gateway import Requestable
 from .guild import Guild
 
