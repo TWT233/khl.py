@@ -1,11 +1,12 @@
 from typing import List
 
-from .gateway import LazyLoadable
-from .channel import Channel
+from .channel import TextChannel
+from .gateway import Requestable
+from .interface import LazyLoadable
 from .role import Role
 
 
-class Guild(LazyLoadable):
+class Guild(LazyLoadable, Requestable):
     """
     `Standard Object`
 
@@ -23,7 +24,7 @@ class Guild(LazyLoadable):
     default_channel_id: str
     welcome_channel_id: str
     roles: List[Role]
-    channels: List[Channel]
+    channels: List[TextChannel]
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id', '')

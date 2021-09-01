@@ -1,4 +1,7 @@
-from .gateway import LazyLoadable
+from abc import ABC
+
+from .gateway import Requestable
+from .interface import LazyLoadable
 
 
 class Channel(LazyLoadable):

@@ -1,4 +1,4 @@
-from interface import ABC
+from abc import ABC
 from enum import IntEnum
 from typing import Any, List, Dict
 
@@ -71,7 +71,7 @@ class Message(RawMessage, Requestable, ABC):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._gate = kwargs.get('_gate_', None)
-        self._ctx = Context(channel=Channel(id=self.target_id), _gate_=self.gate)
+        self._ctx = Context(channel=TextChannel(id=self.target_id), _gate_=self.gate)
         # TODO: init ctx.channel from channel_type
 
 
@@ -86,7 +86,7 @@ class ChannelMessage(Message):
         return self._ctx.guild
 
     @property
-    def channel(self) -> Channel:
+    def channel(self) -> TextChannel:
         return self._ctx.channel
 
     @property

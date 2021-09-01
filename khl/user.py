@@ -1,10 +1,11 @@
 from typing import List
 
-from .gateway import LazyLoadable
+from .gateway import Requestable
+from .interface import LazyLoadable
 from .role import Role
 
 
-class User(LazyLoadable):
+class User(LazyLoadable, Requestable):
     """
     `Standard Object`
 
