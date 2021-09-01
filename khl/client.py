@@ -5,7 +5,7 @@ from typing import Dict, List, Callable
 from .gateway import Gateway
 from .interface import AsyncRunnable
 from .gateway import Requestable
-from .message import BaseMessage, Event, Message
+from .message import RawMessage, Event, ChannelMessage, PrivateMessage
 
 log = logging.getLogger(__name__)
 
@@ -36,11 +36,18 @@ class Client(Requestable, AsyncRunnable):
             event: Dict = await self._event_queue.get()
             log.debug(f'upcoming event: {event}')
 
-            msg: BaseMessage
-            if event['type'] == BaseMessage.Types.SYS.value:
-                msg = Event(**event, _gate_=self.gate)
+            msg: RawMessage
+            if event['type'] == RawMessage.Types.SYS.value:
+                msg = Event(**event)
             else:
-                msg = Message(**event, _gate_=self.gate)
+                if event['channel_type'] == 'GROUP':
+                    msg = ChannelMessage(**event, _gate_=self.gate)
+                elif event['channel_type'] == 'PERSON':
+                    msg = PrivateMessage(**event, _gate_=self.gate)
+                else:
+                    log.error(f'can not spawn msg from event: {event}')
+                    self._event_queue.task_done()
+                    continue
 
             if msg.type in self._handler_map and self._handler_map[msg.type]:
                 for handler in self._handler_map[msg.type]:

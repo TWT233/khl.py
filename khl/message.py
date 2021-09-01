@@ -9,9 +9,9 @@ from .guild import Guild
 from .user import User
 
 
-class BaseMessage(Requestable, ABC):
+class RawMessage(ABC):
     """
-    Base class for kinds of Message
+    Basic and common features of kinds of messages.
 
     now support Message kinds:
         1. Message (sent by users, those normal chats such as TEXT/IMG etc.)
@@ -41,8 +41,6 @@ class BaseMessage(Requestable, ABC):
     nonce: str
     extra: Any
 
-    _ctx: Context
-
     def __init__(self, **kwargs):
         self._type = kwargs.get('type', 0)
         self.channel_type = kwargs.get('channel_type', '')
@@ -54,15 +52,30 @@ class BaseMessage(Requestable, ABC):
         self.nonce = kwargs.get('nonce', '')
         self.extra = kwargs.get('extra', {})
 
-        self._gate = kwargs.get('_gate_', None)
-        self._ctx = Context(channel=Channel(id=self.target_id), _gate_=self.gate)
-
     @property
     def type(self) -> Types:
-        return BaseMessage.Types(self._type)
+        return RawMessage.Types(self._type)
 
 
-class Message(BaseMessage):
+class Message(RawMessage, Requestable, ABC):
+    """
+    Represents the messages sent by user.
+
+    Because it has source and context, we can interact with its sender and context via it.
+
+    now there are two types of message:
+        1. ChannelMessage: sent in a guild channel
+        2. PrivateMessage: sent in a private chat
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._gate = kwargs.get('_gate_', None)
+        self._ctx = Context(channel=Channel(id=self.target_id), _gate_=self.gate)
+        # TODO: init ctx.channel from channel_type
+
+
+class ChannelMessage(Message):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._ctx.guild = Guild(id=self.extra['guild_id'])
@@ -97,7 +110,17 @@ class Message(BaseMessage):
         return User(**self.extra['author'], _gate_=self._gate, _lazy_loaded_=True)
 
 
-class Event(BaseMessage):
+class PrivateMessage(Message):
+    @property
+    def chat_code(self) -> str:
+        return self.extra['code']
+
+    @property
+    def author(self) -> User:
+        return User(**self.extra['author'], _gate_=self._gate, _lazy_loaded_=True)
+
+
+class Event(RawMessage):
     @property
     def event_type(self) -> str:
         return self.extra['type']
