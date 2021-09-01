@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 
 from aiohttp import ClientWebSocketResponse, ClientSession, web
 
+from infra.abc import AsyncRunnable
 from .cert import Cert
 
 log = logging.getLogger(__name__)
@@ -14,7 +15,7 @@ log = logging.getLogger(__name__)
 API = f'https://www.kaiheila.cn/api/v3'
 
 
-class Receiver(ABC):
+class Receiver(AsyncRunnable, ABC):
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
@@ -25,7 +26,7 @@ class Receiver(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def run(self, event_queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
+    async def run(self, event_queue: asyncio.Queue):
         raise NotImplementedError
 
 
@@ -53,8 +54,8 @@ class WebsocketReceiver(Receiver):
         data = json.loads(str(data, encoding='utf-8'))
         return data
 
-    async def run(self, event_queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
-        async with ClientSession() as cs:
+    async def run(self, event_queue: asyncio.Queue):
+        async with ClientSession(loop=self.loop) as cs:
             headers = {
                 'Authorization': f'Bot {self._cert.token}',
                 'Content-type': 'application/json'
@@ -71,7 +72,7 @@ class WebsocketReceiver(Receiver):
                 self._RAW_GATEWAY = res_json['data']['url']
 
             async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
-                asyncio.ensure_future(self.heartbeat(ws_conn), loop=loop)
+                asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
                 async for msg in ws_conn:
                     try:
@@ -118,7 +119,7 @@ class WebhookReceiver(Receiver):
         self.sn_dup_map[sn] = current
         return False
 
-    async def run(self, event_queue: asyncio.Queue, loop: asyncio.AbstractEventLoop):
+    async def run(self, event_queue: asyncio.Queue):
         async def on_recv(request: web.Request):
             req_json = self.__raw_2_req(await request.read())
             assert req_json
