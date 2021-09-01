@@ -38,7 +38,7 @@ class LazyLoadable(ABC):
         """
         raise NotImplementedError
 
-    async def is_loaded(self) -> bool:
+    def is_loaded(self) -> bool:
         """
         Check if loaded
 
