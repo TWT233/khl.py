@@ -6,4 +6,4 @@ from .command import Command, CommandGroup
 from .guild import Guild
 from .message import Msg, TextMsg
 from .user import User
-from .rule import Rule
+from .rule import Rule, MessageRule
