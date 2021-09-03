@@ -24,37 +24,37 @@ class Client(Requestable, AsyncRunnable):
         self._gate = gate
 
         self._handler_map = {}
-        self._event_queue = asyncio.Queue()
+        self._pkg_queue = asyncio.Queue()
 
-    async def handle_event(self):
+    async def handle_pkg(self):
         """
-        Pop `event` from `event_queue`,
-        spawn `msg` according to `event`,
+        Pop `pkg` from `event_queue`,
+        spawn `msg` according to `pkg`,
         pass `msg` to corresponding handlers defined in `_handler_map`
         """
         while True:
-            event: Dict = await self._event_queue.get()
-            log.debug(f'upcoming event: {event}')
+            pkg: Dict = await self._pkg_queue.get()
+            log.debug(f'upcoming pkg: {pkg}')
 
             msg: RawMessage
-            if event['type'] == RawMessage.Types.SYS.value:
-                msg = Event(**event)
+            if pkg['type'] == RawMessage.Types.SYS.value:
+                msg = Event(**pkg)
             else:
-                if event['channel_type'] == 'GROUP':
-                    msg = ChannelMessage(**event, _gate_=self.gate)
-                elif event['channel_type'] == 'PERSON':
-                    msg = PrivateMessage(**event, _gate_=self.gate)
+                if pkg['channel_type'] == 'GROUP':
+                    msg = ChannelMessage(**pkg, _gate_=self.gate)
+                elif pkg['channel_type'] == 'PERSON':
+                    msg = PrivateMessage(**pkg, _gate_=self.gate)
                 else:
-                    log.error(f'can not spawn msg from event: {event}')
-                    self._event_queue.task_done()
+                    log.error(f'can not spawn msg from pkg: {pkg}')
+                    self._pkg_queue.task_done()
                     continue
 
             if msg.type in self._handler_map and self._handler_map[msg.type]:
                 for handler in self._handler_map[msg.type]:
                     asyncio.ensure_future(handler(msg), loop=self.loop)
 
-            self._event_queue.task_done()
+            self._pkg_queue.task_done()
 
     async def run(self):
-        asyncio.ensure_future(self.handle_event(), loop=self.loop)
-        await self.gate.run(self._event_queue)
+        asyncio.ensure_future(self.handle_pkg(), loop=self.loop)
+        await self.gate.run(self._pkg_queue)

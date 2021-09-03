@@ -4,6 +4,7 @@ import logging
 import time
 import zlib
 from abc import ABC, abstractmethod
+from typing import Dict
 
 from aiohttp import ClientWebSocketResponse, ClientSession, web
 
@@ -25,7 +26,7 @@ class Receiver(AsyncRunnable, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def run(self, event_queue: asyncio.Queue):
+    async def run(self, pkg_queue: asyncio.Queue):
         raise NotImplementedError
 
 
@@ -47,12 +48,12 @@ class WebsocketReceiver(Receiver):
             await asyncio.sleep(26)
             await ws_conn.send_json({'s': 2, 'sn': self._NEWEST_SN})
 
-    def __pkg_to_req(self, data: bytes) -> dict:
+    def __raw_to_pkg(self, data: bytes) -> dict:
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
         return data
 
-    async def run(self, event_queue: asyncio.Queue):
+    async def run(self, pkg_queue: asyncio.Queue):
         async with ClientSession(loop=self.loop) as cs:
             headers = {
                 'Authorization': f'Bot {self._cert.token}',
@@ -72,17 +73,17 @@ class WebsocketReceiver(Receiver):
             async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
                 asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
-                async for msg in ws_conn:
+                async for raw in ws_conn:
                     try:
-                        req_json = self.__pkg_to_req(msg.data)
+                        raw_pkg: Dict = self.__raw_to_pkg(raw.data)
                     except Exception as e:
                         log.error(e)
                         return
-                    if req_json['s'] == 0:
-                        log.debug(f'upcoming pkg: {req_json}')
-                        self._NEWEST_SN = req_json['sn']
-                        event = req_json['d']
-                        await event_queue.put(event)
+                    if raw_pkg['s'] == 0:
+                        log.debug(f'upcoming raw_pkg: {raw_pkg}')
+                        self._NEWEST_SN = raw_pkg['sn']
+                        event = raw_pkg['d']
+                        await pkg_queue.put(event)
 
 
 class WebhookReceiver(Receiver):
@@ -99,12 +100,12 @@ class WebhookReceiver(Receiver):
     def type(self) -> str:
         return 'webhook'
 
-    def __raw_2_req(self, data: bytes) -> dict:
+    def __raw_to_pkg(self, data: bytes) -> dict:
         data = self.compress and zlib.decompress(data) or data
         data = json.loads(str(data, encoding='utf-8'))
         return ('encrypt' in data.keys()) and json.loads(self._cert.decrypt(data['encrypt'])) or data
 
-    def __is_req_dup(self, req: dict) -> bool:
+    def __is_pkg_dup(self, req: dict) -> bool:
         sn = req.get('sn', None)
         if not sn:
             return False
@@ -116,22 +117,21 @@ class WebhookReceiver(Receiver):
         self.sn_dup_map[sn] = current
         return False
 
-    async def run(self, event_queue: asyncio.Queue):
+    async def run(self, pkg_queue: asyncio.Queue):
         async def on_recv(request: web.Request):
-            req_json = self.__raw_2_req(await request.read())
-            assert req_json
-            assert req_json['d']['verify_token'] == self._cert.verify_token
+            raw_pkg: Dict = self.__raw_to_pkg(await request.read())
+            assert raw_pkg
+            assert raw_pkg['d']['verify_token'] == self._cert.verify_token
 
-            if self.__is_req_dup(req_json):
+            if self.__is_pkg_dup(raw_pkg):
                 return web.Response()
 
-            if req_json['s'] == 0:
-                event = req_json['d']
-                if event['type'] == 255:
-                    if event['channel_type'] == 'WEBHOOK_CHALLENGE':
-                        return web.json_response(
-                            {'challenge': event['challenge']})
-                await event_queue.put(event)
+            if raw_pkg['s'] == 0:
+                log.debug(f'upcoming raw_pkg: {raw_pkg}')
+                pkg = raw_pkg['d']
+                if pkg['type'] == 255 and pkg['channel_type'] == 'WEBHOOK_CHALLENGE':
+                    return web.json_response({'challenge': pkg['challenge']})
+                await pkg_queue.put(pkg)
 
             return web.Response()
 
