@@ -8,8 +8,8 @@ from typing import Dict
 
 from aiohttp import ClientWebSocketResponse, ClientSession, web
 
-from .interface import AsyncRunnable
 from .cert import Cert
+from .interface import AsyncRunnable
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class Receiver(AsyncRunnable, ABC):
 
 class WebsocketReceiver(Receiver):
 
-    def __init__(self, cert: Cert, compress: bool = True):
+    def __init__(self, cert: Cert, compress: bool):
         self._cert = cert
         self.compress = compress
 
@@ -87,7 +87,7 @@ class WebsocketReceiver(Receiver):
 
 
 class WebhookReceiver(Receiver):
-    def __init__(self, cert: Cert, *, port=5000, route='/khl-wh', compress: bool = True):
+    def __init__(self, cert: Cert, *, port: int, route: str, compress: bool):
         self._cert = cert
         self.port = port
         self.route = route
