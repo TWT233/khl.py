@@ -18,7 +18,7 @@ class Client(Requestable, AsyncRunnable):
 
     reminder: Client.loop only used to run handle_event() and registered handlers.
     """
-    _handler_map: Dict[int, List[Callable]]
+    _handler_map: Dict[RawMessage.Types, List[Callable]]
 
     def __init__(self, gate: Gateway):
         self._gate = gate
