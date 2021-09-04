@@ -73,6 +73,8 @@ class WebsocketReceiver(Receiver):
             async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
                 asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
+                log.info('[ init ] launched')
+
                 async for raw in ws_conn:
                     try:
                         raw_pkg: Dict = self.__raw_to_pkg(raw.data)
@@ -145,6 +147,9 @@ class WebhookReceiver(Receiver):
         runner = web.AppRunner(self.app, access_log_class=None)
         await runner.setup()  # runner use its own loop, can not be set
         site = web.TCPSite(runner, '0.0.0.0', self.port)
+
+        log.info('[ init ] launched')
+
         await site.start()
 
         while True:
