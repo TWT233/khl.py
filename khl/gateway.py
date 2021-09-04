@@ -31,13 +31,4 @@ class Requestable(ABC):
 
         `Guild`: guild.get_roles() to fetch role list from khl
     """
-    _gate: Gateway
-
-    @property
-    def gate(self) -> Gateway:
-        """
-        Getter for gate
-
-        :return: Gateway that being used
-        """
-        return self._gate
+    gate: Gateway

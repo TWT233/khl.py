@@ -37,7 +37,7 @@ class User(LazyLoadable, Requestable):
         self.roles = kwargs.get('roles', [])
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
-        self._gate = kwargs.get('_gate_', None)
+        self.gate = kwargs.get('_gate_', None)
 
     async def load(self):
         pass

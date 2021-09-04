@@ -10,4 +10,4 @@ class Context(Requestable):
     def __init__(self, **kwargs):
         self.channel = kwargs.get('channel')
         self.guild = kwargs.get('guild')
-        self._gate = kwargs.get('_gate_')
+        self.gate = kwargs.get('_gate_')

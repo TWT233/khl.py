@@ -81,8 +81,8 @@ class Message(RawMessage, Requestable, ABC):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._gate = kwargs.get('_gate_', None)
-        self._author = User(**self.extra['author'], _gate_=self._gate, _lazy_loaded_=True)
+        self.gate = kwargs.get('_gate_', None)
+        self._author = User(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
 
     @property
     def author(self) -> User:

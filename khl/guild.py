@@ -42,7 +42,7 @@ class Guild(LazyLoadable, Requestable):
         self.channels = kwargs.get('channels', '')
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
-        self._gate = kwargs.get('_gate_', None)
+        self.gate = kwargs.get('_gate_', None)
 
     async def load(self):
         pass

@@ -49,7 +49,7 @@ class TextChannel(Channel):
         self.permission_sync: int = kwargs.get('permission_sync')
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
-        self._gate = kwargs.get('_gate_')
+        self.gate = kwargs.get('_gate_')
 
     async def load(self):
         pass

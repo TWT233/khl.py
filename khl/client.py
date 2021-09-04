@@ -21,7 +21,7 @@ class Client(Requestable, AsyncRunnable):
     _handler_map: Dict[RawMessage.Types, List[Callable]]
 
     def __init__(self, gate: Gateway):
-        self._gate = gate
+        self.gate = gate
 
         self._handler_map = {}
         self._pkg_queue = asyncio.Queue()
