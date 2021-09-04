@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 from typing import Dict, List, Callable
 
@@ -25,6 +26,18 @@ class Client(Requestable, AsyncRunnable):
 
         self._handler_map = {}
         self._pkg_queue = asyncio.Queue()
+
+    def register(self, type: RawMessage.Types, handler: Callable):
+        if not asyncio.iscoroutinefunction(handler):
+            raise TypeError('handler must be a coroutine.')
+
+        params = list(inspect.signature(handler).parameters.items())
+        if len(params) != 1 or not issubclass(params[0][1].annotation, RawMessage):
+            raise TypeError('handler must have one and only one param, and the param inherits RawMessage')
+
+        if type not in self._handler_map:
+            self._handler_map[type] = []
+        self._handler_map[type].append(handler)
 
     async def handle_pkg(self):
         """
