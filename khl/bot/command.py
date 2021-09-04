@@ -22,7 +22,7 @@ class Command:
     parser: Parser
 
     def __init__(self, name: str, handler: Callable[..., Coroutine], help: str, desc: str,
-                 lexer: Lexer, prefixes: List[str], triggers: List[str],
+                 lexer: Lexer, prefixes: List[str], aliases: List[str],
                  parser: Parser):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
@@ -35,7 +35,7 @@ class Command:
         self.help = help
         self.desc = desc
 
-        self.lexer = lexer or ShlexLexer(set(prefixes), set(triggers + [self.name]))
+        self.lexer = lexer or ShlexLexer(set(prefixes), set([self.name] + aliases))
         self.parser = parser or Parser()
 
     def _lex(self, msg: Message) -> List[str]:
@@ -77,22 +77,21 @@ class Command:
         self.execute(msg, self.prepare(msg))
 
     @staticmethod
-    def command(name: str, help: str = '', desc: str = '',
-                lexer: Lexer = None, prefixes: List[str] = ('/',), triggers: List[str] = (),
-                parser: Parser = None):
+    def command(name: str = '', aliases: List[str] = (), prefixes: List[str] = ('/',),
+                help: str = '', desc: str = '', lexer: Lexer = None, parser: Parser = None):
         """
         decorator, to wrap a func into a Command
 
-        :param name: the name of this Command, also used to trigger
+        :param name: the name of this Command, also used to trigger in ShlexLexer
+        :param aliases: you can also trigger the command with aliases (ShlexLexer only)
+        :param prefixes: command prefix, default use '/' (ShlexLexer only)
         :param help: detailed manual
         :param desc: short introduction
-        :param lexer:
-        :param triggers:
-        :param parser:
-        :param prefixes:
+        :param lexer: the lexer used (Advanced)
+        :param parser: the parser used (Advanced)
         :return: wrapped Command
         """
-        return lambda func: Command(name, func, help, desc, lexer, prefixes, triggers, parser)
+        return lambda func: Command(name, func, help, desc, lexer, prefixes, aliases, parser)
 
     class ExecuteException(Exception):
         def __init__(self, func):
