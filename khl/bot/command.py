@@ -55,7 +55,7 @@ class Command:
         args = self._parse(tokens, self.handler)
         return args
 
-    def execute(self, msg: Message, *args):
+    async def execute(self, msg: Message, *args):
         """
         pass msg and args from prepare() to handler()
 
@@ -64,7 +64,7 @@ class Command:
         :return:
         """
         try:
-            self.handler(msg, *args)
+            await self.handler(msg, *args)
         except Exception:
             raise Command.ExecuteException(self.handler)
 
