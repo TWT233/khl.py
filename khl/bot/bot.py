@@ -21,12 +21,10 @@ class Bot(Requestable, AsyncRunnable):
     client: Client
     _cmd_index: Dict[str, Command] = {}
 
-    def __init__(self, cert: Cert, *, client: Client = None, gate: Gateway = None, out: HTTPRequester = None,
-                 compress: bool = True, port=5000, route='/khl-wh'):
+    def __init__(self, *, token: str = '', cert: Cert = None, client: Client = None, gate: Gateway = None,
+                 out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
         """
-        The most common usage:
-
-        ``Bot(cert=Cert(your certification here))``
+        The most common usage: ``Bot(token='xxxxxx')``
 
         That's enough.
 
@@ -38,7 +36,9 @@ class Bot(Requestable, AsyncRunnable):
         :param port: used to tune the WebhookReceiver
         :param route: used to tune the WebhookReceiver
         """
-        self._init_client(cert, client, gate, out, compress, port, route)
+        if not token and not cert:
+            raise ValueError('require token or cert')
+        self._init_client(cert if cert else Cert(token=token), client, gate, out, compress, port, route)
         self.client.register(Message.Types.TEXT, self._make_msg_handler())
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
