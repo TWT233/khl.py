@@ -68,17 +68,20 @@ class Parser:
         self._parse_funcs[s.return_annotation] = func
         return func
 
-    class ArgListLenNotMatch(Exception):
+    class ParserException(Exception):
+        pass
+
+    class ArgListLenNotMatch(ParserException):
         def __init__(self, expected: int, exact: int, func: Callable):
             self.expected = expected
             self.exact = exact
             self.func = func
 
-    class ParseFuncNotExists(Exception):
+    class ParseFuncNotExists(ParserException):
         def __init__(self, expected: Tuple[str, inspect.Parameter], func: Callable):
             self.expected = expected
             self.func = func
 
-    class ParseFuncException(Exception):
+    class ParseFuncException(ParserException):
         def __init__(self, err: Exception):
             self.err = err
