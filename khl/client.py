@@ -3,8 +3,8 @@ import logging
 from typing import Dict, List, Callable
 
 from .gateway import Gateway
-from .interface import AsyncRunnable
 from .gateway import Requestable
+from .interface import AsyncRunnable
 from .message import RawMessage, Event, ChannelMessage, PrivateMessage
 
 log = logging.getLogger(__name__)
@@ -49,6 +49,7 @@ class Client(Requestable, AsyncRunnable):
                     self._pkg_queue.task_done()
                     continue
 
+            # dispatch msg
             if msg.type in self._handler_map and self._handler_map[msg.type]:
                 for handler in self._handler_map[msg.type]:
                     asyncio.ensure_future(handler(msg), loop=self.loop)
