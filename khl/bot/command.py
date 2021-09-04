@@ -64,7 +64,7 @@ class Command:
         :return:
         """
         try:
-            self.handler(msg, args)
+            self.handler(msg, *args)
         except Exception:
             raise Command.ExecuteException(self.handler)
 
