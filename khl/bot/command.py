@@ -35,7 +35,7 @@ class Command:
         self.help = help
         self.desc = desc
 
-        self.lexer = lexer or ShlexLexer(set(prefixes), set([self.name] + aliases))
+        self.lexer = lexer or ShlexLexer(set(prefixes), set([self.name] + list(aliases)))
         self.parser = parser or Parser()
 
     def _lex(self, msg: Message) -> List[str]:
