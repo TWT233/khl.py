@@ -1,9 +1,11 @@
-from abc import ABC
+import json
+from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import Dict
+from typing import Dict, Union, List, overload
 
+import api
 from .gateway import Requestable
-from .interface import LazyLoadable
+from .interface import LazyLoadable, MessageTypes
 from .user import User
 
 
@@ -21,6 +23,13 @@ class Channel(LazyLoadable, Requestable, ABC):
 
     id: str
     type: Types
+
+    @abstractmethod
+    async def send(self, content: Union[str, List], **kwargs):
+        """
+        send a msg to the channel
+        """
+        raise NotImplementedError
 
 
 class PublicTextChannel(Channel):
@@ -62,6 +71,29 @@ class PublicTextChannel(Channel):
     async def load(self):
         pass
 
+    @overload
+    async def send(self, content: Union[str, List], **kwargs):
+        ...
+
+    async def send(self, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
+        """
+        send a msg to the channel
+
+        ``temp_target_id`` is available in PublicTextChannel, so ``send()`` is overloaded here
+        """
+        # if content is card msg, then convert it to plain str
+        if isinstance(content, List):
+            kwargs['type'] = MessageTypes.CARD.value
+            content = json.dumps(content)
+
+        # merge params
+        kwargs['target_id'] = self.id
+        kwargs['content'] = content
+        if temp_target_id:
+            kwargs['temp_target_id'] = temp_target_id
+
+        return await self.gate.requester.exec_req(api.Message.create(**kwargs))
+
 
 class VoiceChannel(Channel):
     """
@@ -69,6 +101,9 @@ class VoiceChannel(Channel):
 
     a placeholder now for future design/adaption
     """
+
+    async def send(self, content: Union[str, List], **kwargs):
+        raise TypeError('now there is no VoiceChannel, hey here is a pkg from future')
 
     async def load(self):
         pass
@@ -119,3 +154,18 @@ class PrivateChannel(Channel):
     @property
     def target_user_avatar(self) -> str:
         return self.target_info.get('avatar') if self.target_info else None
+
+    async def send(self, content: Union[str, List], **kwargs):
+        # if content is card msg, then convert it to plain str
+        if isinstance(content, List):
+            kwargs['type'] = MessageTypes.CARD.value
+            content = json.dumps(content)
+
+        # merge params
+        if self.code:
+            kwargs['chat_code'] = self.code
+        else:
+            kwargs['target_id'] = self.target_user_id
+        kwargs['content'] = content
+
+        return await self.gate.requester.exec_req(api.DirectMessage.create(**kwargs))

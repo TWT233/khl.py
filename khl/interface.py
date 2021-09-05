@@ -1,6 +1,7 @@
 r"""Some Interfaces"""
 import asyncio
 from abc import ABC, abstractmethod
+from enum import IntEnum
 
 
 class AsyncRunnable(ABC):
@@ -45,3 +46,17 @@ class LazyLoadable(ABC):
         :return: bool
         """
         return self._loaded
+
+
+class MessageTypes(IntEnum):
+    """
+    types of message, type==SYS will be interpreted as `Event`, others are `Message`
+    """
+    TEXT = 1
+    IMG = 2
+    VIDEO = 3
+    FILE = 4
+    AUDIO = 8
+    KMD = 9
+    CARD = 10
+    SYS = 255

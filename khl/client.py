@@ -5,7 +5,7 @@ from typing import Dict, List, Callable
 
 from .gateway import Gateway
 from .gateway import Requestable
-from .interface import AsyncRunnable
+from .interface import AsyncRunnable, MessageTypes
 from .message import RawMessage, Event, PublicMessage, PrivateMessage
 
 log = logging.getLogger(__name__)
@@ -19,7 +19,7 @@ class Client(Requestable, AsyncRunnable):
 
     reminder: Client.loop only used to run handle_event() and registered handlers.
     """
-    _handler_map: Dict[RawMessage.Types, List[Callable]]
+    _handler_map: Dict[MessageTypes, List[Callable]]
 
     def __init__(self, gate: Gateway):
         self.gate = gate
@@ -27,7 +27,7 @@ class Client(Requestable, AsyncRunnable):
         self._handler_map = {}
         self._pkg_queue = asyncio.Queue()
 
-    def register(self, type: RawMessage.Types, handler: Callable):
+    def register(self, type: MessageTypes, handler: Callable):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
 
@@ -50,7 +50,7 @@ class Client(Requestable, AsyncRunnable):
             log.debug(f'upcoming pkg: {pkg}')
 
             msg: RawMessage
-            if pkg['type'] == RawMessage.Types.SYS.value:
+            if pkg['type'] == MessageTypes.SYS.value:
                 msg = Event(**pkg)
             else:
                 if pkg['channel_type'] == 'GROUP':

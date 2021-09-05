@@ -1,9 +1,8 @@
-import json
 from abc import ABC
-from enum import IntEnum, Enum
+from enum import Enum
 from typing import Any, List, Dict, Union
 
-import api
+from interface import MessageTypes
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
@@ -19,19 +18,6 @@ class RawMessage(ABC):
         1. Message (sent by users, those normal chats such as TEXT/IMG etc.)
         2. Event (sent by system, such as notifications and broadcasts)
     """
-
-    class Types(IntEnum):
-        """
-        types of message, type==SYS will be interpreted as `Event`, others are `Message`
-        """
-        TEXT = 1
-        IMG = 2
-        VIDEO = 3
-        FILE = 4
-        AUDIO = 8
-        KMD = 9
-        CARD = 10
-        SYS = 255
 
     class ChannelTypes(Enum):
         """
@@ -62,8 +48,8 @@ class RawMessage(ABC):
         self.extra = kwargs.get('extra', {})
 
     @property
-    def type(self) -> Types:
-        return RawMessage.Types(self._type)
+    def type(self) -> MessageTypes:
+        return MessageTypes(self._type)
 
     @property
     def channel_type(self) -> ChannelTypes:
@@ -99,21 +85,10 @@ class Message(RawMessage, Requestable, ABC):
         """
         reply to a msg, content can also be a card
         """
-
-        if isinstance(content, List):
-            kwargs['type'] = RawMessage.Types.CARD.value
-            content = json.dumps(content)
         if use_quote:
             kwargs['quote'] = self.msg_id
 
-        if self.channel_type == RawMessage.ChannelTypes.PERSON:
-            req = api.DirectMessage.create(target_id=self.author.id, content=content, **kwargs)
-        elif self.channel_type == RawMessage.ChannelTypes.GROUP:
-            req = api.Message.create(target_id=self.ctx.channel.id, content=content, **kwargs)
-        else:
-            raise ValueError(f"Unacceptable channel_type: {self.channel_type}")
-
-        return await self.gate.requester.exec_req(req)
+        return await self.ctx.channel.send(content, **kwargs)
 
 
 class PublicMessage(Message):
@@ -123,7 +98,7 @@ class PublicMessage(Message):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'])
+        self._channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'], _gate_=self.gate)
         self._ctx = Context(channel=self._channel, guild=Guild(id=self.extra['guild_id']), _gate_=self.gate)
 
     @property
@@ -161,7 +136,7 @@ class PrivateMessage(Message):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._channel = PrivateChannel(code=self.extra['code'], target_info=self.extra['author'])
+        self._channel = PrivateChannel(code=self.extra['code'], target_info=self.extra['author'], _gate_=self.gate)
         self._ctx = Context(channel=self._channel, _gate_=self.gate)
 
     @property

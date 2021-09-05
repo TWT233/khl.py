@@ -2,14 +2,11 @@ import asyncio
 import logging
 from typing import Dict, Callable, List
 
-from khl import HTTPRequester, WebhookReceiver, WebsocketReceiver, Message
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from ..cert import Cert
-from ..client import Client
-from ..gateway import Requestable, Gateway
-from ..interface import AsyncRunnable
+from .. import (HTTPRequester, WebhookReceiver, WebsocketReceiver, Message, Cert, Client, Requestable, Gateway,
+                AsyncRunnable, MessageTypes)
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +36,7 @@ class Bot(Requestable, AsyncRunnable):
         if not token and not cert:
             raise ValueError('require token or cert')
         self._init_client(cert if cert else Cert(token=token), client, gate, out, compress, port, route)
-        self.client.register(Message.Types.TEXT, self._make_msg_handler())
+        self.client.register(MessageTypes.TEXT, self._make_msg_handler())
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
         """
