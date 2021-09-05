@@ -83,6 +83,34 @@ class Guild:
         ...
 
 
+class GuildMute:
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id,
+            return_type
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            guild_id,
+            user_id,
+            type,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            guild_id,
+            user_id,
+            type,
+    ):
+        ...
+
+
 class Channel:
     @staticmethod
     @req('GET')
