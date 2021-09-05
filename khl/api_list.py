@@ -409,3 +409,60 @@ class Asset:
             file
     ):
         ...
+
+
+class GuildRole:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            name,
+            guild_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+            guild_id,
+            role_id,
+            hoist,
+            mentionable,
+            permissions,
+            color,
+            name,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            guild_id,
+            role_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def grant(
+            guild_id,
+            user_id,
+            role_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def revoke(
+            guild_id,
+            user_id,
+            role_id,
+    ):
+        ...
