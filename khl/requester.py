@@ -4,7 +4,7 @@ from typing import Union
 
 from aiohttp import ClientSession
 
-from .api_list import _Req
+from .api import _Req
 from .cert import Cert
 from .interface import AsyncRunnable
 
@@ -30,10 +30,18 @@ class HTTPRequester(AsyncRunnable):
             log.debug(f'req: {method} {route}: {params}')
             rsp = await res.json()
             if rsp['code'] != 0:
-                log.error(f'req failed: {rsp}, req: {method} {route}: {params}')
+                raise HTTPRequester.APIRequestFailed(method, route, params, rsp['code'], rsp['message'])
             else:
                 log.debug(f'req done: {rsp}')
             return rsp['data']
 
     async def exec_req(self, r: _Req):
         return await self.request(r.method, r.route, **r.params)
+
+    class APIRequestFailed(Exception):
+        def __init__(self, method, route, params, err_code, err_message):
+            self.method = method
+            self.route = route
+            self.params = params
+            self.err_code = err_code
+            self.err_message = err_message
