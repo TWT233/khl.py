@@ -30,6 +30,7 @@ def req(method: str):
 
 
 class Guild:
+
     @staticmethod
     @req('GET')
     def list(
@@ -84,6 +85,7 @@ class Guild:
 
 
 class GuildMute:
+
     @staticmethod
     @req('GET')
     def list(
@@ -112,6 +114,7 @@ class GuildMute:
 
 
 class Channel:
+
     @staticmethod
     @req('GET')
     def list(
@@ -302,5 +305,70 @@ class UserChat:
     @req('POST')
     def delete(
             chat_code
+    ):
+        ...
+
+
+class DirectMessage:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            chat_code,
+            target_id,
+            msg_id,
+            flag,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            type,
+            target_id,
+            chat_code,
+            content,
+            quote,
+            nonce,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+            msg_id,
+            content,
+            quote,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            msg_id
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
+    def reactionList(
+            msg_id,
+            emoji
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def addReaction(
+            msg_id,
+            emoji
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def deleteReaction(
+            msg_id,
+            emoji
     ):
         ...
