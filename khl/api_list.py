@@ -399,3 +399,13 @@ class User:
             guild_id,
     ):
         ...
+
+
+class Asset:
+
+    @staticmethod
+    @req('POST')
+    def create(
+            file
+    ):
+        ...
