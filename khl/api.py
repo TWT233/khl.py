@@ -14,15 +14,22 @@ class _Req:
         self.params = params
 
 
-def req(method: str):
+def req(method: str, **http_fields):
     def _method(func: Callable):
         @functools.wraps(func)
         def req_maker(*args, **kwargs) -> _Req:
+            route = re.sub(r'(?<!^)(?=[A-Z])', '-', func.__qualname__).lower().replace('.', '/')
+
+            # dump args into kwargs
             param_names = list(inspect.signature(func).parameters.keys())
             for i in range(len(args)):
                 kwargs[param_names[i]] = args[i]
-            route = re.sub(r'(?<!^)(?=[A-Z])', '-', func.__qualname__).lower().replace('.', '/')
-            return _Req(method, route, kwargs)
+
+            # merge http_fields with kwargs
+            params = {'json': kwargs}
+            params.update(http_fields)
+
+            return _Req(method, route, params)
 
         return req_maker
 
@@ -498,12 +505,11 @@ class GuildEmoji:
         ...
 
     @staticmethod
-    @req('POST')
+    @req('POST', headers={'Content-Type': 'multipart/form-data'})
     def create(
             name,
             guild_id,
             emoji,
-            headers={'Content-Type': 'multipart/form-data'}
     ):
         ...
 
