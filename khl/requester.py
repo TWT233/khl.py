@@ -104,3 +104,42 @@ class Channel:
             user_ids
     ):
         ...
+
+
+class ChannelRole:
+
+    @staticmethod
+    @req('GET')
+    def index(
+            channel_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            channel_id,
+            type,
+            value,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+            channel_id,
+            type,
+            value,
+            allow,
+            deny,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            channel_id,
+            type,
+            value,
+    ):
+        ...
