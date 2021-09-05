@@ -372,3 +372,13 @@ class DirectMessage:
             emoji
     ):
         ...
+
+
+class Gateway:
+
+    @staticmethod
+    @req('GET')
+    def index(
+            compress
+    ):
+        ...
