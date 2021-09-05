@@ -27,10 +27,10 @@ class HTTPRequester(AsyncRunnable):
         params['headers'] = headers
 
         async with self._cs.request(method, f'{API}/{route}', **params) as res:
-            log.debug(f'req: [{route}]({params})')
+            log.debug(f'req: {method} {route}: {params}')
             rsp = await res.json()
             if rsp['code'] != 0:
-                log.error(f'req failed: {rsp}, req:[{route}]({params})')
+                log.error(f'req failed: {rsp}, req: {method} {route}: {params}')
             else:
                 log.debug(f'req done: {rsp}')
             return rsp['data']
