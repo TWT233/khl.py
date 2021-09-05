@@ -1,6 +1,8 @@
 import asyncio
 from abc import ABC
+from typing import Union
 
+from api import _Req
 from .receiver import Receiver
 from .requester import HTTPRequester
 
@@ -17,6 +19,12 @@ class Gateway:
     def __init__(self, requester: HTTPRequester, receiver: Receiver):
         self.requester = requester
         self.receiver = receiver
+
+    async def request(self, method: str, route: str, **params) -> Union[dict, list]:
+        return await self.requester.request(method, route, **params)
+
+    async def exec_req(self, r: _Req):
+        return await self.requester.exec_req(r)
 
     async def run(self, in_queue: asyncio.Queue):
         await self.receiver.run(in_queue)

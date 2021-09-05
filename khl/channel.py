@@ -84,7 +84,7 @@ class PublicTextChannel(Channel):
         if temp_target_id:
             kwargs['temp_target_id'] = temp_target_id
 
-        return await self.gate.requester.exec_req(api.Message.create(**kwargs))
+        return await self.gate.exec_req(api.Message.create(**kwargs))
 
 
 class VoiceChannel(Channel):
@@ -160,4 +160,4 @@ class PrivateChannel(Channel):
             kwargs['target_id'] = self.target_user_id
         kwargs['content'] = content
 
-        return await self.gate.requester.exec_req(api.DirectMessage.create(**kwargs))
+        return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
