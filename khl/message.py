@@ -1,7 +1,8 @@
 from abc import ABC
 from enum import IntEnum, Enum
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Union
 
+import api
 from .channel import TextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
@@ -78,6 +79,7 @@ class Message(RawMessage, Requestable, ABC):
         1. ChannelMessage: sent in a guild channel
         2. PrivateMessage: sent in a private chat
     """
+    _ctx: Context
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -87,6 +89,31 @@ class Message(RawMessage, Requestable, ABC):
     @property
     def author(self) -> User:
         return self._author
+
+    @property
+    def ctx(self) -> Context:
+        return self._ctx
+
+    async def reply(self, content: str = '', card: Union[Dict, List] = None, use_quote: bool = True, **kwargs):
+        """
+        reply to a msg, MUST fill content or card
+        """
+        if not content and not card:
+            raise ValueError('must fill content or card')
+
+        if card:
+            kwargs['type'] = RawMessage.Types.CARD.value
+        if use_quote:
+            kwargs['quote'] = self.msg_id
+
+        if self.channel_type == RawMessage.ChannelTypes.PERSON:
+            req = api.DirectMessage.create(target_id=self.author.id, content=content, **kwargs)
+        elif self.channel_type == RawMessage.ChannelTypes.GROUP:
+            req = api.Message.create(target_id=self.ctx.channel.id, content=content, **kwargs)
+        else:
+            raise ValueError(f"Unacceptable channel_type: {self.channel_type}")
+
+        return await self.gate.requester.exec_req(req)
 
 
 class ChannelMessage(Message):
