@@ -11,15 +11,15 @@ class Gateway:
 
     reminder: this is not AsyncRunnable cuz gateway dose not have its own tasks, only pass loop to _in/_out
     """
-    _out: HTTPRequester
-    _in: Receiver
+    requester: HTTPRequester
+    receiver: Receiver
 
     def __init__(self, requester: HTTPRequester, receiver: Receiver):
-        self._out = requester
-        self._in = receiver
+        self.requester = requester
+        self.receiver = receiver
 
     async def run(self, in_queue: asyncio.Queue):
-        await self._in.run(in_queue)
+        await self.receiver.run(in_queue)
 
 
 class Requestable(ABC):
