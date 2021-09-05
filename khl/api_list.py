@@ -486,3 +486,38 @@ class Intimacy:
             img_id,
     ):
         ...
+
+
+class GuildEmoji:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            name,
+            guild_id,
+            emoji,
+            headers={'Content-Type': 'multipart/form-data'}
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+            name,
+            id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            id
+    ):
+        ...
