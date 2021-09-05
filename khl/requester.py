@@ -20,16 +20,16 @@ class HTTPRequester(AsyncRunnable):
     def __del__(self):
         asyncio.get_event_loop().run_until_complete(self._cs.close())
 
-    async def request(self, method: str, route: str, **kwargs) -> Union[dict, list]:
-        headers = kwargs.pop('headers', {})
+    async def request(self, method: str, route: str, **params) -> Union[dict, list]:
+        headers = params.pop('headers', {})
         headers['Authorization'] = f'Bot {self._cert.token}'
-        kwargs['headers'] = headers
+        params['headers'] = headers
 
-        async with self._cs.request(method, f'{API}/{route}', **kwargs) as res:
+        async with self._cs.request(method, f'{API}/{route}', **params) as res:
+            log.debug(f'req: [{route}]({params})')
             rsp = await res.json()
-            log_str = f'[{route}]({kwargs})->({rsp})'
             if rsp['code'] != 0:
-                log.error(f'req failed: {log_str}')
+                log.error(f'req failed: {rsp}, req:[{route}]({params})')
             else:
-                log.debug(f'req done: {log_str}')
+                log.debug(f'req done: {rsp}')
             return rsp['data']
