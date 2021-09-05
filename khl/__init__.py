@@ -11,4 +11,4 @@ from .user import User
 from .channel import Channel, PublicTextChannel, PrivateChannel
 from .guild import Guild
 from .context import Context
-from .message import RawMessage, Message, ChannelMessage, PrivateMessage, Event
+from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event

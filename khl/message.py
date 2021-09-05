@@ -116,7 +116,7 @@ class Message(RawMessage, Requestable, ABC):
         return await self.gate.requester.exec_req(req)
 
 
-class ChannelMessage(Message):
+class PublicMessage(Message):
     """
     Messages sent in a `PublicTextChannel`
     """

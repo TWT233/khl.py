@@ -6,7 +6,7 @@ from typing import Dict, List, Callable
 from .gateway import Gateway
 from .gateway import Requestable
 from .interface import AsyncRunnable
-from .message import RawMessage, Event, ChannelMessage, PrivateMessage
+from .message import RawMessage, Event, PublicMessage, PrivateMessage
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class Client(Requestable, AsyncRunnable):
                 msg = Event(**pkg)
             else:
                 if pkg['channel_type'] == 'GROUP':
-                    msg = ChannelMessage(**pkg, _gate_=self.gate)
+                    msg = PublicMessage(**pkg, _gate_=self.gate)
                 elif pkg['channel_type'] == 'PERSON':
                     msg = PrivateMessage(**pkg, _gate_=self.gate)
                 else:
