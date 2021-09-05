@@ -4,7 +4,7 @@ from enum import IntEnum, Enum
 from typing import Any, List, Dict, Union
 
 import api
-from .channel import TextChannel, PrivateChannel
+from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
 from .guild import Guild
@@ -118,12 +118,12 @@ class Message(RawMessage, Requestable, ABC):
 
 class ChannelMessage(Message):
     """
-    Messages sent in a `TextChannel`
+    Messages sent in a `PublicTextChannel`
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._channel = TextChannel(id=self.target_id, name=self.extra['channel_name'])
+        self._channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'])
         self._ctx = Context(channel=self._channel, guild=Guild(id=self.extra['guild_id']), _gate_=self.gate)
 
     @property
@@ -131,7 +131,7 @@ class ChannelMessage(Message):
         return self._ctx.guild
 
     @property
-    def channel(self) -> TextChannel:
+    def channel(self) -> PublicTextChannel:
         return self._channel
 
     @property

@@ -23,7 +23,7 @@ class Channel(LazyLoadable, Requestable, ABC):
     type: Types
 
 
-class TextChannel(Channel):
+class PublicTextChannel(Channel):
     """
     `Standard Object`
 
