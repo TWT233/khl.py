@@ -274,3 +274,33 @@ class Message:
             emoji
     ):
         ...
+
+
+class UserChat:
+
+    @staticmethod
+    @req('GET')
+    def list(
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
+    def view(
+            chat_code
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            target_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            chat_code
+    ):
+        ...
