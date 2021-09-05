@@ -1,21 +1,24 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List
+from typing import Dict, Callable, List, Optional, Union
 
+import api
+from khl import Channel, PublicTextChannel
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import (AsyncRunnable, Requestable, Message, MessageTypes,
+from .. import (AsyncRunnable, User, Message, MessageTypes,
                 Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, )
 
 log = logging.getLogger(__name__)
 
 
-class Bot(Requestable, AsyncRunnable):
+class Bot(AsyncRunnable):
     """
     Represents a entity that handles msg/events and interact with users/khl server in manners that programmed.
     """
     client: Client
+    _me: Optional[User]
     _cmd_index: Dict[str, Command] = {}
 
     def __init__(self, *, token: str = '', cert: Cert = None, client: Client = None, gate: Gateway = None,
@@ -36,6 +39,7 @@ class Bot(Requestable, AsyncRunnable):
         if not token and not cert:
             raise ValueError('require token or cert')
         self._init_client(cert if cert else Cert(token=token), client, gate, out, compress, port, route)
+        self._me = None
         self.client.register(MessageTypes.TEXT, self._make_msg_handler())
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
@@ -116,6 +120,40 @@ class Bot(Requestable, AsyncRunnable):
         :return: wrapped Command
         """
         return lambda func: self.add_command(Command.command(name, aliases, prefixes, help, desc, lexer, parser)(func))
+
+    async def fetch_me(self, force_update: bool = False) -> User:
+        if force_update or not self._me or not self._me.is_loaded():
+            self._me = User(**(await self.client.gate.exec_req(api.User.me())), _lazy_loaded_=True)
+        return self._me
+
+    @property
+    def me(self) -> User:
+        """
+        get bot it self's data
+
+        RECOMMEND: use ``await fetch_me()``
+
+        CAUTION: please call ``await fetch_me()`` first to load data from khl server
+
+        designed as 'empty-then-fetch' will break the rule 'net-related is async'
+
+        :return: the bot's underlying User
+        """
+        if self._me and self._me.is_loaded():
+            return self._me
+        raise ValueError('not loaded, please call `await fetch_me()` first')
+
+    @staticmethod
+    async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
+        """
+        send a msg to a channel
+
+        ``temp_target_id`` is only available in ChannelPrivacyTypes.GROUP
+        """
+        if isinstance(target, PublicTextChannel):
+            kwargs['temp_target_id'] = temp_target_id
+
+        return await target.send(content, **kwargs)
 
     def run(self):
         try:
