@@ -1,7 +1,7 @@
 r"""Some Interfaces"""
 import asyncio
 from abc import ABC, abstractmethod
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 
 class AsyncRunnable(ABC):
@@ -60,3 +60,11 @@ class MessageTypes(IntEnum):
     KMD = 9
     CARD = 10
     SYS = 255
+
+
+class ChannelPrivacyTypes(Enum):
+    """
+    channel's privacy level
+    """
+    GROUP = 'GROUP'
+    PERSON = 'PERSON'

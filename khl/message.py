@@ -1,8 +1,7 @@
 from abc import ABC
-from enum import Enum
 from typing import Any, List, Dict, Union
 
-from interface import MessageTypes
+from interface import MessageTypes, ChannelPrivacyTypes
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
@@ -18,13 +17,6 @@ class RawMessage(ABC):
         1. Message (sent by users, those normal chats such as TEXT/IMG etc.)
         2. Event (sent by system, such as notifications and broadcasts)
     """
-
-    class ChannelTypes(Enum):
-        """
-        types of channel
-        """
-        GROUP = 'GROUP'
-        PERSON = 'PERSON'
 
     _type: int
     _channel_type: str
@@ -52,8 +44,8 @@ class RawMessage(ABC):
         return MessageTypes(self._type)
 
     @property
-    def channel_type(self) -> ChannelTypes:
-        return RawMessage.ChannelTypes(self._channel_type)
+    def channel_type(self) -> ChannelPrivacyTypes:
+        return ChannelPrivacyTypes(self._channel_type)
 
 
 class Message(RawMessage, Requestable, ABC):
