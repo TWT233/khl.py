@@ -466,3 +466,23 @@ class GuildRole:
             role_id,
     ):
         ...
+
+
+class Intimacy:
+
+    @staticmethod
+    @req('GET')
+    def index(
+            user_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+            user_id,
+            score,
+            social_info,
+            img_id,
+    ):
+        ...
