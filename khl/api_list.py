@@ -382,3 +382,20 @@ class Gateway:
             compress
     ):
         ...
+
+
+class User:
+
+    @staticmethod
+    @req('GET')
+    def me(
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
+    def view(
+            user_id,
+            guild_id,
+    ):
+        ...
