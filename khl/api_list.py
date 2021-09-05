@@ -109,3 +109,86 @@ class ChannelRole:
             value,
     ):
         ...
+
+
+class Message:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            target_id,
+            msg_id,
+            pin,
+            flag,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            type,
+            target_id,
+            content,
+            quote,
+            nonce,
+            temp_target_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+            msg_id,
+            content,
+            quote,
+            temp_target_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            msg_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
+    def reactionList(
+            msg_id,
+            emoji
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def addReaction(
+            msg_id,
+            emoji
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def deleteReaction(
+            msg_id,
+            emoji,
+            user_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def addReaction(
+            msg_id,
+            emoji
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def addReaction(
+            msg_id,
+            emoji
+    ):
+        ...
