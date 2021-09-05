@@ -521,3 +521,31 @@ class GuildEmoji:
             id
     ):
         ...
+
+
+class Invite:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id,
+            channel_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            guild_id,
+            channel_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            guild_id,
+            channel_id,
+            url_code,
+    ):
+        ...
