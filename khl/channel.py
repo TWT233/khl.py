@@ -1,4 +1,5 @@
 from abc import ABC
+from enum import IntEnum
 from typing import Dict
 
 from .gateway import Requestable
@@ -10,7 +11,16 @@ class Channel(LazyLoadable, Requestable, ABC):
     """
     Interface, represents a channel where messages flowing
     """
-    pass
+
+    class Types(IntEnum):
+        """
+        types of channel
+        """
+        TEXT = 1
+        VOICE = 2
+
+    id: str
+    type: Types
 
 
 class TextChannel(Channel):
@@ -19,7 +29,6 @@ class TextChannel(Channel):
 
     Text chat channels in guild
     """
-    id: str
     name: str
     user_id: str
     guild_id: str
@@ -28,7 +37,6 @@ class TextChannel(Channel):
     parent_id: str
     level: int
     slow_mode: int
-    type: int
     permission_overwrites: list
     permission_users: list
     permission_sync: int
@@ -43,7 +51,7 @@ class TextChannel(Channel):
         self.parent_id: str = kwargs.get('parent_id')
         self.level: int = kwargs.get('level')
         self.slow_mode: int = kwargs.get('slow_mode')
-        self.type: int = kwargs.get('type')
+        self.type: Channel.Types = kwargs.get('type') and Channel.Types(kwargs.get('type'))
         self.permission_overwrites: list = kwargs.get('permission_overwrites')
         self.permission_users: list = kwargs.get('permission_users')
         self.permission_sync: int = kwargs.get('permission_sync')
