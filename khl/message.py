@@ -1,3 +1,4 @@
+import json
 from abc import ABC
 from enum import IntEnum, Enum
 from typing import Any, List, Dict, Union
@@ -94,15 +95,14 @@ class Message(RawMessage, Requestable, ABC):
     def ctx(self) -> Context:
         return self._ctx
 
-    async def reply(self, content: str = '', card: Union[Dict, List] = None, use_quote: bool = True, **kwargs):
+    async def reply(self, content: Union[str, List] = '', use_quote: bool = True, **kwargs):
         """
-        reply to a msg, MUST fill content or card
+        reply to a msg, content can also be a card
         """
-        if not content and not card:
-            raise ValueError('must fill content or card')
 
-        if card:
+        if isinstance(content, List):
             kwargs['type'] = RawMessage.Types.CARD.value
+            content = json.dumps(content)
         if use_quote:
             kwargs['quote'] = self.msg_id
 
@@ -149,6 +149,9 @@ class ChannelMessage(Message):
     @property
     def mention_here(self) -> bool:
         return self.extra['mention_here']
+
+    async def reply(self, content: Union[str, List] = '', use_quote: bool = True, temp_target_id: str = '', **kwargs):
+        return await super().reply(content, use_quote, temp_target_id=temp_target_id, **kwargs)
 
 
 class PrivateMessage(Message):
