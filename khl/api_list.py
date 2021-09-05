@@ -29,6 +29,60 @@ def req(method: str):
     return _method
 
 
+class Guild:
+    @staticmethod
+    @req('GET')
+    def list(
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
+    def view(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
+    def userList(
+            guild_id,
+            channel_id,
+            search,
+            role_id,
+            mobile_verified,
+            active_time,
+            joined_at,
+            page,
+            page_size,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def nickname(
+            guild_id,
+            nickname,
+            user_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def leave(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def kickout(
+            guild_id,
+            target_id
+    ):
+        ...
+
+
 class Channel:
     @staticmethod
     @req('GET')
