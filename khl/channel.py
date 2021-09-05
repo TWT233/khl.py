@@ -1,11 +1,10 @@
 import json
 from abc import ABC, abstractmethod
-from enum import IntEnum
 from typing import Dict, Union, List, overload
 
 import api
 from .gateway import Requestable
-from .interface import LazyLoadable, MessageTypes
+from .interface import LazyLoadable, MessageTypes, ChannelTypes
 from .user import User
 
 
@@ -14,15 +13,8 @@ class Channel(LazyLoadable, Requestable, ABC):
     Interface, represents a channel where messages flowing
     """
 
-    class Types(IntEnum):
-        """
-        types of channel
-        """
-        TEXT = 1
-        VOICE = 2
-
     id: str
-    type: Types
+    type: ChannelTypes
 
     @abstractmethod
     async def send(self, content: Union[str, List], **kwargs):
@@ -60,7 +52,7 @@ class PublicTextChannel(Channel):
         self.parent_id: str = kwargs.get('parent_id')
         self.level: int = kwargs.get('level')
         self.slow_mode: int = kwargs.get('slow_mode')
-        self.type: Channel.Types = kwargs.get('type') and Channel.Types(kwargs.get('type'))
+        self.type: ChannelTypes = kwargs.get('type') and ChannelTypes(kwargs.get('type'))
         self.permission_overwrites: list = kwargs.get('permission_overwrites')
         self.permission_users: list = kwargs.get('permission_users')
         self.permission_sync: int = kwargs.get('permission_sync')

@@ -1,5 +1,5 @@
 # infra
-from .interface import AsyncRunnable, LazyLoadable, MessageTypes
+from .interface import AsyncRunnable, LazyLoadable, MessageTypes, ChannelTypes, ChannelPrivacyTypes
 from .cert import Cert
 from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
 from .requester import HTTPRequester

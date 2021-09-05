@@ -62,6 +62,14 @@ class MessageTypes(IntEnum):
     SYS = 255
 
 
+class ChannelTypes(IntEnum):
+    """
+    types of channel
+    """
+    TEXT = 1
+    VOICE = 2
+
+
 class ChannelPrivacyTypes(Enum):
     """
     channel's privacy level

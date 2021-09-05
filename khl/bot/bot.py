@@ -5,8 +5,8 @@ from typing import Dict, Callable, List
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import (HTTPRequester, WebhookReceiver, WebsocketReceiver, Message, Cert, Client, Requestable, Gateway,
-                AsyncRunnable, MessageTypes)
+from .. import (AsyncRunnable, Requestable, Message, MessageTypes,
+                Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, )
 
 log = logging.getLogger(__name__)
 
