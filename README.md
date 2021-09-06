@@ -1,3 +1,5 @@
+[> 加入我们的 khl 服务器 | Join our server on khl](https://kaihei.co/JJE0Es)
+
 # khl.py
 
 SDK for kaiheila.cn in python

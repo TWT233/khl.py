@@ -1,6 +1,7 @@
 import asyncio
 from asyncio.events import AbstractEventLoop
 import json
+import logging
 import time
 import zlib
 
@@ -99,8 +100,12 @@ class WebhookClient(BaseClient):
 
     async def run(self):
         self.__init_app()
-        runner = web.AppRunner(self.app, access_log_class=None)
-        await runner.setup()
+        runner = web.AppRunner(self.app, access_log_class=_AccessLogger)
+        try:
+            await runner.setup()
+        except Exception as e:
+            logging.exception('app runner setup error: %s', e)
+            runner._server = runner._make_server()
         site = web.TCPSite(runner, '0.0.0.0', self.port)
         await site.start()
 
@@ -108,10 +113,11 @@ class WebhookClient(BaseClient):
             await asyncio.sleep(3600)  # sleep forever
 
 
-# from aiohttp.abc import AbstractAccessLogger
+from aiohttp.abc import AbstractAccessLogger
 
-# class __AccessLogger(AbstractAccessLogger):
-#     def log(self, request, response, time):
-#         self.logger.debug(f'{request.remote} '
-#                           f'"{request.method} {request.path} '
-#                           f'done in {time}s: {response.status}')
+
+class _AccessLogger(AbstractAccessLogger):
+    def log(self, request, response, time):
+        self.logger.debug(f'{request.remote} '
+                          f'"{request.method} {request.path} '
+                          f'done in {time}s: {response.status}')
