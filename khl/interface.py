@@ -66,6 +66,7 @@ class ChannelTypes(IntEnum):
     """
     types of channel
     """
+    CATEGORY = 0
     TEXT = 1
     VOICE = 2
 
