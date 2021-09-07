@@ -121,8 +121,8 @@ class PublicMessage(Message):
     def mention_here(self) -> bool:
         return self.extra['mention_here']
 
-    async def reply(self, content: Union[str, List] = '', use_quote: bool = True, temp_target_id: str = '', **kwargs):
-        return await super().reply(content, use_quote, temp_target_id=temp_target_id, **kwargs)
+    async def reply(self, content: Union[str, List] = '', use_quote: bool = True, is_temp: bool = False, **kwargs):
+        return await super().reply(content, use_quote, temp_target_id=self.author_id if is_temp else '', **kwargs)
 
 
 class PrivateMessage(Message):
