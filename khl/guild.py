@@ -24,7 +24,7 @@ class Guild(LazyLoadable, Requestable):
     open_id: str
     default_channel_id: str
     welcome_channel_id: str
-    roles: List[Role]
+    _roles: List[Role]
     _channel_categories: List[Dict]
     _channels: List[Channel]
 
@@ -40,7 +40,7 @@ class Guild(LazyLoadable, Requestable):
         self.open_id = kwargs.get('open_id', '')
         self.default_channel_id = kwargs.get('default_channel_id', '')
         self.welcome_channel_id = kwargs.get('welcome_channel_id', '')
-        self.roles = kwargs.get('roles', [])
+        self._roles = kwargs.get('roles', None)
         self._channel_categories = []
         self._channels = kwargs.get('channels', None)
 
@@ -78,3 +78,18 @@ class Guild(LazyLoadable, Requestable):
         if self._channels is not None:
             return self._channels
         raise ValueError('not loaded, please call `await fetch_channel_list()` first')
+
+    async def fetch_roles(self, force_update: bool = True) -> List[Role]:
+        if force_update or self._roles is None:
+            raw_list = await self.gate.exec_pagination_req(api.GuildRole.list(guild_id=self.id))
+            self._roles = [Role(**i) for i in raw_list]
+        return self._roles
+
+    async def create_role(self, role_name: str) -> Role:
+        return Role(**(await self.gate.exec_req(api.GuildRole.create(guild_id=self.id, name=role_name))))
+
+    async def update_role(self, new_role: Role) -> Role:
+        return Role(**(await self.gate.exec_req(api.GuildRole.update(guild_id=self.id, **vars(new_role)))))
+
+    async def delete_role(self, role_id: int):
+        return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=role_id))
