@@ -23,12 +23,7 @@ class Channel(LazyLoadable, Requestable, ABC):
         raise NotImplementedError
 
 
-class PublicTextChannel(Channel):
-    """
-    `Standard Object`
-
-    Text chat channels in guild
-    """
+class PublicChannel(Channel, ABC):
     name: str
     user_id: str
     guild_id: str
@@ -36,7 +31,6 @@ class PublicTextChannel(Channel):
     is_category: int
     parent_id: str
     level: int
-    slow_mode: int
     permission_overwrites: list
     permission_users: list
     permission_sync: int
@@ -50,7 +44,6 @@ class PublicTextChannel(Channel):
         self.is_category: int = kwargs.get('is_category')
         self.parent_id: str = kwargs.get('parent_id')
         self.level: int = kwargs.get('level')
-        self.slow_mode: int = kwargs.get('slow_mode')
         self.type: ChannelTypes = kwargs.get('type') and ChannelTypes(kwargs.get('type'))
         self.permission_overwrites: list = kwargs.get('permission_overwrites')
         self.permission_users: list = kwargs.get('permission_users')
@@ -58,6 +51,19 @@ class PublicTextChannel(Channel):
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
         self.gate = kwargs.get('_gate_')
+
+
+class PublicTextChannel(PublicChannel):
+    """
+    `Standard Object`
+
+    Text chat channels in guild
+    """
+    slow_mode: int
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.slow_mode: int = kwargs.get('slow_mode')
 
     async def load(self):
         pass
@@ -86,18 +92,21 @@ class PublicTextChannel(Channel):
         return await self.gate.exec_req(api.Message.create(**kwargs))
 
 
-class VoiceChannel(Channel):
+class PublicVoiceChannel(PublicChannel):
     """
     Voice chat channel in guild
 
     a placeholder now for future design/adaption
     """
 
-    async def send(self, content: Union[str, List], **kwargs):
-        raise TypeError('now there is no VoiceChannel, hey here is a pkg from future')
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     async def load(self):
         pass
+
+    async def send(self, content: Union[str, List], **kwargs):
+        raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
 
 
 class PrivateChannel(Channel):
