@@ -1,5 +1,7 @@
-from typing import List
+from typing import List, Union
 
+import api
+from .channel import PrivateChannel
 from .gateway import Requestable
 from .interface import LazyLoadable
 from .role import Role
@@ -23,6 +25,9 @@ class User(LazyLoadable, Requestable):
     mobile_verified: bool
     roles: List[Role]
 
+    _loaded: bool
+    _channel: PrivateChannel
+
     def __init__(self, **kwargs):
         self.id = kwargs.get('id', '')
         self.username = kwargs.get('username', '')
@@ -37,7 +42,20 @@ class User(LazyLoadable, Requestable):
         self.roles = kwargs.get('roles', [])
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
+        self._channel = kwargs.get('_channel_')
         self.gate = kwargs.get('_gate_', None)
 
     async def load(self):
         pass
+
+    async def send(self, content: Union[str, List], **kwargs):
+        """
+        send a msg to a channel
+
+        ``temp_target_id`` is only available in ChannelPrivacyTypes.GROUP
+        """
+        if not self._channel:
+            self._channel = PrivateChannel(**(await self.gate.exec_req(api.UserChat.create(target_id=self.id))),
+                                           _lazy_loaded_=True, _gate_=self.gate)
+
+        return await self._channel.send(content, **kwargs)

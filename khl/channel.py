@@ -5,7 +5,6 @@ from typing import Dict, Union, List, overload
 import api
 from .gateway import Requestable
 from .interface import LazyLoadable, MessageTypes, ChannelTypes
-from .user import User
 
 
 class Channel(LazyLoadable, Requestable, ABC):
@@ -113,7 +112,7 @@ class PrivateChannel(Channel):
     is_friend: bool
     is_blocked: bool
     is_target_blocked: bool
-    target_info: User
+    target_info: Dict
 
     def __init__(self, **kwargs):
         self.code: str = kwargs.get('code')
