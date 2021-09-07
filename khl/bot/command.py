@@ -63,6 +63,7 @@ class Command:
         :param args: the returned list of prepare()
         :return:
         """
+        log.info(f'command {self.name} was triggered by msg: {msg.content}')
         try:
             await self.handler(msg, *args)
         except Exception:
