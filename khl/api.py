@@ -26,7 +26,7 @@ def req(method: str, **http_fields):
                 kwargs[param_names[i]] = args[i]
 
             # merge http_fields with kwargs
-            params = {'json': kwargs}
+            params = {'json' if method == 'POST' else 'params': kwargs}
             params.update(http_fields)
 
             return _Req(method, route, params)
