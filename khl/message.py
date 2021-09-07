@@ -90,16 +90,20 @@ class PublicMessage(Message):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'], _gate_=self.gate)
-        self._ctx = Context(channel=self._channel, guild=Guild(id=self.extra['guild_id']), _gate_=self.gate)
+        channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'], _gate_=self.gate)
+        guild = Guild(id=self.extra['guild_id'], _gate_=self.gate)
+        self._ctx = Context(channel=channel, guild=guild, _gate_=self.gate)
 
     @property
     def guild(self) -> Guild:
-        return self._ctx.guild
+        return self.ctx.guild
 
     @property
     def channel(self) -> PublicTextChannel:
-        return self._channel
+        if isinstance(self.ctx.channel, PublicTextChannel):
+            return self.ctx.channel
+        else:
+            raise ValueError('PublicMessage should be placed in PublicTextChannel')
 
     @property
     def mention(self) -> List[str]:
