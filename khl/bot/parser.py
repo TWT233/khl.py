@@ -41,6 +41,12 @@ class Parser:
         ret = []
         for i in range(len(tokens)):
             t = params[i][1].annotation  # arg type
+
+            # no type hint for t
+            if t == inspect.Parameter.empty:
+                ret.append(tokens[i])
+                continue
+
             if t not in self._parse_funcs:
                 raise Parser.ParseFuncNotExists(params[i], handler)
             try:
