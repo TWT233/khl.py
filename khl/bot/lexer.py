@@ -28,7 +28,10 @@ class Lexer(ABC):
             self.msg = msg
 
 
-class ShlexLexer(Lexer):
+class DefaultLexer(Lexer):
+    """
+    lex with python standard module ``shlex``
+    """
     prefixes: Set[str]
     triggers: Set[str]
 
@@ -51,7 +54,7 @@ class ShlexLexer(Lexer):
             try:
                 arg_list = shlex.split(msg.content)
             except Exception:
-                raise ShlexLexer.MalformedContent(msg)
+                raise DefaultLexer.MalformedContent(msg)
 
             # check if trigger exists
             if arg_list[0][len(prefix):] in self.triggers:
@@ -59,10 +62,10 @@ class ShlexLexer(Lexer):
                 return arg_list[1:]  # arg_list[0] is trigger
             else:
                 # not exists
-                raise ShlexLexer.NoMatchedTrigger(msg)
+                raise DefaultLexer.NoMatchedTrigger(msg)
 
         # no matched prefix(did not enter the for-loop)
-        raise ShlexLexer.NoMatchedPrefix(msg)
+        raise DefaultLexer.NoMatchedPrefix(msg)
 
     class MalformedContent(Lexer.LexerException):
         pass

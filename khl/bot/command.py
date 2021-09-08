@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Callable, Coroutine, List, Any
 
-from .lexer import Lexer, ShlexLexer
+from .lexer import Lexer, DefaultLexer
 from .parser import Parser
 from ..message import Message
 
@@ -35,7 +35,7 @@ class Command:
         self.help = help
         self.desc = desc
 
-        self.lexer = lexer or ShlexLexer(set(prefixes), set([self.name] + list(aliases)))
+        self.lexer = lexer or DefaultLexer(set(prefixes), set([self.name] + list(aliases)))
         self.parser = parser or Parser()
 
     def _lex(self, msg: Message) -> List[str]:
