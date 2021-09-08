@@ -1,6 +1,8 @@
+[> 加入我们的 khl 服务器 | Join our server on khl](https://kaihei.co/JJE0Es)
+
 # khl.py
 
-SDK for kaiheila.cn in python
+Python SDK for [kaiheila.cn](https://www.kaiheila.cn/) API
 
 # install
 
@@ -12,24 +14,29 @@ pip install khl.py
 
 # quickly enroll
 
+Minimal example:
+
 ```python
-from khl import TextMsg, Bot, Cert
+from khl import Bot, Message
 
-# init Cert and Bot
-cert = Cert(client_id='xxxxxxxx', client_secret='xxxxxxxx', token='xxxxxxxx')
-bot = Bot(cmd_prefix=['!', '！'], cert=cert)
+# init Bot
+bot = Bot(token='xxxxxxxxxxxxxxxxxxxxxxxxx')
 
 
+# register command
+# invoke this via saying `/hello` in channel
 @bot.command(name='hello')
-async def roll(msg: TextMsg):
+async def world(msg: Message):
     await msg.reply('world!')
 
 
+# everything done, go ahead now!
 bot.run()
-# now invite the bot to ur server,
-# and type '!hello'(in any channel) to check ur san today!
-# (remember to grant read & send permissions to the bot first)
+# now invite the bot to a server, and type '/hello'(in any channel)
+# (remember to grant the bot with read & send permissions)
 ```
+
+For more example and tutorial, please turn to [example](./example)
 
 ## notes for Mac OSX users:
 
@@ -39,51 +46,17 @@ if you encounter this error:
 ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)
 ```
 
-please install certi manually, turning to this post for guide:
+please install certificate manually, turning to this post for guide:
 
 [certificate verify failed: unable to get local issuer certificate](https://stackoverflow.com/a/58525755)
 
 # short-term roadmap
 
-## refactor
+## feat
 
-- [ ] move api req urls into `hardcoded` 
-
-## docs
-
-- [ ] examples & tutorials (active @TWT233)
-- [ ] docstring (v0.0.10)
-
-## perf:
-
-- [ ] async bot.run() (v0.0.11)
-- [ ] websocket refine (v0.0.11/.12)
-
-## feat:
-
-### T1:
-
-- [x] private messages
-- [x] refactor `Msg`, support multimedia msg
-  - [x] add kinds of multimedia msg (v0.0.10)
-- [ ] new events, new handler system (v0.0.10)(active @TWT233)
-    - [x] [channel](https://developer.kaiheila.cn/doc/event/channel)
-    - [ ] [direct-message](https://developer.kaiheila.cn/doc/event/direct-message)
-    - [x] [guild-member](https://developer.kaiheila.cn/doc/event/guild-member)
-    - [x] [guild-role](https://developer.kaiheila.cn/doc/event/guild-role)
-    - [x] [guild](https://developer.kaiheila.cn/doc/event/guild)
-    - [x] [message](https://developer.kaiheila.cn/doc/event/message)
-    - [x] [user](https://developer.kaiheila.cn/doc/event/user)
-- [x] upload assets (v0.0.10)
-- [ ] no prefix commands (v0.0.10)
-  - [ ] fix `cmd_prefix=[]`
-
-### T2:
-
-- [ ] bot send args (done by @fi6, waiting for merge)
-  - [ ] needs more practice and design
-- [ ] command & arg parse system(long term design needed)
-- [ ] event class(interface)
+- regex lexer
+- bot.on_event()
+- helper function for apis
 
 # commit message rules
 
