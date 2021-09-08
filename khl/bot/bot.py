@@ -111,19 +111,23 @@ class Bot(AsyncRunnable):
         """
         decorator, wrap a function in Command and register it on current Bot
 
-        :param name: the name of this Command, also used to trigger in DefaultLexer
-        :param aliases: you can also trigger the command with aliases (DefaultLexer only)
-        :param prefixes: command prefix, default use '/' (DefaultLexer only)
-        :param regex:
+        :param name: the name of this Command, also used to trigger command in DefaultLexer
+        :param aliases: (DefaultLexer only) you can also trigger the command with aliases
+        :param prefixes: (DefaultLexer only) command prefix, default use '/'
+        :param regex: (RELexer only) pattern for the command
         :param help: detailed manual
         :param desc: short introduction
-        :param lexer: the lexer used (Advanced)
-        :param parser: the parser used (Advanced)
+        :param lexer: (Advanced) explicitly set the lexer
+        :param parser: (Advanced) explicitly set the parser
         :return: wrapped Command
         """
         args = {'help': help, 'desc': desc,
                 'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
                 'lexer': lexer, 'parser': parser}
+
+        # use lambda cuz i do not wanna declare decorator() explicitly to take 3 blank lines
+        # did not init Lexer in advance cuz it needs func.__name__
+        # this is redundant stuff in constructor, there should be a better way
         return lambda func: self.add_command(Command.command(name, **args)(func))
 
     async def fetch_me(self, force_update: bool = False) -> User:

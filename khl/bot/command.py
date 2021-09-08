@@ -82,14 +82,14 @@ class Command:
         """
         decorator, to wrap a func into a Command
 
-        :param name: the name of this Command, also used to trigger in DefaultLexer
-        :param aliases: you can also trigger the command with aliases (DefaultLexer only)
-        :param prefixes: command prefix, default use '/' (DefaultLexer only)
-        :param regex:
+        :param name: the name of this Command, also used to trigger command in DefaultLexer
+        :param aliases: (DefaultLexer only) you can also trigger the command with aliases
+        :param prefixes: (DefaultLexer only) command prefix, default use '/'
+        :param regex: (RELexer only) pattern for the command
         :param help: detailed manual
         :param desc: short introduction
-        :param lexer: the lexer used (Advanced)
-        :param parser: the parser used (Advanced)
+        :param lexer: (Advanced) explicitly set the lexer
+        :param parser: (Advanced) explicitly set the parser
         :return: wrapped Command
         """
         if not lexer and regex:
