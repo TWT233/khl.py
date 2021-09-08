@@ -1,7 +1,8 @@
 import logging
+import re
 import shlex
 from abc import ABC, abstractmethod
-from typing import List, Set
+from typing import List, Set, Union, Pattern
 
 from ..message import Message
 
@@ -76,4 +77,25 @@ class DefaultLexer(Lexer):
     class NoMatchedTrigger(Lexer.LexerException):
         pass
 
-# TODO: regex lexer
+
+class RELexer(Lexer):
+    """
+    lex with python built-in module ``re``
+    """
+    pattern: Pattern
+
+    def __init__(self, regex: Union[str, Pattern]):
+        if isinstance(regex, str):
+            self.pattern = re.compile(regex)
+        else:
+            self.pattern = regex
+
+    def lex(self, msg: Message) -> List[str]:
+        m = self.pattern.fullmatch(msg.content)
+        if not m:
+            raise RELexer.NotMatched(msg)
+        if m.groups():
+            return [m.group(i) for i in range(1, len(m.groups())) if m.start(i) < len(msg.content)]
+
+    class NotMatched(Lexer.LexerException):
+        pass

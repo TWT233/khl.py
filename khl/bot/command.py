@@ -1,8 +1,8 @@
 import asyncio
 import logging
-from typing import Callable, Coroutine, List, Any
+from typing import Callable, Coroutine, List, Any, Union, Pattern
 
-from .lexer import Lexer, DefaultLexer
+from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
 from ..message import Message
 
@@ -21,9 +21,7 @@ class Command:
     lexer: Lexer
     parser: Parser
 
-    def __init__(self, name: str, handler: Callable[..., Coroutine], help: str, desc: str,
-                 lexer: Lexer, prefixes: List[str], aliases: List[str],
-                 parser: Parser):
+    def __init__(self, name: str, handler: Callable, help: str, desc: str, lexer: Lexer, parser: Parser):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
         self.handler = handler
@@ -35,8 +33,8 @@ class Command:
         self.help = help
         self.desc = desc
 
-        self.lexer = lexer or DefaultLexer(set(prefixes), set([self.name] + list(aliases)))
-        self.parser = parser or Parser()
+        self.lexer = lexer
+        self.parser = parser
 
     def _lex(self, msg: Message) -> List[str]:
         return self.lexer.lex(msg)
@@ -78,21 +76,31 @@ class Command:
         self.execute(msg, self.prepare(msg))
 
     @staticmethod
-    def command(name: str = '', aliases: List[str] = (), prefixes: List[str] = ('/',),
-                help: str = '', desc: str = '', lexer: Lexer = None, parser: Parser = None):
+    def command(name: str = '', *, help: str = '', desc: str = '',
+                aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
+                lexer: Lexer = None, parser: Parser = None):
         """
         decorator, to wrap a func into a Command
 
-        :param name: the name of this Command, also used to trigger in ShlexLexer
-        :param aliases: you can also trigger the command with aliases (ShlexLexer only)
-        :param prefixes: command prefix, default use '/' (ShlexLexer only)
+        :param name: the name of this Command, also used to trigger in DefaultLexer
+        :param aliases: you can also trigger the command with aliases (DefaultLexer only)
+        :param prefixes: command prefix, default use '/' (DefaultLexer only)
+        :param regex:
         :param help: detailed manual
         :param desc: short introduction
         :param lexer: the lexer used (Advanced)
         :param parser: the parser used (Advanced)
         :return: wrapped Command
         """
-        return lambda func: Command(name, func, help, desc, lexer, prefixes, aliases, parser)
+        if not lexer and regex:
+            lexer = RELexer(regex)
+
+        # use lambda cuz i do not wanna declare decorator() explicitly to take 3 blank lines
+        # did not init Lexer in advance cuz it needs func.__name__
+        # this is redundant stuff in constructor, there should be a better way
+        return lambda func: Command(name, func, help, desc,
+                                    lexer or DefaultLexer(set(prefixes), set([name or func.__name__] + list(aliases))),
+                                    parser or Parser())
 
     class ExecuteException(Exception):
         def __init__(self, func):

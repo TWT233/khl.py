@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List, Optional, Union
+from typing import Dict, Callable, List, Optional, Union, Pattern
 
 import api
 from khl import Channel, PublicTextChannel
@@ -105,21 +105,26 @@ class Bot(AsyncRunnable):
         log.debug(f'cmd: {cmd.name} added')
         return cmd
 
-    def command(self, name: str = '', aliases: List[str] = (), prefixes: List[str] = ('/',),
-                help: str = '', desc: str = '', lexer: Lexer = None, parser: Parser = None):
+    def command(self, name: str = '', *, help: str = '', desc: str = '',
+                aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
+                lexer: Lexer = None, parser: Parser = None):
         """
         decorator, wrap a function in Command and register it on current Bot
 
-        :param name: the name of this Command, also used to trigger in ShlexLexer
-        :param aliases: you can also trigger the command with aliases (ShlexLexer only)
-        :param prefixes: command prefix, default use '/' (ShlexLexer only)
+        :param name: the name of this Command, also used to trigger in DefaultLexer
+        :param aliases: you can also trigger the command with aliases (DefaultLexer only)
+        :param prefixes: command prefix, default use '/' (DefaultLexer only)
+        :param regex:
         :param help: detailed manual
         :param desc: short introduction
         :param lexer: the lexer used (Advanced)
         :param parser: the parser used (Advanced)
         :return: wrapped Command
         """
-        return lambda func: self.add_command(Command.command(name, aliases, prefixes, help, desc, lexer, parser)(func))
+        args = {'help': help, 'desc': desc,
+                'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
+                'lexer': lexer, 'parser': parser}
+        return lambda func: self.add_command(Command.command(name, **args)(func))
 
     async def fetch_me(self, force_update: bool = False) -> User:
         if force_update or not self._me or not self._me.is_loaded():

@@ -54,7 +54,6 @@ please install certificate manually, turning to this post for guide:
 
 ## feat
 
-- regex lexer
 - bot.on_event()
 - helper function for apis
 
