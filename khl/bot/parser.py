@@ -34,8 +34,8 @@ class Parser:
         params = list(s.parameters.items())[1:]  # the first param is `msg: Message`
 
         # check
-        if len(tokens) != len(params):
-            raise Parser.ArgListLenNotMatch(len(params), len(tokens), handler)
+        if len(tokens) > len(params):
+            raise Parser.TooMuchArgs(len(params), len(tokens), handler)
 
         # parse
         ret = []
@@ -77,7 +77,7 @@ class Parser:
     class ParserException(Exception):
         pass
 
-    class ArgListLenNotMatch(ParserException):
+    class TooMuchArgs(ParserException):
         def __init__(self, expected: int, exact: int, func: Callable):
             self.expected = expected
             self.exact = exact
