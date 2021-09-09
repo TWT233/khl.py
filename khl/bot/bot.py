@@ -2,13 +2,12 @@ import asyncio
 import logging
 from typing import Dict, Callable, List, Optional, Union, Pattern
 
-import api
-from khl import Channel, PublicTextChannel
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import (AsyncRunnable, User, Message, MessageTypes,
-                Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, )
+from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client
+from .. import User, Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes
+from .. import api
 
 log = logging.getLogger(__name__)
 

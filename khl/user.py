@@ -1,6 +1,6 @@
 from typing import List, Union
 
-import api
+from . import api
 from .channel import PrivateChannel
 from .gateway import Requestable
 from .interface import LazyLoadable

@@ -1,8 +1,8 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, Union, List, overload
+from typing import Union, List, overload, Dict
 
-import api
+from . import api
 from .gateway import Requestable
 from .interface import LazyLoadable, MessageTypes, ChannelTypes
 

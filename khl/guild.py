@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-import api
+from . import api
 from .channel import Channel, PublicTextChannel, PublicVoiceChannel
 from .gateway import Requestable
 from .interface import LazyLoadable, ChannelTypes

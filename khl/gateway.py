@@ -2,7 +2,7 @@ import asyncio
 from abc import ABC
 from typing import Union, List
 
-from api import _Req
+from .api import _Req
 from .receiver import Receiver
 from .requester import HTTPRequester
 
