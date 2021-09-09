@@ -6,7 +6,7 @@ import zlib
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from aiohttp import ClientWebSocketResponse, ClientSession, web
+from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage
 
 from .cert import Cert
 from .interface import AsyncRunnable
@@ -49,7 +49,7 @@ class WebsocketReceiver(Receiver):
             await ws_conn.send_json({'s': 2, 'sn': self._NEWEST_SN})
 
     def __raw_to_pkg(self, data: bytes) -> dict:
-        data = self.compress and zlib.decompress(data) or data
+        data = zlib.decompress(data) if self.compress else data
         data = json.loads(str(data, encoding='utf-8'))
         return data
 
@@ -59,7 +59,7 @@ class WebsocketReceiver(Receiver):
                 'Authorization': f'Bot {self._cert.token}',
                 'Content-type': 'application/json'
             }
-            params = {'compress': self.compress and 1 or 0}
+            params = {'compress': 1 if self.compress else 0}
             async with cs.get(f"{API}/gateway/index",
                               headers=headers,
                               params=params) as res:
@@ -77,14 +77,16 @@ class WebsocketReceiver(Receiver):
 
                 async for raw in ws_conn:
                     try:
-                        raw_pkg: Dict = self.__raw_to_pkg(raw.data)
+                        raw: WSMessage
+                        pkg: Dict = self.__raw_to_pkg(raw.data)
+                        log.debug(f'upcoming raw: {pkg}')
                     except Exception as e:
-                        log.error(e)
-                        return
-                    if raw_pkg['s'] == 0:
-                        log.debug(f'upcoming raw_pkg: {raw_pkg}')
-                        self._NEWEST_SN = raw_pkg['sn']
-                        event = raw_pkg['d']
+                        log.exception(e)
+                        continue
+                    if pkg['s'] == 0:
+                        log.debug(f'upcoming pkg: {pkg}')
+                        self._NEWEST_SN = pkg['sn']
+                        event = pkg['d']
                         await pkg_queue.put(event)
 
 
@@ -103,11 +105,12 @@ class WebhookReceiver(Receiver):
         return 'webhook'
 
     def __raw_to_pkg(self, data: bytes) -> dict:
-        data = self.compress and zlib.decompress(data) or data
+        data = zlib.decompress(data) if self.compress else data
         data = json.loads(str(data, encoding='utf-8'))
         return ('encrypt' in data.keys()) and json.loads(self._cert.decrypt(data['encrypt'])) or data
 
     def __is_pkg_dup(self, req: dict) -> bool:
+        # TODO: need a recycle count down ring
         sn = req.get('sn', None)
         if not sn:
             return False
@@ -121,16 +124,23 @@ class WebhookReceiver(Receiver):
 
     async def run(self, pkg_queue: asyncio.Queue):
         async def on_recv(request: web.Request):
-            raw_pkg: Dict = self.__raw_to_pkg(await request.read())
-            assert raw_pkg
-            assert raw_pkg['d']['verify_token'] == self._cert.verify_token
-
-            if self.__is_pkg_dup(raw_pkg):
+            try:
+                pkg: Dict = self.__raw_to_pkg(await request.read())
+            except Exception as e:
+                log.exception(e)
                 return web.Response()
 
-            if raw_pkg['s'] == 0:
-                log.debug(f'upcoming raw_pkg: {raw_pkg}')
-                pkg = raw_pkg['d']
+            if not pkg or pkg['d']['verify_token'] != self._cert.verify_token:
+                # empty pkg or verify_token check failed
+                return web.Response()
+
+            if self.__is_pkg_dup(pkg):
+                # dupe pkg
+                return web.Response()
+
+            if pkg['s'] == 0:
+                log.debug(f'upcoming pkg: {pkg}')
+                pkg = pkg['d']
                 if pkg['type'] == 255 and pkg['channel_type'] == 'WEBHOOK_CHALLENGE':
                     return web.json_response({'challenge': pkg['challenge']})
                 await pkg_queue.put(pkg)
