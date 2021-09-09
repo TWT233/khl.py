@@ -1,55 +1,61 @@
-from typing import Any, Mapping, Sequence, TYPE_CHECKING
+from typing import List, Union
 
-from .hardcoded import API_URL
+from . import api
+from .channel import PrivateChannel
+from .gateway import Requestable
+from .interface import LazyLoadable
+from .role import Role
 
-if TYPE_CHECKING:
-    from khl.bot import Bot
 
-
-class User:
-    __slots__ = 'id', 'roles', 'bot', 'username'
+class User(LazyLoadable, Requestable):
     """
-    presents a User in chat/group
+    `Standard Object`
 
-    including other bots
+    represent a entity that interact with khl server
     """
     id: str
-    roles: Sequence[str]
     username: str
+    nickname: str
+    identify_num: str
+    online: bool
+    bot: bool
+    status: int
+    avatar: str
+    vip_avatar: str
+    mobile_verified: bool
+    roles: List[Role]
 
-    def __init__(self, data: Mapping[str, Any]):
-        self.id = data['id']
-        self.username = data.get('username')
-        self.roles = data['roles'] if data.get('roles') else []
+    _loaded: bool
+    _channel: PrivateChannel
+
+    def __init__(self, **kwargs):
+        self.id = kwargs.get('id', '')
+        self.username = kwargs.get('username', '')
+        self.nickname = kwargs.get('nickname', '')
+        self.identify_num = kwargs.get('identify_num', '')
+        self.online = kwargs.get('online', False)
+        self.bot = kwargs.get('bot', False)
+        self.status = kwargs.get('status', 0)
+        self.avatar = kwargs.get('avatar', '')
+        self.vip_avatar = kwargs.get('vip_avatar', '')
+        self.mobile_verified = kwargs.get('mobile_verified', False)
+        self.roles = kwargs.get('roles', [])
+
+        self._loaded = kwargs.get('_lazy_loaded_', False)
+        self._channel = kwargs.get('_channel_')
+        self.gate = kwargs.get('_gate_', None)
+
+    async def load(self):
         pass
 
-    @property
-    def mention(self):
-        return f'(met){self.id}(met)'
+    async def send(self, content: Union[str, List], **kwargs):
+        """
+        send a msg to a channel
 
-    async def send_pm(self, bot: 'Bot', content: str, **kwargs):
-        return await bot.send_dm(self.id, content, **kwargs)
+        ``temp_target_id`` is only available in ChannelPrivacyTypes.GROUP
+        """
+        if not self._channel:
+            self._channel = PrivateChannel(**(await self.gate.exec_req(api.UserChat.create(target_id=self.id))),
+                                           _lazy_loaded_=True, _gate_=self.gate)
 
-    async def update_pm(self, bot: 'Bot', msg_id: str, content: str, **kwargs):
-        return await bot.update_dm(msg_id, content, **kwargs)
-
-    async def delete_pm(self, bot: 'Bot', msg_id: str):
-        return await bot.delete_dm(msg_id)
-
-    async def grant_role(self, bot: 'Bot', guild_id: str,
-                         role_id: int) -> dict:
-        return await bot.post(f'{API_URL}/guild-role/grant?compress=0',
-                              json={
-                                  'user_id': self.id,
-                                  'guild_id': guild_id,
-                                  'role_id': role_id
-                              })
-
-    async def revoke_role(self, bot: 'Bot', guild_id: str,
-                          role_id: int) -> dict:
-        return await bot.post(f'{API_URL}/guild-role/revoke?compress=0',
-                              json={
-                                  'user_id': self.id,
-                                  'guild_id': guild_id,
-                                  'role_id': role_id
-                              })
+        return await self._channel.send(content, **kwargs)

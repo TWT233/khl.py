@@ -1,16 +1,13 @@
-from khl import TextMsg, Bot, Cert
-
-# init Cert for Bot OAuth
-cert = Cert(client_id='xxxxxxxx', client_secret='xxxxxxxx', token='xxxxxxxx')
+from khl import Bot, Message
 
 # init Bot
-bot = Bot(cmd_prefix=['!', '！'], cert=cert)
+bot = Bot(token='xxxxxxxxxxxxxxxxxxxxxxxxx')
 
 
 # register command
-# invoke this via saying `!hello` in channel
+# invoke this via saying `/hello` in channel
 @bot.command(name='hello')
-async def roll(msg: TextMsg):
+async def world(msg: Message):
     await msg.reply('world!')
 
 

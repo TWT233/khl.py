@@ -1,84 +1,95 @@
-import logging
-from typing import TYPE_CHECKING, Union
+from typing import List, Dict
 
-from .hardcoded import API_URL
+from . import api
+from .channel import Channel, PublicTextChannel, PublicVoiceChannel
+from .gateway import Requestable
+from .interface import LazyLoadable, ChannelTypes
+from .role import Role
 
-if TYPE_CHECKING:
-    from .bot import Bot
 
+class Guild(LazyLoadable, Requestable):
+    """
+    `Standard Object`
 
-class Role:
+    represent a server where users gathered in and contains channels
+    """
+    id: str
+    name: str
+    topic: str
+    master_id: str
+    icon: str
+    notify_type: int
+    region: str
+    enable_open: bool
+    open_id: str
+    default_channel_id: str
+    welcome_channel_id: str
+    _roles: List[Role]
+    _channel_categories: List[Dict]
+    _channels: List[Channel]
 
     def __init__(self, **kwargs):
-        self.role_id: int = kwargs.get("role_id", 0)
-        self.name: str = kwargs.get("name", "")
-        self.color: int = kwargs.get("color", 0)
-        self.position: int = kwargs.get("position", 0)
-        self.hoist: int = kwargs.get("hoist", 0)
-        self.mentionable: int = kwargs.get("mentionable", 0)
-        self.permissions: int = kwargs.get("permissions", 0)
+        self.id = kwargs.get('id')
+        self.name = kwargs.get('name', '')
+        self.topic = kwargs.get('topic', '')
+        self.master_id = kwargs.get('master_id', '')
+        self.icon = kwargs.get('icon', '')
+        self.notify_type = kwargs.get('notify_type', 0)
+        self.region = kwargs.get('region', '')
+        self.enable_open = kwargs.get('enable_open', False)
+        self.open_id = kwargs.get('open_id', '')
+        self.default_channel_id = kwargs.get('default_channel_id', '')
+        self.welcome_channel_id = kwargs.get('welcome_channel_id', '')
+        self._roles = kwargs.get('roles', None)
+        self._channel_categories = []
+        self._channels = kwargs.get('channels', None)
 
+        self._loaded = kwargs.get('_lazy_loaded_', False)
+        self.gate = kwargs.get('_gate_', None)
 
-class Guild:
-    logger = logging.getLogger('khl.Guild')
+    async def load(self):
+        pass
 
-    def __init__(self, guild_id: Union[str, None], bot: 'Bot'):
-        self.id = guild_id
-        self.bot = bot
+    async def fetch_channel_list(self, force_update: bool = True) -> List[Channel]:
+        if force_update or self._channels is None:
+            raw_list = await self.gate.exec_pagination_req(api.Channel.list(guild_id=self.id))
+            channel_list: List[Channel] = []
+            for i in raw_list:
+                if i['type'] == ChannelTypes.CATEGORY:
+                    self._channel_categories.append(i)
+                elif i['type'] == ChannelTypes.TEXT:
+                    channel_list.append(PublicTextChannel(**i))
+                elif i['type'] == ChannelTypes.VOICE:
+                    channel_list.append(PublicVoiceChannel(**i))
+            self._channels = channel_list
+        return self._channels
 
     @property
-    def is_user_chat(self):
-        return self.id is None
-    
-    async def get_channels(self) -> list:
-        return await self.bot.get(f'{API_URL}/channel/list?compress=0',
-                             json={'guild_id': self.id})
-    
-    async def create_channel(self, name: str = None, parent_id: str = '', type: int = 1) -> list:
-        return await self.bot.post(f'{API_URL}/channel/create?compress=0',
-                              json={
-                                  'name': name,
-                                  'type': type,
-                                  'parent_id': parent_id,
-                                  'guild_id': self.id
-                              } if name else {'guild_id': self.id})
-    
-    async def delete_channel(self, channel_id: str = None):
-        await self.bot.post(f'{API_URL}/channel/delete?compress=0',
-                       json={
-                           'channel_id': channel_id
-                       })
-    
+    def channels(self) -> List[Channel]:
+        """
+        get guild's channel list
 
-    async def get_roles(self) -> list:
-        return await self.bot.get(f'{API_URL}/guild-role/index?compress=0',
-                             json={'guild_id': self.id})
+        RECOMMEND: use ``await fetch_channel_list()``
 
-    async def create_role(self, name: str = None) -> list:
-        return await self.bot.post(f'{API_URL}/guild-role/create?compress=0',
-                              json={
-                                  'name': name,
-                                  'guild_id': self.id
-                              } if name else {'guild_id': self.id})
+        CAUTION: please call ``await fetch_me()`` first to load data from khl server
 
-    async def delete_role(self, name: str):
-        await self.bot.post(f'{API_URL}/guild-role/delete?compress=0',
-                       json={
-                           'name': name,
-                           'guild_id': self.id
-                       })
+        designed as 'empty-then-fetch' will break the rule 'net-related is async'
+        """
+        if self._channels is not None:
+            return self._channels
+        raise ValueError('not loaded, please call `await fetch_channel_list()` first')
 
-    async def update_role(self,
-                          *,
-                          role_id: int,
-                          mentionable: bool,
-                          permissions: int,
-                          hoist: bool = False) -> bool:
-        return await self.bot.post(f'{API_URL}/guild-role/update?compress=0',
-                              json={
-                                  'guild_id': self.id,
-                                  'role_id': role_id,
-                                  'hoist': 1 if hoist else 0,
-                                  'mentionable': 1 if mentionable else 0,
-                                  'permissions': permissions
-                              })
+    async def fetch_roles(self, force_update: bool = True) -> List[Role]:
+        if force_update or self._roles is None:
+            raw_list = await self.gate.exec_pagination_req(api.GuildRole.list(guild_id=self.id))
+            self._roles = [Role(**i) for i in raw_list]
+        return self._roles
+
+    async def create_role(self, role_name: str) -> Role:
+        return Role(**(await self.gate.exec_req(api.GuildRole.create(guild_id=self.id, name=role_name))))
+
+    async def update_role(self, new_role: Role) -> Role:
+        return Role(**(await self.gate.exec_req(api.GuildRole.update(guild_id=self.id, **vars(new_role)))))
+
+    async def delete_role(self, role_id: int):
+        return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=role_id))

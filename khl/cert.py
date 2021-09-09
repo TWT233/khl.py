@@ -30,8 +30,6 @@ class Cert:
     def __init__(self,
                  *,
                  type: Types = Types.NOTSET,
-                 client_id: str,
-                 client_secret: str,
                  token: str,
                  verify_token: str = '',
                  encrypt_key: str = ''):
@@ -45,8 +43,6 @@ class Cert:
                 self.type = self.Types.WEBHOOK
             else:
                 self.type = self.Types.WEBSOCKET
-        self.client_id = client_id
-        self.client_secret = client_secret
         self.token = token
         self.verify_token = verify_token
         self.encrypt_key = encrypt_key

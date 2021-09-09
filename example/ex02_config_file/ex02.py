@@ -1,25 +1,20 @@
 import json
 
-from khl import TextMsg, Bot, Cert
+from khl import Message, Bot
 
-# load config from config/config.json, replace `path` points to your own config file
+# load config from config/config.json, replace `path` to your own config file
 # config template: `./config/config.json.example`
 with open('./config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
-# init Cert for Bot OAuth
-cert = Cert(client_id=config['client_id'],
-            client_secret=config['client_secret'],
-            token=config['token'])
-
 # init Bot
-bot = Bot(cmd_prefix=['!', '！'], cert=cert)
+bot = Bot(token=config['token'])
 
 
 # register command
-# invoke this via saying `!hello` in channel
+# invoke this via saying `/hello` in channel
 @bot.command(name='hello')
-async def roll(msg: TextMsg):
+async def world(msg: Message):
     await msg.reply('world!')
 
 
