@@ -118,6 +118,13 @@ class Bot(AsyncRunnable):
         log.debug(f'cmd: {cmd.name} added')
         return cmd
 
+    def get_command(self, name: str) -> Optional[Command]:
+        return self._cmd_index.get(name, None)
+
+    def remove_command(self, name: str):
+        if name in self._cmd_index:
+            del self._cmd_index[name]
+
     def command(self, name: str = '', *, help: str = '', desc: str = '',
                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
                 lexer: Lexer = None, parser: Parser = None):
