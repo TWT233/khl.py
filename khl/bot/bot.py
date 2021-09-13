@@ -5,9 +5,8 @@ from typing import Dict, Callable, List, Optional, Union, Pattern
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client
-from .. import User, Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes
-from .. import api
+from .. import (Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, Event, EventTypes, User,
+                Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes, api)
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +17,8 @@ class Bot(AsyncRunnable):
     """
     client: Client
     _me: Optional[User]
-    _cmd_index: Dict[str, Command] = {}
+    _cmd_index: Dict[str, Command]
+    _event_index: Dict[EventTypes, List[Callable]]
 
     def __init__(self, *, token: str = '', cert: Cert = None, client: Client = None, gate: Gateway = None,
                  out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
@@ -39,7 +39,10 @@ class Bot(AsyncRunnable):
             raise ValueError('require token or cert')
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
         self._me = None
+        self._cmd_index = {}
+        self._event_index = {}
         self.client.register(MessageTypes.TEXT, self._make_msg_handler())
+        self.client.register(MessageTypes.SYS, self._make_event_handler())
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
         """
@@ -91,6 +94,17 @@ class Bot(AsyncRunnable):
 
         return handler
 
+    def _make_event_handler(self) -> Callable:
+        async def handler(event: Event):
+            if event.event_type not in self._event_index:
+                return
+            if not self._event_index[event.event_type]:
+                return
+            for h in self._event_index[event.event_type]:
+                await h(self, event)
+
+        return handler
+
     def add_command(self, cmd: Command) -> Command:
         """
         register the cmd on current Bot
@@ -128,6 +142,23 @@ class Bot(AsyncRunnable):
         # did not init Lexer in advance cuz it needs func.__name__
         # this is redundant stuff in constructor, there should be a better way
         return lambda func: self.add_command(Command.command(name, **args)(func))
+
+    def add_event_handler(self, type: EventTypes, handler: Callable):
+        if type not in self._event_index:
+            self._event_index[type] = []
+        self._event_index[type].append(handler)
+        log.debug(f'event_handler {handler.__qualname__} for {type} added')
+        return handler
+
+    def on_event(self, type: EventTypes):
+        """
+        decorator, register a function to handle events of the type
+
+        :param type: the type
+        :return: original func
+        """
+
+        return lambda func: self.add_event_handler(type, func)
 
     async def fetch_me(self, force_update: bool = False) -> User:
         if force_update or not self._me or not self._me.is_loaded():
