@@ -21,7 +21,10 @@ class Command:
     lexer: Lexer
     parser: Parser
 
-    def __init__(self, name: str, handler: Callable, help: str, desc: str, lexer: Lexer, parser: Parser):
+    rule: Callable
+
+    def __init__(self, name: str, handler: Callable, help: str, desc: str, lexer: Lexer, parser: Parser,
+                 rule: Callable = None):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
         self.handler = handler
@@ -35,6 +38,8 @@ class Command:
 
         self.lexer = lexer
         self.parser = parser
+
+        self.rule = rule
 
     def _lex(self, msg: Message) -> List[str]:
         return self.lexer.lex(msg)
@@ -53,6 +58,18 @@ class Command:
         args = self._parse(tokens, self.handler)
         return args
 
+    async def _execute_rule(self, msg: Message, *args):
+        try:
+            if self.rule is None:
+                return True
+            else:
+                if asyncio.iscoroutinefunction(self.rule):
+                    return await self.rule(msg, *args)
+                return self.rule(msg, *args)
+        except Exception as e:
+            log.error(f"rule execute failed:{e}")
+            return False
+
     async def execute(self, msg: Message, *args):
         """
         pass msg and args from prepare() to handler()
@@ -63,7 +80,8 @@ class Command:
         """
         log.info(f'command {self.name} was triggered by msg: {msg.content}')
         try:
-            await self.handler(msg, *args)
+            if await self._execute_rule(msg, *args):
+                await self.handler(msg, *args)
         except Exception:
             raise Command.ExecuteException(self.handler)
 
@@ -78,7 +96,7 @@ class Command:
     @staticmethod
     def command(name: str = '', *, help: str = '', desc: str = '',
                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                lexer: Lexer = None, parser: Parser = None):
+                lexer: Lexer = None, parser: Parser = None, rule: Callable = None):
         """
         decorator, to wrap a func into a Command
 
@@ -100,7 +118,7 @@ class Command:
         # this is redundant stuff in constructor, there should be a better way
         return lambda func: Command(name, func, help, desc,
                                     lexer or DefaultLexer(set(prefixes), set([name or func.__name__] + list(aliases))),
-                                    parser or Parser())
+                                    parser or Parser(), rule)
 
     class ExecuteException(Exception):
         def __init__(self, func):

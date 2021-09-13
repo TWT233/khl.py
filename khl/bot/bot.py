@@ -106,7 +106,7 @@ class Bot(AsyncRunnable):
 
     def command(self, name: str = '', *, help: str = '', desc: str = '',
                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                lexer: Lexer = None, parser: Parser = None):
+                lexer: Lexer = None, parser: Parser = None, rule: Callable = None):
         """
         decorator, wrap a function in Command and register it on current Bot
 
@@ -122,7 +122,7 @@ class Bot(AsyncRunnable):
         """
         args = {'help': help, 'desc': desc,
                 'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
-                'lexer': lexer, 'parser': parser}
+                'lexer': lexer, 'parser': parser, 'rule': rule}
 
         # use lambda cuz i do not wanna declare decorator() explicitly to take 3 blank lines
         # did not init Lexer in advance cuz it needs func.__name__
