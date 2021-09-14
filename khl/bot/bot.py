@@ -201,6 +201,14 @@ class Bot(AsyncRunnable):
 
         return await target.send(content, **kwargs)
 
+    async def upload_asset(self, file: str) -> str:
+        """return the url to the file, alias for ``create_asset``"""
+        return await self.create_asset(file)
+
+    async def create_asset(self, file: str) -> str:
+        """return the url to the file"""
+        return (await self.client.gate.exec_req(api.Asset.create(file=open(file, 'rb'))))['url']
+
     def run(self):
         try:
             if not self.loop:
