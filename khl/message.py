@@ -1,11 +1,11 @@
 from abc import ABC
 from typing import Any, List, Dict, Union
 
-from .interface import MessageTypes, ChannelPrivacyTypes
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
 from .guild import Guild
+from .interface import MessageTypes, ChannelPrivacyTypes, EventTypes
 from .user import User
 
 
@@ -145,9 +145,13 @@ class PrivateMessage(Message):
 
 
 class Event(RawMessage):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     @property
-    def event_type(self) -> str:
-        return self.extra['type']
+    def event_type(self) -> EventTypes:
+        return EventTypes(self.extra['type'])
 
     @property
     def body(self) -> Dict:

@@ -80,12 +80,14 @@ class PublicTextChannel(PublicChannel):
         """
         # if content is card msg, then convert it to plain str
         if isinstance(content, List):
-            kwargs['type'] = MessageTypes.CARD.value
+            kwargs['type'] = MessageTypes.CARD
             content = json.dumps(content)
 
         # merge params
         kwargs['target_id'] = self.id
         kwargs['content'] = content
+        if isinstance(kwargs['type'], MessageTypes):
+            kwargs['type'] = kwargs['type'].value
         if temp_target_id:
             kwargs['temp_target_id'] = temp_target_id
 
@@ -167,5 +169,7 @@ class PrivateChannel(Channel):
         else:
             kwargs['target_id'] = self.target_user_id
         kwargs['content'] = content
+        if isinstance(kwargs['type'], MessageTypes):
+            kwargs['type'] = kwargs['type'].value
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))

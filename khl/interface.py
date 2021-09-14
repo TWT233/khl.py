@@ -77,3 +77,46 @@ class ChannelPrivacyTypes(Enum):
     """
     GROUP = 'GROUP'
     PERSON = 'PERSON'
+
+
+class EventTypes(Enum):
+    """
+    for system events(type==255)
+    """
+    MESSAGE_BTN_CLICK = 'message_btn_click'
+
+    ADDED_REACTION = 'added_reaction'
+    DELETED_REACTION = 'deleted_reaction'
+    UPDATED_MESSAGE = 'updated_message'
+    DELETED_MESSAGE = 'deleted_message'
+
+    PRIVATE_ADDED_REACTION = 'private_added_reaction'
+    PRIVATE_DELETED_REACTION = 'private_deleted_reaction'
+    UPDATED_PRIVATE_MESSAGE = 'updated_private_message'
+    DELETED_PRIVATE_MESSAGE = 'deleted_private_message'
+
+    UPDATED_GUILD = 'updated_guild'
+    DELETED_GUILD = 'deleted_guild'
+    ADDED_BLOCK_LIST = 'added_block_list'
+    DELETED_BLOCK_LIST = 'deleted_block_list'
+
+    ADDED_ROLE = 'added_role'
+    DELETED_ROLE = 'deleted_role'
+    UPDATED_ROLE = 'update_role'
+
+    JOINED_GUILD = 'joined_guild'
+    EXITED_GUILD = 'exited_guild'
+    GUILD_MEMBER_ONLINE = 'guild_member_online'
+    GUILD_MEMBER_OFFLINE = 'guild_member_offline'
+
+    UPDATED_GUILD_MEMBER = 'updated_guild_member'
+
+    UPDATED_CHANNEL = 'updated_channel'
+    ADDED_CHANNEL = 'added_channel'
+    DELETED_CHANNEL = 'deleted_channel'
+
+    JOINED_CHANNEL = 'joined_channel'
+    EXITED_CHANNEL = 'exited_channel'
+    USER_UPDATE = 'user_update'
+    SELF_JOINED_GUILD = 'self_joined_guild'
+    SELF_EXITED_GUILD = 'self_exited_guild'
