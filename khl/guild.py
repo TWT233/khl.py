@@ -58,9 +58,9 @@ class Guild(LazyLoadable, Requestable):
                 if i['type'] == ChannelTypes.CATEGORY:
                     self._channel_categories.append(i)
                 elif i['type'] == ChannelTypes.TEXT:
-                    channel_list.append(PublicTextChannel(**i))
+                    channel_list.append(PublicTextChannel(**i, _gate_=self.gate))
                 elif i['type'] == ChannelTypes.VOICE:
-                    channel_list.append(PublicVoiceChannel(**i))
+                    channel_list.append(PublicVoiceChannel(**i, _gate_=self.gate))
             self._channels = channel_list
         return self._channels
 
