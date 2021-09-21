@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Union, List, overload, Dict
 
 from . import api
-from .gateway import Requestable
+from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes
 
 
@@ -11,8 +11,6 @@ class Channel(LazyLoadable, Requestable, ABC):
     """
     Interface, represents a channel where messages flowing
     """
-
-    id: str
     type: ChannelTypes
 
     @abstractmethod
@@ -20,6 +18,11 @@ class Channel(LazyLoadable, Requestable, ABC):
         """
         send a msg to the channel
         """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def id(self) -> str:
         raise NotImplementedError
 
 
@@ -36,7 +39,7 @@ class PublicChannel(Channel, ABC):
     permission_sync: int
 
     def __init__(self, **kwargs):
-        self.id: str = kwargs.get('id')
+        self._id: str = kwargs.get('id')
         self.name: str = kwargs.get('name')
         self.user_id: str = kwargs.get('user_id')
         self.guild_id: str = kwargs.get('guild_id')
@@ -51,6 +54,10 @@ class PublicChannel(Channel, ABC):
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
         self.gate = kwargs.get('_gate_')
+
+    @property
+    def id(self) -> str:
+        return self._id
 
 
 class PublicTextChannel(PublicChannel):
@@ -142,6 +149,10 @@ class PrivateChannel(Channel):
 
     async def load(self):
         pass
+
+    @property
+    def id(self) -> str:
+        return self.target_user_id
 
     @property
     def target_user_id(self) -> str:
