@@ -82,6 +82,8 @@ class PublicTextChannel(PublicChannel):
         if isinstance(content, List):
             kwargs['type'] = MessageTypes.CARD
             content = json.dumps(content)
+        if 'type' not in kwargs:
+            kwargs['type'] = MessageTypes.TEXT
 
         # merge params
         kwargs['target_id'] = self.id
@@ -162,6 +164,8 @@ class PrivateChannel(Channel):
         if isinstance(content, List):
             kwargs['type'] = MessageTypes.CARD.value
             content = json.dumps(content)
+        if 'type' not in kwargs:
+            kwargs['type'] = MessageTypes.TEXT
 
         # merge params
         if self.code:
