@@ -6,7 +6,8 @@ from .command import Command
 from .lexer import Lexer
 from .parser import Parser
 from .. import (Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, Event, EventTypes, User,
-                Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes, api)
+                Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes, api, PublicChannel,
+                public_channel_factory)
 
 log = logging.getLogger(__name__)
 
@@ -188,6 +189,10 @@ class Bot(AsyncRunnable):
         if self._me and self._me.is_loaded():
             return self._me
         raise ValueError('not loaded, please call `await fetch_me()` first')
+
+    async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
+        channel_data = await self.client.gate.exec_req(api.Channel.view(channel_id))
+        return public_channel_factory(_gate_=self.client.gate, **channel_data)
 
     @staticmethod
     async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
