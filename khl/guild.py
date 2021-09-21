@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from . import api
-from .channel import Channel, PublicTextChannel, PublicVoiceChannel
+from .channel import Channel, public_channel_factory
 from .gateway import Requestable
 from .interface import LazyLoadable, ChannelTypes
 from .role import Role
@@ -57,10 +57,8 @@ class Guild(LazyLoadable, Requestable):
             for i in raw_list:
                 if i['type'] == ChannelTypes.CATEGORY:
                     self._channel_categories.append(i)
-                elif i['type'] == ChannelTypes.TEXT:
-                    channel_list.append(PublicTextChannel(**i, _gate_=self.gate))
-                elif i['type'] == ChannelTypes.VOICE:
-                    channel_list.append(PublicVoiceChannel(**i, _gate_=self.gate))
+                else:
+                    channel_list.append(public_channel_factory(_gate_=self.gate, **i))
             self._channels = channel_list
         return self._channels
 

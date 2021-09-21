@@ -120,6 +120,14 @@ class PublicVoiceChannel(PublicChannel):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
 
 
+def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
+    kwargs['type'] = kwargs['type'] if isinstance(kwargs['type'], ChannelTypes) else ChannelTypes(kwargs['type'])
+    if kwargs['type'] == ChannelTypes.TEXT:
+        return PublicTextChannel(**kwargs, _gate_=_gate_)
+    elif kwargs['type'] == ChannelTypes.VOICE:
+        return PublicVoiceChannel(**kwargs, _gate_=_gate_)
+
+
 class PrivateChannel(Channel):
     """
     Private chat channel
