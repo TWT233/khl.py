@@ -62,7 +62,8 @@ please install certificate manually, turning to this post for guide:
 
 ## feat
 
-- bot.on_event()
+- card message
+    - default colors
 - helper function for apis
 
 # commit message rules

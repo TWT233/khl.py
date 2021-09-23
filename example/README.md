@@ -5,6 +5,7 @@
 3. [example 02 别把米洒了](./ex02_config_file)
 4. [example 03 加点辣酱：指令参数](./ex03_cmd_args)
 5. [example 04 好看的菜盘：向用户发消息的各种花活](./ex04_reply)
+5. [example 05 开点小灶：事件处理](./ex05_event)
 
 appendix. [Dive into khl.py: 设计 khl.py](./appendix_dive_into_khlpy)
 
