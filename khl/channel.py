@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Union, List, overload, Dict
 
 from . import api
-from .gateway import Requestable
+from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes
 
 
@@ -11,8 +11,6 @@ class Channel(LazyLoadable, Requestable, ABC):
     """
     Interface, represents a channel where messages flowing
     """
-
-    id: str
     type: ChannelTypes
 
     @abstractmethod
@@ -20,6 +18,11 @@ class Channel(LazyLoadable, Requestable, ABC):
         """
         send a msg to the channel
         """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def id(self) -> str:
         raise NotImplementedError
 
 
@@ -36,7 +39,7 @@ class PublicChannel(Channel, ABC):
     permission_sync: int
 
     def __init__(self, **kwargs):
-        self.id: str = kwargs.get('id')
+        self._id: str = kwargs.get('id')
         self.name: str = kwargs.get('name')
         self.user_id: str = kwargs.get('user_id')
         self.guild_id: str = kwargs.get('guild_id')
@@ -51,6 +54,10 @@ class PublicChannel(Channel, ABC):
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
         self.gate = kwargs.get('_gate_')
+
+    @property
+    def id(self) -> str:
+        return self._id
 
 
 class PublicTextChannel(PublicChannel):
@@ -82,6 +89,8 @@ class PublicTextChannel(PublicChannel):
         if isinstance(content, List):
             kwargs['type'] = MessageTypes.CARD
             content = json.dumps(content)
+        if 'type' not in kwargs:
+            kwargs['type'] = MessageTypes.TEXT
 
         # merge params
         kwargs['target_id'] = self.id
@@ -109,6 +118,14 @@ class PublicVoiceChannel(PublicChannel):
 
     async def send(self, content: Union[str, List], **kwargs):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
+
+
+def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
+    kwargs['type'] = kwargs['type'] if isinstance(kwargs['type'], ChannelTypes) else ChannelTypes(kwargs['type'])
+    if kwargs['type'] == ChannelTypes.TEXT:
+        return PublicTextChannel(**kwargs, _gate_=_gate_)
+    elif kwargs['type'] == ChannelTypes.VOICE:
+        return PublicVoiceChannel(**kwargs, _gate_=_gate_)
 
 
 class PrivateChannel(Channel):
@@ -142,6 +159,10 @@ class PrivateChannel(Channel):
         pass
 
     @property
+    def id(self) -> str:
+        return self.target_user_id
+
+    @property
     def target_user_id(self) -> str:
         return self.target_info.get('id') if self.target_info else None
 
@@ -162,6 +183,8 @@ class PrivateChannel(Channel):
         if isinstance(content, List):
             kwargs['type'] = MessageTypes.CARD.value
             content = json.dumps(content)
+        if 'type' not in kwargs:
+            kwargs['type'] = MessageTypes.TEXT
 
         # merge params
         if self.code:

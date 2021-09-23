@@ -95,7 +95,7 @@ class RELexer(Lexer):
         if not m:
             raise RELexer.NotMatched(msg)
         if m.groups():
-            return [m.group(i) for i in range(1, len(m.groups())) if m.start(i) < len(msg.content)]
+            return [m[i] for i in range(1, len(m.groups()) + 1) if m.start(i) < len(msg.content)]
 
     class NotMatched(Lexer.LexerException):
         pass

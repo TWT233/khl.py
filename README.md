@@ -31,8 +31,7 @@ from khl import Bot, Message
 bot = Bot(token='xxxxxxxxxxxxxxxxxxxxxxxxx')
 
 
-# register command
-# invoke this via saying `/hello` in channel
+# register command, send `/hello` in channel to invoke
 @bot.command(name='hello')
 async def world(msg: Message):
     await msg.reply('world!')
@@ -40,7 +39,7 @@ async def world(msg: Message):
 
 # everything done, go ahead now!
 bot.run()
-# now invite the bot to a server, and type '/hello'(in any channel)
+# now invite the bot to a server, and send '/hello' in any channel
 # (remember to grant the bot with read & send permissions)
 ```
 
@@ -62,10 +61,18 @@ please install certificate manually, turning to this post for guide:
 
 ## feat
 
-- bot.on_event()
+- card message
+    - default colors
 - helper function for apis
 
-# commit message rules
+# CONTRIBUTION
+
+welcome! we are glad to get help from community hands, and don't be shy to show your code, we can improve it together
+even if it's not perfect right now
+
+if there is any bug/perf/feature request, we are willing to deal with your issue/pull request!
+
+the only red tape:
 
 only accept commits satisfying [Conventional Commits convention](https://github.com/commitizen/cz-cli)
 
