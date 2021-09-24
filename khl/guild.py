@@ -30,6 +30,12 @@ class Guild(LazyLoadable, Requestable):
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id')
+        self._channel_categories = []
+        self._loaded = kwargs.get('_lazy_loaded_', False)
+        self.gate = kwargs.get('_gate_', None)
+        self._update_fields(**kwargs)
+
+    def _update_fields(self, **kwargs):
         self.name = kwargs.get('name', '')
         self.topic = kwargs.get('topic', '')
         self.master_id = kwargs.get('master_id', '')
@@ -41,14 +47,11 @@ class Guild(LazyLoadable, Requestable):
         self.default_channel_id = kwargs.get('default_channel_id', '')
         self.welcome_channel_id = kwargs.get('welcome_channel_id', '')
         self._roles = kwargs.get('roles', None)
-        self._channel_categories = []
         self._channels = kwargs.get('channels', None)
 
-        self._loaded = kwargs.get('_lazy_loaded_', False)
-        self.gate = kwargs.get('_gate_', None)
-
     async def load(self):
-        pass
+        self._update_fields(**(await self.gate.exec_req(api.Guild.view(self.id))))
+        self._loaded = True
 
     async def fetch_channel_list(self, force_update: bool = True) -> List[Channel]:
         if force_update or self._channels is None:
