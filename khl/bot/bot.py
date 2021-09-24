@@ -195,6 +195,11 @@ class Bot(AsyncRunnable):
         channel_data = await self.client.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.client.gate, **channel_data)
 
+    async def fetch_guild(self, guild_id: str) -> Guild:
+        guild = Guild(_gate_=self.client.gate, id=guild_id)
+        await guild.load()
+        return guild
+
     @staticmethod
     async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
         """
