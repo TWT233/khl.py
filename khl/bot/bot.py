@@ -5,9 +5,10 @@ from typing import Dict, Callable, List, Optional, Union, Pattern
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import (Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, Event, EventTypes, User,
-                Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes, api, PublicChannel,
-                public_channel_factory)
+from .. import AsyncRunnable, MessageTypes, EventTypes, api  # interfaces & basics
+from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
+from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
+from ..channel import public_channel_factory  # helper
 
 log = logging.getLogger(__name__)
 
@@ -213,6 +214,12 @@ class Bot(AsyncRunnable):
     async def create_asset(self, file: str) -> str:
         """return the url to the file"""
         return (await self.client.gate.exec_req(api.Asset.create(file=open(file, 'rb'))))['url']
+
+    async def kickout(self, guild: Guild, user: Union[User, str]):
+        """kick ``user`` out from ``guild``"""
+        if guild.gate.requester != self.client.gate.requester:
+            raise ValueError('can not modify guild from other gate')
+        return await guild.kickout(user)
 
     def run(self):
         try:

@@ -1,10 +1,11 @@
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from . import api
 from .channel import Channel, public_channel_factory
 from .gateway import Requestable
 from .interface import LazyLoadable, ChannelTypes
 from .role import Role
+from .user import User
 
 
 class Guild(LazyLoadable, Requestable):
@@ -94,3 +95,7 @@ class Guild(LazyLoadable, Requestable):
 
     async def delete_role(self, role_id: int):
         return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=role_id))
+
+    async def kickout(self, user: Union[User, str]):
+        target_id = user.id if isinstance(user, User) else user
+        return await self.gate.exec_req(api.Guild.kickout(guild_id=self.id, target_id=target_id))

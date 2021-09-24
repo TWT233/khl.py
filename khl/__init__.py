@@ -10,7 +10,7 @@ from .client import Client
 # concepts
 from .role import Role
 from .user import User
-from .channel import Channel, PublicTextChannel, PrivateChannel, PublicChannel, public_channel_factory
+from .channel import Channel, PublicTextChannel, PrivateChannel, PublicChannel
 from .guild import Guild
 from .context import Context
 from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
