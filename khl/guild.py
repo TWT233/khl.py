@@ -99,3 +99,7 @@ class Guild(LazyLoadable, Requestable):
     async def kickout(self, user: Union[User, str]):
         target_id = user.id if isinstance(user, User) else user
         return await self.gate.exec_req(api.Guild.kickout(guild_id=self.id, target_id=target_id))
+
+    async def leave(self):
+        """leave from this guild"""
+        return await self.gate.exec_req(api.Guild.leave(guild_id=self.id))

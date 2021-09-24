@@ -226,6 +226,12 @@ class Bot(AsyncRunnable):
             raise ValueError('can not modify guild from other gate')
         return await guild.kickout(user)
 
+    async def leave(self, guild: Guild):
+        """leave from ``guild``"""
+        if guild.gate.requester != self.client.gate.requester:
+            raise ValueError('can not modify guild from other gate')
+        return await guild.leave()
+
     def run(self):
         try:
             if not self.loop:
