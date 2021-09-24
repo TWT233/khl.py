@@ -84,7 +84,8 @@ class Command:
         """
         log.info(f'command {self.name} was triggered by msg: {msg.content}')
         try:
-            await self.handler(msg, *args)
+            if await self._execute_rules(msg, *args):
+                await self.handler(msg, *args)
         except Exception:
             raise Command.ExecuteException(self.handler)
 

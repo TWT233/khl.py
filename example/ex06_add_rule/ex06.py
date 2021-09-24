@@ -25,12 +25,12 @@ async def yes(msg: Message, *args):
 
 # you can write a rule
 def myrule1(msg: Message, *args, **kwargs):
-    return msg.content.find('khl')
+    return msg.content.find('khl') != -1
 
 
 def myrule2(param: str):
     def func(msg: Message, *args, **kwargs):
-        return msg.content.find(param)
+        return msg.content.find(param) != -1
 
     return func
 
