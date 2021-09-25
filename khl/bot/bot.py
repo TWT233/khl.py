@@ -5,10 +5,9 @@ from typing import Dict, Callable, List, Optional, Union, Pattern
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import AsyncRunnable, MessageTypes, EventTypes, api  # interfaces & basics
+from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
-from ..channel import public_channel_factory  # helper
 
 log = logging.getLogger(__name__)
 
@@ -172,7 +171,7 @@ class Bot(AsyncRunnable):
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
         if force_update or not self._me or not self._me.is_loaded():
-            self._me = User(**(await self.client.gate.exec_req(api.User.me())), _lazy_loaded_=True)
+            self._me = await self.client.fetch_me()
         return self._me
 
     @property
@@ -194,8 +193,7 @@ class Bot(AsyncRunnable):
 
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
         """fetch details of a public channel from khl"""
-        channel_data = await self.client.gate.exec_req(api.Channel.view(channel_id))
-        return public_channel_factory(_gate_=self.client.gate, **channel_data)
+        return await self.client.fetch_public_channel(channel_id)
 
     async def fetch_guild(self, guild_id: str) -> Guild:
         """fetch details of a guild from khl"""
@@ -205,8 +203,7 @@ class Bot(AsyncRunnable):
 
     async def list_guild(self) -> List[Guild]:
         """list guilds the bot joined"""
-        guilds_data = (await self.client.gate.exec_pagination_req(api.Guild.list()))
-        return [Guild(_gate_=self.client.gate, _lazy_loaded_=True, **i) for i in guilds_data]
+        return await self.client.list_guild()
 
     @staticmethod
     async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
@@ -221,12 +218,12 @@ class Bot(AsyncRunnable):
         return await target.send(content, **kwargs)
 
     async def upload_asset(self, file: str) -> str:
-        """return the url to the file, alias for ``create_asset``"""
-        return await self.create_asset(file)
+        """upload ``file`` to khl, and return the url to the file, alias for ``create_asset``"""
+        return await self.client.create_asset(file)
 
     async def create_asset(self, file: str) -> str:
-        """return the url to the file"""
-        return (await self.client.gate.exec_req(api.Asset.create(file=open(file, 'rb'))))['url']
+        """upload ``file`` to khl, and return the url to the file"""
+        return await self.client.create_asset(file)
 
     async def kickout(self, guild: Guild, user: Union[User, str]):
         """kick ``user`` out from ``guild``"""
