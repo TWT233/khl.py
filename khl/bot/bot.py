@@ -170,6 +170,7 @@ class Bot(AsyncRunnable):
         return lambda func: self.add_event_handler(type, func)
 
     async def fetch_me(self, force_update: bool = False) -> User:
+        """fetch detail of the bot it self as a ``User``"""
         if force_update or not self._me or not self._me.is_loaded():
             self._me = User(**(await self.client.gate.exec_req(api.User.me())), _lazy_loaded_=True)
         return self._me
@@ -192,10 +193,12 @@ class Bot(AsyncRunnable):
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
+        """fetch details of a public channel from khl"""
         channel_data = await self.client.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.client.gate, **channel_data)
 
     async def fetch_guild(self, guild_id: str) -> Guild:
+        """fetch details of a guild from khl"""
         guild = Guild(_gate_=self.client.gate, id=guild_id)
         await guild.load()
         return guild
