@@ -203,6 +203,11 @@ class Bot(AsyncRunnable):
         await guild.load()
         return guild
 
+    async def list_guild(self) -> List[Guild]:
+        """list guilds the bot joined"""
+        guilds_data = (await self.client.gate.exec_pagination_req(api.Guild.list()))
+        return [Guild(_gate_=self.client.gate, _lazy_loaded_=True, **i) for i in guilds_data]
+
     @staticmethod
     async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
         """
