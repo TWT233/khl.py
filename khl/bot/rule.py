@@ -1,17 +1,11 @@
 from abc import ABC, abstractmethod
-from .bot import Bot
-from .message import Message
-
-import asyncio
+from khl.bot import Bot
+from khl.message import Message
 
 
 class Rule(ABC):
     def __init__(self):
         pass
-
-    @abstractmethod
-    def at_me(self):
-        raise NotImplementedError
 
     @abstractmethod
     def at_all(self):

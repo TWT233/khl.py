@@ -38,7 +38,7 @@ class Command:
 
         self.lexer = lexer
         self.parser = parser
-        self.rules = rules
+        self.rules = list(rules)
 
     def _lex(self, msg: Message) -> List[str]:
         return self.lexer.lex(msg)
@@ -48,16 +48,13 @@ class Command:
 
     async def _execute_rules(self, msg: Message, *args):
         try:
-            if len(self.rules) == 0:
-                return True
             for rule in self.rules:
                 if asyncio.iscoroutinefunction(rule):
-                    if await rule(msg, *args):
-                        continue
+                    if not await rule(msg, *args):
+                        return False
                 else:
-                    if rule(msg, *args):
-                        continue
-                return False
+                    if not rule(msg, *args):
+                        return False
             return True
         except Exception as e:
             log.error(f"rule execute failed:{e}")
