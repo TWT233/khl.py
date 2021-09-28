@@ -81,6 +81,10 @@ class Guild(LazyLoadable, Requestable):
             return self._channels
         raise ValueError('not loaded, please call `await fetch_channel_list()` first')
 
+    async def list_user(self, channel: Channel) -> List[User]:
+        users = await self.gate.exec_pagination_req(api.Guild.userList(guild_id=self.id, channel_id=channel.id))
+        return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
+
     async def fetch_roles(self, force_update: bool = True) -> List[Role]:
         if force_update or self._roles is None:
             raw_list = await self.gate.exec_pagination_req(api.GuildRole.list(guild_id=self.id))
