@@ -103,6 +103,22 @@ class Guild(LazyLoadable, Requestable):
     async def delete_role(self, role_id: int):
         return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=role_id))
 
+    async def grant_role(self, user: User, role: Union[Role, str]):
+        """
+        docs:
+        https://developer.kaiheila.cn/doc/http/guild-role#%E8%B5%8B%E4%BA%88%E7%94%A8%E6%88%B7%E8%A7%92%E8%89%B2
+        """
+        role_id = role.id if isinstance(role, Role) else role
+        return await self.gate.exec_req(api.GuildRole.grant(guild_id=self.id, user_id=user.id, role_id=role_id))
+
+    async def revoke_role(self, user: User, role: Union[Role, str]):
+        """
+        docs:
+        https://developer.kaiheila.cn/doc/http/guild-role#%E5%88%A0%E9%99%A4%E7%94%A8%E6%88%B7%E8%A7%92%E8%89%B2
+        """
+        role_id = role.id if isinstance(role, Role) else role
+        return await self.gate.exec_req(api.GuildRole.revoke(guild_id=self.id, user_id=user.id, role_id=role_id))
+
     async def create_channel(self, name: str, type: ChannelTypes = None, category: str = None,
                              limit_amount: int = None, voice_quality: int = None):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
