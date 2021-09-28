@@ -40,6 +40,15 @@ class PublicChannel(Channel, ABC):
 
     def __init__(self, **kwargs):
         self._id: str = kwargs.get('id')
+        self._loaded = kwargs.get('_lazy_loaded_', False)
+        self.gate = kwargs.get('_gate_')
+        self._update_fields(**kwargs)
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    def _update_fields(self, **kwargs):
         self.name: str = kwargs.get('name')
         self.user_id: str = kwargs.get('user_id')
         self.guild_id: str = kwargs.get('guild_id')
@@ -52,12 +61,9 @@ class PublicChannel(Channel, ABC):
         self.permission_users: list = kwargs.get('permission_users')
         self.permission_sync: int = kwargs.get('permission_sync')
 
-        self._loaded = kwargs.get('_lazy_loaded_', False)
-        self.gate = kwargs.get('_gate_')
-
-    @property
-    def id(self) -> str:
-        return self._id
+    async def load(self):
+        self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
+        self._loaded = True
 
 
 class PublicTextChannel(PublicChannel):
@@ -70,10 +76,10 @@ class PublicTextChannel(PublicChannel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.slow_mode: int = kwargs.get('slow_mode')
 
-    async def load(self):
-        pass
+    def _update_fields(self, **kwargs):
+        super()._update_fields(**kwargs)
+        self.slow_mode: int = kwargs.get('slow_mode')
 
     @overload
     async def send(self, content: Union[str, List], **kwargs):
@@ -112,9 +118,6 @@ class PublicVoiceChannel(PublicChannel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    async def load(self):
-        pass
 
     async def send(self, content: Union[str, List], **kwargs):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')

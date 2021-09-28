@@ -5,9 +5,9 @@ from typing import Dict, Callable, List, Optional, Union, Pattern
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
-from .. import (Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client, Event, EventTypes, User,
-                Channel, PublicTextChannel, AsyncRunnable, Message, MessageTypes, api, PublicChannel,
-                public_channel_factory)
+from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
+from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
+from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 
 log = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ class Bot(AsyncRunnable):
 
     def command(self, name: str = '', *, help: str = '', desc: str = '',
                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                lexer: Lexer = None, parser: Parser = None):
+                lexer: Lexer = None, parser: Parser = None, rules: List[Callable] = ()):
         """
         decorator, wrap a function in Command and register it on current Bot
 
@@ -140,11 +140,12 @@ class Bot(AsyncRunnable):
         :param desc: short introduction
         :param lexer: (Advanced) explicitly set the lexer
         :param parser: (Advanced) explicitly set the parser
+        :param rules: only be executed if all rules are met
         :return: wrapped Command
         """
         args = {'help': help, 'desc': desc,
                 'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
-                'lexer': lexer, 'parser': parser}
+                'lexer': lexer, 'parser': parser, 'rules': rules}
 
         # use lambda cuz i do not wanna declare decorator() explicitly to take 3 blank lines
         # did not init Lexer in advance cuz it needs func.__name__
@@ -169,8 +170,9 @@ class Bot(AsyncRunnable):
         return lambda func: self.add_event_handler(type, func)
 
     async def fetch_me(self, force_update: bool = False) -> User:
+        """fetch detail of the bot it self as a ``User``"""
         if force_update or not self._me or not self._me.is_loaded():
-            self._me = User(**(await self.client.gate.exec_req(api.User.me())), _lazy_loaded_=True)
+            self._me = await self.client.fetch_me()
         return self._me
 
     @property
@@ -191,8 +193,18 @@ class Bot(AsyncRunnable):
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
-        channel_data = await self.client.gate.exec_req(api.Channel.view(channel_id))
-        return public_channel_factory(_gate_=self.client.gate, **channel_data)
+        """fetch details of a public channel from khl"""
+        return await self.client.fetch_public_channel(channel_id)
+
+    async def fetch_guild(self, guild_id: str) -> Guild:
+        """fetch details of a guild from khl"""
+        guild = Guild(_gate_=self.client.gate, id=guild_id)
+        await guild.load()
+        return guild
+
+    async def list_guild(self) -> List[Guild]:
+        """list guilds the bot joined"""
+        return await self.client.list_guild()
 
     @staticmethod
     async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
@@ -207,12 +219,24 @@ class Bot(AsyncRunnable):
         return await target.send(content, **kwargs)
 
     async def upload_asset(self, file: str) -> str:
-        """return the url to the file, alias for ``create_asset``"""
-        return await self.create_asset(file)
+        """upload ``file`` to khl, and return the url to the file, alias for ``create_asset``"""
+        return await self.client.create_asset(file)
 
     async def create_asset(self, file: str) -> str:
-        """return the url to the file"""
-        return (await self.client.gate.exec_req(api.Asset.create(file=open(file, 'rb'))))['url']
+        """upload ``file`` to khl, and return the url to the file"""
+        return await self.client.create_asset(file)
+
+    async def kickout(self, guild: Guild, user: Union[User, str]):
+        """kick ``user`` out from ``guild``"""
+        if guild.gate.requester != self.client.gate.requester:
+            raise ValueError('can not modify guild from other gate')
+        return await guild.kickout(user)
+
+    async def leave(self, guild: Guild):
+        """leave from ``guild``"""
+        if guild.gate.requester != self.client.gate.requester:
+            raise ValueError('can not modify guild from other gate')
+        return await guild.leave()
 
     def run(self):
         try:

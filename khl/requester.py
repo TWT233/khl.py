@@ -38,18 +38,19 @@ class HTTPRequester(AsyncRunnable):
     async def exec_req(self, r: _Req):
         return await self.request(r.method, r.route, **r.params)
 
-    async def exec_pagination_req(self, r: _Req, page: int = 1, page_size: int = 50, sort: str = '') -> List:
+    async def exec_pagination_req(self, r: _Req, *, begin_page: int = 1, end_page: int = None,
+                                  page_size: int = 50, sort: str = '') -> List:
         """
-        exec pagination requests, iter from ``page`` to the end
+        exec pagination requests, iter from ``begin_page`` to the ``end_page``, ``end_page=None`` means to the end
 
         1. get a req, inject the params
         2. req and receive the result
         3. unwrap the result, append result, fresh pagination params
         """
         ret = []
-        page_total = page + 1
-        while page < page_total:
-            r.params['params']['page'] = page
+        current_page = begin_page
+        while end_page is None or current_page < end_page:
+            r.params['params']['page'] = current_page
             r.params['params']['page_size'] = page_size
             if sort:
                 r.params['params']['sort'] = sort
@@ -57,9 +58,13 @@ class HTTPRequester(AsyncRunnable):
             p = await self.exec_req(r)
 
             ret.extend(p['items'])
-            page = p['meta']['page']
+            current_page = p['meta']['page']
             page_total = p['meta']['page_total']
             page_size = p['meta']['page_size']
+
+            current_page += 1
+            if end_page is None:
+                end_page = page_total
 
         return ret
 

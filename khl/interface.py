@@ -102,7 +102,7 @@ class EventTypes(Enum):
 
     ADDED_ROLE = 'added_role'
     DELETED_ROLE = 'deleted_role'
-    UPDATED_ROLE = 'update_role'
+    UPDATED_ROLE = 'updated_role'
 
     JOINED_GUILD = 'joined_guild'
     EXITED_GUILD = 'exited_guild'
