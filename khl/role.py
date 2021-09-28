@@ -4,7 +4,7 @@ class Role:
 
     represent the component that used in permission control and user identify
     """
-    role_id: int
+    id: int
     name: str
     color: int
     position: int
@@ -13,7 +13,7 @@ class Role:
     permissions: int
 
     def __init__(self, **kwargs):
-        self.role_id: int = kwargs.get("role_id", 0)
+        self.id: int = kwargs.get("role_id", 0)
         self.name: str = kwargs.get("name", "")
         self.color: int = kwargs.get("color", 0)
         self.position: int = kwargs.get("position", 0)
