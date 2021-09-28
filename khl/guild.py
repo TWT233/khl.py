@@ -103,6 +103,20 @@ class Guild(LazyLoadable, Requestable):
     async def delete_role(self, role_id: int):
         return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=role_id))
 
+    async def create_channel(self, name: str, type: ChannelTypes = None, category: str = None,
+                             limit_amount: int = None, voice_quality: int = None):
+        """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        params = {'name': name, 'guild_id': self.id}
+        if type:
+            params['type'] = type.value
+        if category:
+            params['parent_id'] = category
+        if limit_amount:
+            params['limit_amount'] = limit_amount
+        if voice_quality:
+            params['voice_quality'] = voice_quality
+        return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
+
     async def kickout(self, user: Union[User, str]):
         target_id = user.id if isinstance(user, User) else user
         return await self.gate.exec_req(api.Guild.kickout(guild_id=self.id, target_id=target_id))
