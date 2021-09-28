@@ -14,6 +14,5 @@ from .channel import Channel, PublicTextChannel, PrivateChannel, PublicChannel
 from .guild import Guild
 from .context import Context
 from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
-
 # extensions
 from .bot import *
