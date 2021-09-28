@@ -85,6 +85,9 @@ class Guild(LazyLoadable, Requestable):
         users = await self.gate.exec_pagination_req(api.Guild.userList(guild_id=self.id, channel_id=channel.id))
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
+    async def set_user_nickname(self, user: User, new_nickname: str):
+        await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=user.id))
+
     async def fetch_roles(self, force_update: bool = True) -> List[Role]:
         if force_update or self._roles is None:
             raw_list = await self.gate.exec_pagination_req(api.GuildRole.list(guild_id=self.id))
