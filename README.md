@@ -64,6 +64,9 @@ please install certificate manually, turning to this post for guide:
 - card message
     - default colors
 - helper function for apis
+    - msg.delete
+- pass bot to command
+- timer
 
 # CONTRIBUTION
 
