@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import Any, List, Dict, Union
 
+import api
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
@@ -85,6 +86,9 @@ class Message(RawMessage, Requestable, ABC):
             kwargs['quote'] = self.id
 
         return await self.ctx.channel.send(content, **kwargs)
+
+    async def delete(self):
+        return await self.gate.exec_req(api.Message.delete(msg_id=self.id))
 
 
 class PublicMessage(Message):

@@ -238,6 +238,12 @@ class Bot(AsyncRunnable):
             raise ValueError('can not modify guild from other gate')
         return await guild.leave()
 
+    async def delete_message(self, msg: Message):
+        """delete msg"""
+        if msg.gate.requester != self.client.gate.requester:
+            raise ValueError('can not modify message from other gate')
+        return msg.delete()
+
     def run(self):
         try:
             if not self.loop:
