@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Any, List, Dict, Union
 
-import api
+from . import api
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
