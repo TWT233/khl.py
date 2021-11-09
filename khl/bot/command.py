@@ -47,18 +47,21 @@ class Command:
         return self.parser.parse(tokens, handler)
 
     async def _execute_rules(self, msg: Message, *args):
-        try:
-            for rule in self.rules:
-                if asyncio.iscoroutinefunction(rule):
-                    if not await rule(msg, *args):
-                        return False
-                else:
-                    if not rule(msg, *args):
-                        return False
-            return True
-        except Exception as e:
-            log.error(f"rule execute failed:{e}")
-            return False
+        result = True
+        for rule in self.rules:
+            try:
+                result = result and await self._wrap_rule(rule, msg, *args)
+            except Exception as e:
+                log.exception(f"_execute_rules: {e}")
+                return False
+        return result
+
+    @staticmethod
+    async def _wrap_rule(rule, msg: Message, *args):
+        if asyncio.iscoroutinefunction(rule):
+            return await rule(msg, *args) is not None
+        else:
+            return rule(msg, *args) is not None
 
     def prepare(self, msg: Message) -> List[Any]:
         """
@@ -83,8 +86,8 @@ class Command:
         try:
             if await self._execute_rules(msg, *args):
                 await self.handler(msg, *args)
-        except Exception:
-            raise Command.ExecuteException(self.handler)
+        except Exception as e:
+            log.exception(f"execute: {Command.ExecuteException(self.handler, e)}")
 
     def do(self, msg: Message):
         """
@@ -123,5 +126,6 @@ class Command:
                                     parser or Parser(), rules)
 
     class ExecuteException(Exception):
-        def __init__(self, func):
+        def __init__(self, func, e):
             self.func = func
+            self.exception = e

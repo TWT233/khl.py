@@ -52,8 +52,11 @@ class Client(Requestable, AsyncRunnable):
             pkg: Dict = await self._pkg_queue.get()
             log.debug(f'upcoming pkg: {pkg}')
 
-            msg = self._make_msg(pkg)
-            self._dispatch_msg(msg)
+            try:
+                msg = self._make_msg(pkg)
+                self._dispatch_msg(msg)
+            except Exception as e:
+                log.exception(e)
 
             self._pkg_queue.task_done()
 
