@@ -52,25 +52,38 @@ class Client(Requestable, AsyncRunnable):
             pkg: Dict = await self._pkg_queue.get()
             log.debug(f'upcoming pkg: {pkg}')
 
-            msg: RawMessage
-            if pkg['type'] == MessageTypes.SYS.value:
-                msg = Event(**pkg)
-            else:
-                if pkg['channel_type'] == 'GROUP':
-                    msg = PublicMessage(**pkg, _gate_=self.gate)
-                elif pkg['channel_type'] == 'PERSON':
-                    msg = PrivateMessage(**pkg, _gate_=self.gate)
-                else:
-                    log.error(f'can not spawn msg from pkg: {pkg}')
-                    self._pkg_queue.task_done()
-                    continue
-
-            # dispatch msg
-            if msg.type in self._handler_map and self._handler_map[msg.type]:
-                for handler in self._handler_map[msg.type]:
-                    asyncio.ensure_future(handler(msg), loop=self.loop)
+            try:
+                msg = self._make_msg(pkg)
+                self._dispatch_msg(msg)
+            except Exception as e:
+                log.exception(e)
 
             self._pkg_queue.task_done()
+
+    def _make_msg(self, pkg: Dict):
+        if pkg.get('type') == MessageTypes.SYS.value:
+            msg = Event(**pkg)
+        else:
+            msg = self._make_channel_msg(pkg)
+        return msg
+
+    def _make_channel_msg(self, pkg):
+        msg = None
+        channel_type = pkg.get('channel_type')
+        if channel_type == 'GROUP':
+            msg = PublicMessage(**pkg, _gate_=self.gate)
+        elif channel_type == 'PERSON':
+            msg = PrivateMessage(**pkg, _gate_=self.gate)
+        else:
+            log.error(f'can not make msg from pkg: {pkg}')
+        return msg
+
+    def _dispatch_msg(self, msg):
+        if not msg:
+            return
+        if msg.type in self._handler_map and self._handler_map[msg.type]:
+            for handler in self._handler_map[msg.type]:
+                asyncio.ensure_future(handler(msg), loop=self.loop)
 
     async def create_asset(self, file: str) -> str:
         """upload ``file`` to khl, and return the url to the file"""

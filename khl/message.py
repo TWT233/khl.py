@@ -1,6 +1,7 @@
 from abc import ABC
 from typing import Any, List, Dict, Union
 
+from . import api
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
@@ -23,21 +24,25 @@ class RawMessage(ABC):
     target_id: str
     author_id: str
     content: str
-    msg_id: str
+    _msg_id: str
     msg_timestamp: int
     nonce: str
     extra: Any
 
     def __init__(self, **kwargs):
+        self._msg_id = kwargs.get('msg_id')
         self._type = kwargs.get('type')
         self._channel_type = kwargs.get('channel_type')
         self.target_id = kwargs.get('target_id')
         self.author_id = kwargs.get('author_id')
         self.content = kwargs.get('content')
-        self.msg_id = kwargs.get('msg_id')
         self.msg_timestamp = kwargs.get('msg_timestamp')
         self.nonce = kwargs.get('nonce')
         self.extra = kwargs.get('extra', {})
+
+    @property
+    def id(self) -> str:
+        return self._msg_id
 
     @property
     def type(self) -> MessageTypes:
@@ -78,9 +83,12 @@ class Message(RawMessage, Requestable, ABC):
         reply to a msg, content can also be a card
         """
         if use_quote:
-            kwargs['quote'] = self.msg_id
+            kwargs['quote'] = self.id
 
         return await self.ctx.channel.send(content, **kwargs)
+
+    async def delete(self):
+        return await self.gate.exec_req(api.Message.delete(msg_id=self.id))
 
 
 class PublicMessage(Message):

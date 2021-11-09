@@ -65,7 +65,7 @@ class WebsocketReceiver(Receiver):
                               params=params) as res:
                 res_json = await res.json()
                 if res_json['code'] != 0:
-                    log.error(f'error getting gateway: {res_json}')
+                    log.error(f'getting gateway: {res_json}')
                     return
 
                 self._RAW_GATEWAY = res_json['data']['url']
@@ -83,8 +83,8 @@ class WebsocketReceiver(Receiver):
                     except Exception as e:
                         log.exception(e)
                         continue
+
                     if pkg['s'] == 0:
-                        log.debug(f'upcoming pkg: {pkg}')
                         self._NEWEST_SN = pkg['sn']
                         event = pkg['d']
                         await pkg_queue.put(event)
@@ -139,7 +139,6 @@ class WebhookReceiver(Receiver):
                 return web.Response()
 
             if pkg['s'] == 0:
-                log.debug(f'upcoming pkg: {pkg}')
                 pkg = pkg['d']
                 if pkg['type'] == 255 and pkg['channel_type'] == 'WEBHOOK_CHALLENGE':
                     return web.json_response({'challenge': pkg['challenge']})
