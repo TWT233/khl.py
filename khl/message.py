@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Union
 
 from . import api
@@ -78,6 +78,31 @@ class Message(RawMessage, Requestable, ABC):
     def ctx(self) -> Context:
         return self._ctx
 
+    @abstractmethod
+    async def add_reaction(self, emoji: str):
+        """add emoji to msg's reaction list
+
+        https://developer.kaiheila.cn/doc/http/message#%E7%BB%99%E6%9F%90%E4%B8%AA%E6%B6%88%E6%81%AF%E6%B7%BB%E5%8A%A0%E5%9B%9E%E5%BA%94
+
+        https://developer.kaiheila.cn/doc/http/direct-message#%E7%BB%99%E6%9F%90%E4%B8%AA%E6%B6%88%E6%81%AF%E6%B7%BB%E5%8A%A0%E5%9B%9E%E5%BA%94
+
+        :param emoji: 😘
+        """
+        ...
+
+    @abstractmethod
+    async def delete_reaction(self, emoji: str, user: User):
+        """delete emoji from msg's reaction list
+
+        https://developer.kaiheila.cn/doc/http/message#%E5%88%A0%E9%99%A4%E6%B6%88%E6%81%AF%E7%9A%84%E6%9F%90%E4%B8%AA%E5%9B%9E%E5%BA%94
+
+        https://developer.kaiheila.cn/doc/http/direct-message#%E5%88%A0%E9%99%A4%E6%B6%88%E6%81%AF%E7%9A%84%E6%9F%90%E4%B8%AA%E5%9B%9E%E5%BA%94
+
+        :param emoji: 😘
+        :param user: whose reaction, delete others added reaction requires channel msg admin permission
+        """
+        ...
+
     async def reply(self, content: Union[str, List] = '', use_quote: bool = True, **kwargs):
         """
         reply to a msg, content can also be a card
@@ -129,6 +154,13 @@ class PublicMessage(Message):
     def mention_here(self) -> bool:
         return self.extra['mention_here']
 
+    async def add_reaction(self, emoji: str):
+        return await self.gate.exec_req(api.Message.addReaction(msg_id=self.id, emoji=emoji))
+
+    async def delete_reaction(self, emoji: str, user: User = None):
+        req = api.Message.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
+        return await self.gate.exec_req(req)
+
     async def reply(self, content: Union[str, List] = '', use_quote: bool = True, is_temp: bool = False, **kwargs):
         return await super().reply(content, use_quote, temp_target_id=self.author_id if is_temp else '', **kwargs)
 
@@ -150,6 +182,13 @@ class PrivateMessage(Message):
     @property
     def channel(self) -> PrivateChannel:
         return self._channel
+
+    async def add_reaction(self, emoji: str):
+        return await self.gate.exec_req(api.DirectMessage.addReaction(msg_id=self.id, emoji=emoji))
+
+    async def delete_reaction(self, emoji: str, user: User = None):
+        req = api.DirectMessage.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
+        return await self.gate.exec_req(req)
 
 
 class Event(RawMessage):
