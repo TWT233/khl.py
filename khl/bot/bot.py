@@ -147,9 +147,6 @@ class Bot(AsyncRunnable):
                 'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
                 'lexer': lexer, 'parser': parser, 'rules': rules}
 
-        # use lambda cuz i do not wanna declare decorator() explicitly to take 3 blank lines
-        # did not init Lexer in advance cuz it needs func.__name__
-        # this is redundant stuff in constructor, there should be a better way
         return lambda func: self.add_command(Command.command(name, **args)(func))
 
     def add_event_handler(self, type: EventTypes, handler: Callable):
