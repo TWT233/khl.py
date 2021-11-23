@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from enum import IntEnum, Enum
 
 
-class AsyncRunnable(ABC):
+class AsyncRunnable:
     """
     Classes that has async work to run
     """
