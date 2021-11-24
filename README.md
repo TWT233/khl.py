@@ -1,13 +1,5 @@
 [> 加入我们的 khl 服务器 | Join our server on khl](https://kaihei.co/JJE0Es)
 
-# special notes for v0.1.0
-
-**v0.1.0 is a breaking version** with better architecture, simpler API, more powerful components etc.
-
-if you do not want to migrate existing code, please stay at v0.0.10
-
-by the way, have a try on v0.1.0 is a piece of cake, and we wanna your feedback or help(if you are willing to)
-
 # khl.py
 
 Python SDK for [kaiheila.cn](https://www.kaiheila.cn/) API
@@ -61,11 +53,12 @@ please install certificate manually, turning to this post for guide:
 
 ## feat
 
-- card message
-    - default colors
 - helper function for apis
+  - reaction related(0.1.5)
 - pass bot to command
-- timer
+- return-as-reply(issue #22)
+- card message(delay, due to incoming changes on khl card message)
+    - default colors
 
 # CONTRIBUTION
 
