@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from enum import IntEnum, Enum
 
 
-class AsyncRunnable:
+class AsyncRunnable(ABC):
     """
     Classes that has async work to run
     """
@@ -17,6 +17,13 @@ class AsyncRunnable:
     @loop.setter
     def loop(self, new_loop: asyncio.AbstractEventLoop):
         self._loop = new_loop
+
+    def schedule(self):
+        asyncio.ensure_future(self.run(), loop=self.loop)
+
+    @abstractmethod
+    async def run(self):
+        ...
 
 
 class LazyLoadable(ABC):

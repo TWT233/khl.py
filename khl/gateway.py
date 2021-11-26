@@ -38,7 +38,8 @@ class Gateway:
                                                         page_size=page_size, sort=sort)
 
     async def run(self, in_queue: asyncio.Queue):
-        await self.receiver.run(in_queue)
+        self.receiver.pkg_queue = in_queue
+        await self.receiver.run()
 
 
 class Requestable(ABC):

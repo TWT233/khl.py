@@ -299,14 +299,14 @@ class Bot(AsyncRunnable):
     def run(self):
         if self._is_running:
             raise RuntimeError('this bot is already running')
-        if not self.loop:
-            self.loop = asyncio.get_event_loop()
-
-        self.loop.create_task(self.client.run())
-        for task in self._tasks:
-            asyncio.ensure_future(task.run(), loop=task.loop)
 
         try:
+            self.client.schedule()
+            for task in self._tasks:
+                task.schedule()
+
+            if not self.loop:
+                self.loop = asyncio.get_event_loop()
             self.loop.run_forever()
         except KeyboardInterrupt:
             ...
