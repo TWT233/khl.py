@@ -4,6 +4,7 @@ from typing import Union, Dict, List
 
 from .element import ImageElement, ButtonElement, TextElement
 from .interface import CountdownModeTypes, FileTypes, TextTypes, SectionModeTypes, SizeTypes, ThemeTypes, _Common
+from .struct import ParagraphStruct
 
 
 class Module(_Common, ABC):
@@ -24,7 +25,8 @@ class HeaderModule(Module):
 
     @text.setter
     def text(self, value: Union[TextElement, str]):
-        self._text = value if isinstance(value, TextElement) else TextElement(TextTypes.PLAIN, value)
+        self._text = value if isinstance(
+            value, TextElement) else TextElement(TextTypes.PLAIN, value)
 
     @property
     def repr(self) -> Union[Dict, str]:
@@ -33,11 +35,12 @@ class HeaderModule(Module):
 
 class SectionModule(Module):
     _type = 'section'
-    text: TextElement
+    text: Union[ParagraphStruct, TextElement, str]
     _accessory: Union[ImageElement, ButtonElement, None]
     mode: SectionModeTypes
 
-    def __init__(self, text: Union[TextElement, str] = '',
+    def __init__(self,
+                 text: Union[ParagraphStruct, TextElement, str] = '',
                  accessory: Union[ImageElement, ButtonElement, None] = None,
                  mode: Union[SectionModeTypes, str] = SectionModeTypes.LEFT):
         self.text = text
@@ -51,7 +54,8 @@ class SectionModule(Module):
 
     @text.setter
     def text(self, value: Union[TextElement, str]):
-        self._text = value if isinstance(value, TextElement) else TextElement(TextTypes.PLAIN, value)
+        self._text = value if isinstance(value, TextElement) or isinstance(value, ParagraphStruct) else TextElement(
+            TextTypes.PLAIN, value)
 
     @property
     def mode(self) -> SectionModeTypes:
@@ -59,7 +63,8 @@ class SectionModule(Module):
 
     @mode.setter
     def mode(self, value: Union[SectionModeTypes, str]):
-        self._mode = value if isinstance(value, SectionModeTypes) else SectionModeTypes(value)
+        self._mode = value if isinstance(
+            value, SectionModeTypes) else SectionModeTypes(value)
 
     @property
     def accessory(self) -> Union[ImageElement, ButtonElement]:
@@ -82,7 +87,47 @@ class ImageGroupModule(Module):
 
     def __init__(self, images: List[ImageElement]):
         if not 1 <= len(images) <= 9:
-            raise ValueError('element length unacceptable, should: 9 >= len >= 1')
+            raise ValueError(
+                'element length unacceptable, should: 9 >= len >= 1')
+        self._elements = images
+        super().__init__(ThemeTypes.NA, SizeTypes.NA)
+
+    @property
+    def elements(self) -> List[ImageElement]:
+        return self._elements
+
+    def add_image(self, image: ImageElement):
+        if len(self._elements) >= 9:
+            raise ValueError('element max length exceeded(9)')
+        self._elements.append(image)
+
+    def images_count(self) -> int:
+        return len(self._elements)
+
+    def remove_image(self, n: int):
+        if len(self._elements) <= 1:
+            raise ValueError('element min length exceeded(1)')
+        if n < 0 or n >= len(self._elements):
+            return
+        self._elements.pop(n)
+
+    @property
+    def elements(self) -> List[ImageElement]:
+        return self._elements
+
+    @property
+    def repr(self) -> Union[Dict, str]:
+        return self._gen_dict(['type', 'elements'])
+
+
+class ContainerModule(Module):
+    _type = 'container'
+    _elements: List[ImageElement]
+
+    def __init__(self, images: List[ImageElement]):
+        if not 1 <= len(images) <= 9:
+            raise ValueError(
+                'element length unacceptable, should: 9 >= len >= 1')
         self._elements = images
         super().__init__(ThemeTypes.NA, SizeTypes.NA)
 
@@ -106,6 +151,10 @@ class ImageGroupModule(Module):
         self._elements.pop(n)
 
     @property
+    def elements(self) -> List[ImageElement]:
+        return self._elements
+
+    @property
     def repr(self) -> Union[Dict, str]:
         return self._gen_dict(['type', 'elements'])
 
@@ -119,7 +168,7 @@ class ActionGroupModule(Module):
         super().__init__(ThemeTypes.NA, SizeTypes.NA)
 
     @property
-    def element(self) -> List[ButtonElement]:
+    def elements(self) -> List[ButtonElement]:
         return self._elements
 
     def append(self, element: ButtonElement):
@@ -138,15 +187,17 @@ class ContextModule(Module):
     _elements: List[Union[TextElement, ImageElement]]
 
     def __init__(self, elements: List[Union[TextElement, ImageElement, str]] = ()):
-        self._elements = [TextElement(TextTypes.PLAIN, i) if isinstance(i, str) else i for i in elements]
+        self._elements = [TextElement(TextTypes.PLAIN, i) if isinstance(
+            i, str) else i for i in elements]
         super().__init__(ThemeTypes.NA, SizeTypes.NA)
 
     @property
-    def element(self) -> List[Union[TextElement, ImageElement]]:
+    def elements(self) -> List[Union[TextElement, ImageElement]]:
         return self._elements
 
     def append_element(self, element: Union[TextElement, ImageElement, str]):
-        self._elements.append(TextElement(TextTypes.PLAIN, element) if isinstance(element, str) else element)
+        self._elements.append(TextElement(
+            TextTypes.PLAIN, element) if isinstance(element, str) else element)
 
     def pop_element(self, index: int = None):
         return self._elements.pop(index)
@@ -158,6 +209,9 @@ class ContextModule(Module):
 
 class DividerModule(Module):
     _type = 'divider'
+
+    def __init__(self):
+        super().__init__(..., ...)
 
     @property
     def repr(self) -> Dict:
@@ -192,11 +246,15 @@ class CountdownModule(Module):
     mode: CountdownModeTypes
     start: datetime.datetime
 
-    def __init__(self, end: datetime.datetime, *,
-                 mode: Union[CountdownModeTypes, str] = CountdownModeTypes.HOUR,
+    def __init__(self,
+                 end: datetime.datetime,
+                 *,
+                 mode: Union[CountdownModeTypes,
+                             str] = CountdownModeTypes.HOUR,
                  start: datetime.datetime = None):
         self.end = end
-        self.mode = mode if isinstance(mode, CountdownModeTypes) else CountdownModeTypes(mode)
+        self.mode = mode if isinstance(
+            mode, CountdownModeTypes) else CountdownModeTypes(mode)
         self.start = start
         super().__init__(ThemeTypes.NA, SizeTypes.NA)
 
