@@ -1,34 +1,23 @@
-from abc import ABC, abstractmethod
-from khl.bot import Bot
-from khl.message import Message
+from typing import Union, Callable, Coroutine, Any
+
+from .. import Message, User
+
+TypeRule = Callable[[Message], Union[bool, Coroutine[Any, Any, bool]]]
 
 
-class Rule(ABC):
-    def __init__(self):
-        pass
+def is_bot_mentioned(bot) -> TypeRule:
+    async def rule(msg: Message) -> bool:
+        return (await bot.fetch_me()).id in msg.extra.get('mention')
 
-    @abstractmethod
-    def at_all(self):
-        raise NotImplementedError
+    return rule
 
 
-class CommandRule(Rule):
-    bot: Bot
+def is_user_mentioned(user: User) -> TypeRule:
+    def rule(msg: Message) -> bool:
+        return user.id in msg.extra.get('mention')
 
-    def __init__(self, bot: Bot):
-        super().__init__()
-        self.bot = bot
+    return rule
 
-    def at_me(self):
-        async def func(msg: Message, *args, **kwargs):
-            bot_user = await self.bot.fetch_me()
-            bot_id = bot_user.id
-            return bot_id in msg.extra.get('mention')
 
-        return func
-
-    def at_all(self):
-        def func(msg: Message, *args, **kwargs):
-            return bool(msg.extra.get('mention_all'))
-
-        return func
+def is_mention_all(msg: Message) -> bool:
+    return msg.extra.get('mention_all', None) is not None

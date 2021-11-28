@@ -17,6 +17,8 @@ API = f'https://www.kaiheila.cn/api/v3'
 
 
 class Receiver(AsyncRunnable, ABC):
+    _queue: asyncio.Queue
+
     @abstractmethod
     def __init__(self):
         raise NotImplementedError
@@ -25,8 +27,16 @@ class Receiver(AsyncRunnable, ABC):
     def type(self) -> str:
         raise NotImplementedError
 
+    @property
+    def pkg_queue(self) -> asyncio.Queue:
+        return self._queue
+
+    @pkg_queue.setter
+    def pkg_queue(self, queue: asyncio.Queue):
+        self._queue = queue
+
     @abstractmethod
-    async def run(self, pkg_queue: asyncio.Queue):
+    async def run(self):
         raise NotImplementedError
 
 
@@ -53,7 +63,7 @@ class WebsocketReceiver(Receiver):
         data = json.loads(str(data, encoding='utf-8'))
         return data
 
-    async def run(self, pkg_queue: asyncio.Queue):
+    async def run(self):
         async with ClientSession(loop=self.loop) as cs:
             headers = {
                 'Authorization': f'Bot {self._cert.token}',
@@ -87,7 +97,7 @@ class WebsocketReceiver(Receiver):
                     if pkg['s'] == 0:
                         self._NEWEST_SN = pkg['sn']
                         event = pkg['d']
-                        await pkg_queue.put(event)
+                        await self.pkg_queue.put(event)
 
 
 class WebhookReceiver(Receiver):
@@ -122,7 +132,7 @@ class WebhookReceiver(Receiver):
         self.sn_dup_map[sn] = current
         return False
 
-    async def run(self, pkg_queue: asyncio.Queue):
+    async def run(self):
         async def on_recv(request: web.Request):
             try:
                 pkg: Dict = self.__raw_to_pkg(await request.read())
@@ -142,7 +152,7 @@ class WebhookReceiver(Receiver):
                 pkg = pkg['d']
                 if pkg['type'] == 255 and pkg['channel_type'] == 'WEBHOOK_CHALLENGE':
                     return web.json_response({'challenge': pkg['challenge']})
-                await pkg_queue.put(pkg)
+                await self.pkg_queue.put(pkg)
 
             return web.Response()
 

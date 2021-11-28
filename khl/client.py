@@ -104,5 +104,4 @@ class Client(Requestable, AsyncRunnable):
         return [Guild(_gate_=self.gate, _lazy_loaded_=True, **i) for i in guilds_data]
 
     async def run(self):
-        asyncio.ensure_future(self.handle_pkg(), loop=self.loop)
-        await self.gate.run(self._pkg_queue)
+        await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue), loop=self.loop)

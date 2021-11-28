@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import timedelta
 from typing import Dict, Callable, List, Optional, Union, Pattern
 
 from .command import Command
@@ -8,6 +9,7 @@ from .parser import Parser
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
+from ..task import Task, IntervalTask
 
 log = logging.getLogger(__name__)
 
@@ -16,10 +18,17 @@ class Bot(AsyncRunnable):
     """
     Represents a entity that handles msg/events and interact with users/khl server in manners that programmed.
     """
+    # components
     client: Client
+
+    # flags
+    _is_running: bool
+
+    # internal containers
     _me: Optional[User]
     _cmd_index: Dict[str, Command]
     _event_index: Dict[EventTypes, List[Callable]]
+    _tasks: List[Task]
 
     def __init__(self, *, token: str = '', cert: Cert = None, client: Client = None, gate: Gateway = None,
                  out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
@@ -39,11 +48,15 @@ class Bot(AsyncRunnable):
         if not token and not cert:
             raise ValueError('require token or cert')
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
+        self.client.register(MessageTypes.TEXT, self._make_msg_handler())
+        self.client.register(MessageTypes.SYS, self._make_event_handler())
+
+        self._is_running = False
+
         self._me = None
         self._cmd_index = {}
         self._event_index = {}
-        self.client.register(MessageTypes.TEXT, self._make_msg_handler())
-        self.client.register(MessageTypes.SYS, self._make_event_handler())
+        self._tasks = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
         """
@@ -147,9 +160,6 @@ class Bot(AsyncRunnable):
                 'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
                 'lexer': lexer, 'parser': parser, 'rules': rules}
 
-        # use lambda cuz i do not wanna declare decorator() explicitly to take 3 blank lines
-        # did not init Lexer in advance cuz it needs func.__name__
-        # this is redundant stuff in constructor, there should be a better way
         return lambda func: self.add_command(Command.command(name, **args)(func))
 
     def add_event_handler(self, type: EventTypes, handler: Callable):
@@ -166,8 +176,17 @@ class Bot(AsyncRunnable):
         :param type: the type
         :return: original func
         """
-
         return lambda func: self.add_event_handler(type, func)
+
+    def add_interval_task(self, interval: timedelta, run_immediately: bool = True):
+        """decorator, add a interval type task"""
+        return lambda func: self.add_task(IntervalTask(func, interval, run_immediately))
+
+    def add_task(self, task: Task):
+        """add a task to the current tasks"""
+        self._tasks.append(task)
+        if self._is_running:
+            self.loop.create_task(task.run())
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
@@ -238,19 +257,58 @@ class Bot(AsyncRunnable):
             raise ValueError('can not modify guild from other gate')
         return await guild.leave()
 
-    async def delete_message(self, msg: Message):
-        """delete msg"""
-        if msg.gate.requester != self.client.gate.requester:
-            raise ValueError('can not modify message from other gate')
-        return msg.delete()
+    async def _make_temp_msg(self, msg_id: str) -> Message:
+        return Message(msg_id=msg_id, _gate_=self.client.gate)
+
+    async def delete_message(self, msg: Union[Message, str]):
+        """delete msg
+
+        wraps `Message.delete`
+
+        :param msg: the msg, accepts Message and msg_id(str)
+        """
+        if isinstance(msg, str):
+            msg = self._make_temp_msg(msg)
+        return await msg.delete()
+
+    async def add_reaction(self, msg: Union[Message, str], emoji: str):
+        """add emoji to msg's reaction list
+
+        wraps `Message.add_reaction`
+
+        :param msg: accepts `Message` and msg_id(str)
+        :param emoji: 😘
+        """
+        if isinstance(msg, str):
+            msg = self._make_temp_msg(msg)
+        return await msg.add_reaction(emoji)
+
+    async def delete_reaction(self, msg: Union[Message, str], emoji: str, user: User = None):
+        """delete emoji from msg's reaction list
+
+        wraps `Message.delete_reaction`
+
+        :param msg: accepts `Message` and msg_id(str)
+        :param emoji: 😘
+        :param user: whose reaction, delete others added reaction requires channel msg admin permission
+        """
+        if isinstance(msg, str):
+            msg = self._make_temp_msg(msg)
+        return await msg.delete_reaction(emoji, user)
 
     def run(self):
+        if self._is_running:
+            raise RuntimeError('this bot is already running')
+
         try:
+            self.client.schedule()
+            for task in self._tasks:
+                task.schedule()
+
             if not self.loop:
                 self.loop = asyncio.get_event_loop()
-            self.loop.run_until_complete(self.client.run())
+            self.loop.run_forever()
         except KeyboardInterrupt:
-            pass
-        except Exception as e:
-            log.error(e)
+            ...
+
         log.info('see you next time')

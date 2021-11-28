@@ -16,7 +16,7 @@ bot = Bot(token=config['token'])
 # invoke this via saying `!roll 1 100` in channel
 # or `/roll 1 100 5` to dice 5 times once
 @bot.command()
-async def roll(msg: Message, t_min: int, t_max: int, n=1):
+async def roll(msg: Message, t_min: int, t_max: int, n: int = 1):
     result = [random.randint(t_min, t_max) for i in range(n)]
     await msg.reply(f'you got: {result}')
 

@@ -6,17 +6,16 @@ from aiohttp import ClientSession
 
 from .api import _Req
 from .cert import Cert
-from .interface import AsyncRunnable
 
 log = logging.getLogger(__name__)
 
 API = f'https://www.kaiheila.cn/api/v3'
 
 
-class HTTPRequester(AsyncRunnable):
+class HTTPRequester:
     def __init__(self, cert: Cert):
         self._cert = cert
-        self._cs: ClientSession = ClientSession(loop=self.loop)
+        self._cs: ClientSession = ClientSession()
 
     def __del__(self):
         asyncio.get_event_loop().run_until_complete(self._cs.close())
