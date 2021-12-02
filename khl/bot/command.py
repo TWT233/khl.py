@@ -121,9 +121,9 @@ class Command:
     @staticmethod
     async def _wrap_rule(rule, msg: Message, *args):
         if asyncio.iscoroutinefunction(rule):
-            return await rule(msg, *args) is not None
+            return bool(await rule(msg, *args))
         else:
-            return rule(msg, *args) is not None
+            return bool(rule(msg, *args))
 
     def on_check(self, rule: TypeRule):
         ...
