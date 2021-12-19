@@ -28,6 +28,8 @@ class Client(Requestable, AsyncRunnable):
 
     def __init__(self, gate: Gateway):
         self.gate = gate
+        self.ignore_self_msg = True
+        self._me = None
 
         self._handler_map = {}
         self._pkg_queue = asyncio.Queue()
@@ -46,21 +48,30 @@ class Client(Requestable, AsyncRunnable):
 
     async def handle_pkg(self):
         """
-        Pop `pkg` from `event_queue`,
-        spawn `msg` according to `pkg`,
-        pass `msg` to corresponding handlers defined in `_handler_map`
+        consume `pkg` from `event_queue`
         """
         while True:
             pkg: Dict = await self._pkg_queue.get()
             log.debug(f'upcoming pkg: {pkg}')
 
             try:
-                msg = self._make_msg(pkg)
-                self._dispatch_msg(msg)
+                await self._consume_pkg(pkg)
             except Exception as e:
                 log.exception(e)
 
             self._pkg_queue.task_done()
+
+    async def _consume_pkg(self, pkg: Dict):
+        """
+        spawn `msg` according to `pkg`,
+        check if ignore msgs from self
+        pass `msg` to corresponding handlers defined in `_handler_map`
+        """
+        msg = self._make_msg(pkg)
+        if self.ignore_self_msg and msg.type != MessageTypes.SYS:
+            if msg.author.id == (await self.fetch_me()).id:
+                return
+        self._dispatch_msg(msg)
 
     def _make_msg(self, pkg: Dict):
         if pkg.get('type') == MessageTypes.SYS.value:
@@ -101,9 +112,11 @@ class Client(Requestable, AsyncRunnable):
         """upload ``file`` to khl, and return the url to the file"""
         return (await self.gate.exec_req(api.Asset.create(file=open(file, 'rb'))))['url']
 
-    async def fetch_me(self) -> User:
+    async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the ``User`` on the client"""
-        return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.me())))
+        if force_update or not self._me or not self._me.is_loaded():
+            self._me = User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.me())))
+        return self._me
 
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
         """fetch details of a public channel from khl"""
