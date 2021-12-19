@@ -2,6 +2,7 @@ import asyncio
 import logging
 from typing import Dict, Callable, List, Optional, Union, Pattern, Type
 
+from apscheduler.events import EVENT_JOB_ERROR
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
@@ -327,18 +328,23 @@ class Bot(AsyncRunnable):
             msg = self._make_temp_msg(msg)
         return await msg.delete_reaction(emoji, user)
 
-    def run(self):
+    async def _schedule_tasks(self):
+        def task_exc_logger(event):
+            log.exception(f'error raised during task', exc_info=event.exception)
+
+        self.scheduler.add_listener(task_exc_logger, EVENT_JOB_ERROR)
+        self.scheduler.start()
+
+    async def start(self):
         if self._is_running:
             raise RuntimeError('this bot is already running')
+        asyncio.ensure_future(self._schedule_tasks(), loop=self.loop)
+        await self.client.start()
 
+    def run(self):
+        if not self.loop:
+            self.loop = asyncio.get_event_loop()
         try:
-            self.client.schedule()
-            self.scheduler.start()
-
-            if not self.loop:
-                self.loop = asyncio.get_event_loop()
-            self.loop.run_forever()
+            self.loop.run_until_complete(self.start())
         except KeyboardInterrupt:
-            ...
-
-        log.info('see you next time')
+            log.info('see you next time')
