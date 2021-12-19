@@ -53,11 +53,11 @@ please install certificate manually, turning to this post for guide:
 
 ## feat
 
-- helper function for apis
-  - reaction related(0.1.5)
-- pass bot to command
-- return-as-reply(issue #22)
-- card message(delay, due to incoming changes on khl card message)
+- [ ] helper function for apis
+    - reaction related(0.1.5)
+- [x] pass bot to command
+- [ ] return-as-reply(issue #22)
+- [ ] card message(delay, due to incoming changes on khl card message)
     - default colors
 
 # CONTRIBUTION

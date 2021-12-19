@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List, Optional, Union, Pattern
+from typing import Dict, Callable, List, Optional, Union, Pattern, Type
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -12,7 +12,7 @@ from .lexer import Lexer
 from .parser import Parser
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
-from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
+from .. import User, Channel, RawMessage, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 
 log = logging.getLogger(__name__)
 
@@ -102,16 +102,31 @@ class Bot(AsyncRunnable):
         construct a function to receive msg from client, and interpret it with _cmd_index
         """
 
-        # use closure
         async def handler(msg: Message):
             for name, cmd in self._cmd_index.items():
                 try:
-                    args = cmd.prepare(msg)
-                except Lexer.LexerException:  # TODO: a more reasonable exception handle in lex and parse
+                    filtered, params = cmd.params([Message, Bot])
+
+                    filled = self._fill_filtered_params(msg, filtered)
+                    args = cmd.prepare(msg, params)
+
+                    await cmd.execute(msg, *filled, *args)
+                except Lexer.NotMatched:
                     continue
-                await cmd.execute(msg, *args)
+                except Exception as e:
+                    log.exception(f'error handling command: {cmd.name}', exc_info=e)
 
         return handler
+
+    def _fill_filtered_params(self, msg: Message, filtered: List[Type]) -> List:
+        filled = []
+        for i in filtered:
+            if issubclass(i, RawMessage):
+                filled.append(msg)
+                continue
+            if issubclass(i, Bot):
+                filled.append(self)
+        return filled
 
     def _make_event_handler(self) -> Callable:
         async def handler(event: Event):
@@ -206,8 +221,8 @@ class Bot(AsyncRunnable):
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
-        if force_update or not self._me or not self._me.is_loaded():
-            self._me = await self.client.fetch_me()
+        if not self._me or not self._me.is_loaded():
+            self._me = await self.client.fetch_me(force_update)
         return self._me
 
     @property
