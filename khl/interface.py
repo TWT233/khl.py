@@ -12,6 +12,7 @@ class AsyncRunnable(ABC):
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
+        """the event loop for the async work"""
         return self._loop
 
     @loop.setter
@@ -19,10 +20,12 @@ class AsyncRunnable(ABC):
         self._loop = new_loop
 
     def schedule(self):
+        """schedule the async work into background"""
         asyncio.ensure_future(self.run(), loop=self.loop)
 
     @abstractmethod
     async def run(self):
+        """run the async work"""
         ...
 
 
