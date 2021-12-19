@@ -2,7 +2,7 @@ import asyncio
 import copy
 import inspect
 import logging
-from typing import Dict, Any, Callable, List, Tuple
+from typing import Dict, Any, Callable, List
 
 log = logging.getLogger(__name__)
 
@@ -21,38 +21,31 @@ class Parser:
     def __init__(self):
         self._parse_funcs = copy.copy(Parser._parse_funcs)
 
-    def parse(self, tokens: List[str], handler: Callable) -> List[Any]:
+    def parse(self, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
         """
         parse tokens into args that types corresponding to handler's requirement
 
         :param tokens: output of Lexer.lex()
-        :param handler: parse target
+        :param params: command handlers parameters
         :return: List of args
         :raise: Parser.ArgListLenNotMatch
         """
-        s = inspect.signature(handler)
-        params = list(s.parameters.items())[1:]  # the first param is `msg: Message`
-
-        # check
-        if len(tokens) > len(params):
-            raise Parser.TooMuchArgs(len(params), len(tokens), handler)
-
-        # parse
         ret = []
         for i in range(len(tokens)):
-            t = params[i][1].annotation  # arg type
+            arg_type = params[i].annotation
 
             # no type hint for t
-            if t == inspect.Parameter.empty:
+            if arg_type == inspect.Parameter.empty:
                 ret.append(tokens[i])
                 continue
 
-            if t not in self._parse_funcs:
-                raise Parser.ParseFuncNotExists(params[i], handler)
+            if arg_type not in self._parse_funcs:
+                raise Parser.ParseFuncNotExists(params[i])
+
             try:
-                ret.append(self._parse_funcs[t](tokens[i]))
+                ret.append(self._parse_funcs[arg_type](tokens[i]))
             except Exception as e:
-                raise Parser.ParseFuncException(e)
+                raise Parser.ParseException(e) from e
         return ret
 
     def register(self, func):  # TODO: global register
@@ -70,7 +63,7 @@ class Parser:
         if len(s.parameters) != 1 or list(s.parameters.values())[0].annotation != str:
             raise TypeError('parse function should own only one param, and the param type is str')
 
-        # insert, remember this is a replace
+        # insert, remember this is a replacement
         self._parse_funcs[s.return_annotation] = func
         return func
 
@@ -84,10 +77,9 @@ class Parser:
             self.func = func
 
     class ParseFuncNotExists(ParserException):
-        def __init__(self, expected: Tuple[str, inspect.Parameter], func: Callable):
+        def __init__(self, expected: inspect.Parameter):
             self.expected = expected
-            self.func = func
 
-    class ParseFuncException(ParserException):
+    class ParseException(ParserException):
         def __init__(self, err: Exception):
             self.err = err
