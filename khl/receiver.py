@@ -35,7 +35,7 @@ class Receiver(AsyncRunnable, ABC):
         self._queue = queue
 
     @abstractmethod
-    async def run(self):
+    async def start(self):
         raise NotImplementedError
 
 
@@ -57,7 +57,7 @@ class WebsocketReceiver(Receiver):
             await asyncio.sleep(26)
             await ws_conn.send_json({'s': 2, 'sn': self._NEWEST_SN})
 
-    async def run(self):
+    async def start(self):
         async with ClientSession(loop=self.loop) as cs:
             headers = {
                 'Authorization': f'Bot {self._cert.token}',
@@ -121,7 +121,7 @@ class WebhookReceiver(Receiver):
         self.sn_dup_map[sn] = current
         return False
 
-    async def run(self):
+    async def start(self):
         async def on_recv(request: web.Request):
             try:
                 data = await request.read()

@@ -39,7 +39,7 @@ class Gateway:
 
     async def run(self, in_queue: asyncio.Queue):
         self.receiver.pkg_queue = in_queue
-        await self.receiver.run()
+        await self.receiver.start()
 
 
 class Requestable(ABC):
