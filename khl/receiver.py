@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import time
 import zlib
@@ -58,11 +57,6 @@ class WebsocketReceiver(Receiver):
             await asyncio.sleep(26)
             await ws_conn.send_json({'s': 2, 'sn': self._NEWEST_SN})
 
-    def __raw_to_pkg(self, data: bytes) -> dict:
-        data = zlib.decompress(data) if self.compress else data
-        data = json.loads(str(data, encoding='utf-8'))
-        return data
-
     async def run(self):
         async with ClientSession(loop=self.loop) as cs:
             headers = {
@@ -86,18 +80,19 @@ class WebsocketReceiver(Receiver):
                 log.info('[ init ] launched')
 
                 async for raw in ws_conn:
+                    raw: WSMessage
                     try:
-                        raw: WSMessage
-                        pkg: Dict = self.__raw_to_pkg(raw.data)
+                        data = raw.data
+                        data = zlib.decompress(data) if self.compress else data
+                        pkg: Dict = self._cert.decode_raw(data)
                         log.debug(f'upcoming raw: {pkg}')
+                        if pkg['s'] != 0:
+                            continue
+                        self._NEWEST_SN = pkg['sn']
+                        await self.pkg_queue.put(pkg['d'])
                     except Exception as e:
                         log.exception(e)
                         continue
-
-                    if pkg['s'] == 0:
-                        self._NEWEST_SN = pkg['sn']
-                        event = pkg['d']
-                        await self.pkg_queue.put(event)
 
 
 class WebhookReceiver(Receiver):
@@ -105,7 +100,6 @@ class WebhookReceiver(Receiver):
         self._cert = cert
         self.port = port
         self.route = route
-        self.cs = ClientSession()
         self.app = web.Application()
         self.compress = compress
         self.sn_dup_map = {}
@@ -114,15 +108,10 @@ class WebhookReceiver(Receiver):
     def type(self) -> str:
         return 'webhook'
 
-    def __raw_to_pkg(self, data: bytes) -> dict:
-        data = zlib.decompress(data) if self.compress else data
-        data = json.loads(str(data, encoding='utf-8'))
-        return ('encrypt' in data.keys()) and json.loads(self._cert.decrypt(data['encrypt'])) or data
-
-    def __is_pkg_dup(self, req: dict) -> bool:
+    def _is_dup(self, req: dict) -> bool:
         # TODO: need a recycle count down ring
         sn = req.get('sn', None)
-        if not sn:
+        if sn is None:
             return False
         current = time.time()
         if sn in self.sn_dup_map.keys():
@@ -135,17 +124,20 @@ class WebhookReceiver(Receiver):
     async def run(self):
         async def on_recv(request: web.Request):
             try:
-                pkg: Dict = self.__raw_to_pkg(await request.read())
+                data = await request.read()
+                data = zlib.decompress(data) if self.compress else data
+                pkg: Dict = self._cert.decode_raw(data)
             except Exception as e:
                 log.exception(e)
                 return web.Response()
 
-            if not pkg or pkg['d']['verify_token'] != self._cert.verify_token:
-                # empty pkg or verify_token check failed
+            if not pkg:  # empty pkg
                 return web.Response()
 
-            if self.__is_pkg_dup(pkg):
-                # dupe pkg
+            if pkg['d']['verify_token'] != self._cert.verify_token:  # check verify_token
+                return web.Response()
+
+            if self._is_dup(pkg):  # dup pkg
                 return web.Response()
 
             if pkg['s'] == 0:
@@ -157,11 +149,6 @@ class WebhookReceiver(Receiver):
             return web.Response()
 
         self.app.router.add_post(self.route, on_recv)
-
-        async def on_shutdown(app):
-            await self.cs.close()
-
-        self.app.on_shutdown.append(on_shutdown)
 
         runner = web.AppRunner(self.app, access_log_class=None)
         await runner.setup()  # runner use its own loop, can not be set
