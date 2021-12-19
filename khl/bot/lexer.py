@@ -28,6 +28,9 @@ class Lexer(ABC):
         def __init__(self, msg: Message):
             self.msg = msg
 
+    class NotMatched(LexerException):
+        pass
+
 
 class DefaultLexer(Lexer):
     """
@@ -50,28 +53,23 @@ class DefaultLexer(Lexer):
                     ShlexLexer.NoMatchedPrefix  literally
                     ShlexLexer.NoMatchedTrigger literally
         """
-        for prefix in [p for p in self.prefixes if msg.content.startswith(p)]:  # get matched prefix
-            # tear down
+        matched_prefixes = [p for p in self.prefixes if msg.content.startswith(p)]
+        if not matched_prefixes:
+            raise Lexer.NotMatched(msg)
+
+        for prefix in matched_prefixes:
             try:
                 arg_list = shlex.split(msg.content)
             except Exception:
                 raise DefaultLexer.MalformedContent(msg)
 
             # check if trigger exists
-            if arg_list[0][len(prefix):] in self.triggers:
-                # exists
-                return arg_list[1:]  # arg_list[0] is trigger
-            else:
-                # not exists
-                raise DefaultLexer.NoMatchedTrigger(msg)
-
-        # no matched prefix(did not enter the for-loop)
-        raise DefaultLexer.NoMatchedPrefix(msg)
+            if arg_list[0][len(prefix):] not in self.triggers:
+                raise Lexer.NotMatched(msg)
+            
+            return arg_list[1:]  # arg_list[0] is trigger
 
     class MalformedContent(Lexer.LexerException):
-        pass
-
-    class NoMatchedPrefix(Lexer.LexerException):
         pass
 
     class NoMatchedTrigger(Lexer.LexerException):
@@ -93,9 +91,6 @@ class RELexer(Lexer):
     def lex(self, msg: Message) -> List[str]:
         m = self.pattern.fullmatch(msg.content)
         if not m:
-            raise RELexer.NotMatched(msg)
+            raise Lexer.NotMatched(msg)
         if m.groups():
             return [m[i] for i in range(1, len(m.groups()) + 1) if m.start(i) < len(msg.content)]
-
-    class NotMatched(Lexer.LexerException):
-        pass
