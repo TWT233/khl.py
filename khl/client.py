@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import logging
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Coroutine
 
 from . import api
 from .channel import public_channel_factory, PublicChannel
@@ -13,6 +13,8 @@ from .user import User
 
 log = logging.getLogger(__name__)
 
+TypeHandler = Callable[..., Coroutine]
+
 
 class Client(Requestable, AsyncRunnable):
     """
@@ -22,7 +24,7 @@ class Client(Requestable, AsyncRunnable):
 
     reminder: Client.loop only used to run handle_event() and registered handlers.
     """
-    _handler_map: Dict[MessageTypes, List[Callable]]
+    _handler_map: Dict[MessageTypes, List[TypeHandler]]
 
     def __init__(self, gate: Gateway):
         self.gate = gate
@@ -30,7 +32,7 @@ class Client(Requestable, AsyncRunnable):
         self._handler_map = {}
         self._pkg_queue = asyncio.Queue()
 
-    def register(self, type: MessageTypes, handler: Callable):
+    def register(self, type: MessageTypes, handler: TypeHandler):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
 
@@ -83,7 +85,17 @@ class Client(Requestable, AsyncRunnable):
             return
         if msg.type in self._handler_map and self._handler_map[msg.type]:
             for handler in self._handler_map[msg.type]:
-                asyncio.ensure_future(handler(msg), loop=self.loop)
+                asyncio.ensure_future(self._handle_safe(handler)(msg), loop=self.loop)
+
+    @staticmethod
+    def _handle_safe(handler: TypeHandler):
+        async def safe_handler(msg):
+            try:
+                await handler(msg)
+            except Exception as e:
+                log.exception(f'error raised during message handling', exc_info=e)
+
+        return safe_handler
 
     async def create_asset(self, file: str) -> str:
         """upload ``file`` to khl, and return the url to the file"""
