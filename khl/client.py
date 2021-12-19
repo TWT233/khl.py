@@ -34,8 +34,8 @@ class Client(Requestable, AsyncRunnable):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
 
-        params = list(inspect.signature(handler).parameters.items())
-        if len(params) != 1 or not issubclass(params[0][1].annotation, RawMessage):
+        params = list(inspect.signature(handler).parameters.values())
+        if len(params) != 1 or not issubclass(params[0].annotation, RawMessage):
             raise TypeError('handler must have one and only one param, and the param inherits RawMessage')
 
         if type not in self._handler_map:
