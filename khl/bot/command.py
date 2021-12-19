@@ -1,6 +1,7 @@
 import asyncio
+import inspect
 import logging
-from typing import Callable, Coroutine, List, Union, Pattern, Any
+from typing import Callable, Coroutine, List, Union, Pattern, Any, Type
 
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
@@ -76,22 +77,39 @@ class Command:
 
         return decorator
 
-    def prepare(self, msg: Message) -> List:
+    def params(self, ignores: List[Type]) -> (List[Type], List[inspect.Parameter]):
+        """get parameters that need to be parsed according to `ignores`
+
+        :param ignores: list of types that need to be filtered
+
+        :return: a tuple: (the filtered params(need to be filled in outer context), the params need to be parsed)
+        """
+        filtered = []
+        params = list(inspect.signature(self.handler).parameters.values())
+        for t in ignores:
+            if len(params) <= 0:
+                break
+            if t == params[0].annotation:
+                filtered.append(params.pop(0).annotation)
+        return filtered, params
+
+    def prepare(self, msg: Message, params: List[inspect.Parameter]) -> List:
         """
         parse msg, prepare arg list from the msg
 
-        :param msg: the msg going to be lexed and parsed
+        :param msg: the msg going to be lex and parsed
+        :param params:
         :return:
         """
         tokens = self._lex(msg)
-        args = self._parse(tokens, self.handler)
+        args = self._parse(tokens, params)
         return args
 
     def _lex(self, msg: Message) -> List[str]:
         return self.lexer.lex(msg)
 
-    def _parse(self, tokens: List[str], handler: TypeHandler) -> List:
-        return self.parser.parse(tokens, handler)
+    def _parse(self, tokens: List[str], params: List[inspect.Parameter]) -> List:
+        return self.parser.parse(tokens, params)
 
     async def execute(self, msg: Message, *args):
         """
@@ -102,39 +120,25 @@ class Command:
         :return:
         """
         log.info(f'command {self.name} was triggered by msg: {msg.content}')
-        try:
-            if await self._check_rules(msg, *args):
-                await self.handler(msg, *args)
-        except Exception as e:
-            log.exception(e)
+        if await self._check_rules(msg):
+            await self.handler(*args)
 
-    async def _check_rules(self, msg: Message, *args):
+    async def _check_rules(self, msg: Message):
         result = True
+        # usually, there is only one or two rules, thus we need not check rules concurrently
         for rule in self.rules:
-            try:
-                result = result and await self._wrap_rule(rule, msg, *args)
-            except Exception as e:
-                log.exception(f"_execute_rules: {e}")
-                return False
+            result = result and await self._wrap_rule(rule, msg)
         return result
 
     @staticmethod
-    async def _wrap_rule(rule, msg: Message, *args):
+    async def _wrap_rule(rule, msg: Message) -> bool:
         if asyncio.iscoroutinefunction(rule):
-            return bool(await rule(msg, *args))
+            return bool(await rule(msg))
         else:
-            return bool(rule(msg, *args))
+            return bool(rule(msg))
 
     def on_check(self, rule: TypeRule):
         ...
-
-    def do(self, msg: Message):
-        """
-        wrapper for prepare() and execute()
-
-        :param msg: what wanna be handled
-        """
-        self.execute(msg, *self.prepare(msg))
 
     def on_error(self, exception_handler: TypeEHandler):
         self.exception_handlers.append(exception_handler)
