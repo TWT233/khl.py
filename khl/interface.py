@@ -21,10 +21,10 @@ class AsyncRunnable(ABC):
 
     def schedule(self):
         """schedule the async work into background"""
-        asyncio.ensure_future(self.run(), loop=self.loop)
+        asyncio.ensure_future(self.start(), loop=self.loop)
 
     @abstractmethod
-    async def run(self):
+    async def start(self):
         """run the async work"""
         ...
 
