@@ -1,4 +1,5 @@
 import base64
+import json
 from enum import Enum
 
 from Cryptodome.Cipher import AES
@@ -11,6 +12,7 @@ class Cert:
 
     used in auth/data encrypt/decrypt
     """
+
     class Types(Enum):
         """
         types of :class:`Cert`
@@ -61,3 +63,7 @@ class Cert:
                        iv=data[0:16]).decrypt(base64.b64decode(data[16:]))
         data = Padding.unpad(data, 16)
         return data.decode('utf-8')
+
+    def decode_raw(self, data: bytes) -> dict:
+        data = json.loads(str(data, encoding='utf-8'))
+        return json.loads(self.decrypt(data['encrypt'])) if ('encrypt' in data.keys()) else data
