@@ -1,7 +1,11 @@
 import asyncio
 import logging
-from datetime import timedelta
 from typing import Dict, Callable, List, Optional, Union, Pattern
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
 from .command import Command
 from .lexer import Lexer
@@ -9,7 +13,6 @@ from .parser import Parser
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
-from ..task import Task, IntervalTask
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +23,7 @@ class Bot(AsyncRunnable):
     """
     # components
     client: Client
+    scheduler: AsyncIOScheduler
 
     # flags
     _is_running: bool
@@ -28,7 +32,6 @@ class Bot(AsyncRunnable):
     _me: Optional[User]
     _cmd_index: Dict[str, Command]
     _event_index: Dict[EventTypes, List[Callable]]
-    _tasks: List[Task]
 
     def __init__(self, *, token: str = '', cert: Cert = None, client: Client = None, gate: Gateway = None,
                  out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
@@ -50,6 +53,8 @@ class Bot(AsyncRunnable):
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
         self.client.register(MessageTypes.TEXT, self._make_msg_handler())
         self.client.register(MessageTypes.SYS, self._make_event_handler())
+
+        self.scheduler = AsyncIOScheduler()
 
         self._is_running = False
 
@@ -178,15 +183,26 @@ class Bot(AsyncRunnable):
         """
         return lambda func: self.add_event_handler(type, func)
 
-    def add_interval_task(self, interval: timedelta, run_immediately: bool = True):
+    def add_interval_task(self, weeks=0, days=0, hours=0, minutes=0, seconds=0, start_date=None,
+                          end_date=None, timezone=None, jitter=None):
         """decorator, add a interval type task"""
-        return lambda func: self.add_task(IntervalTask(func, interval, run_immediately))
+        trigger = IntervalTrigger(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds,
+                                  start_date=start_date, end_date=end_date, timezone=timezone, jitter=jitter)
+        return lambda func: self.scheduler.add_job(func, trigger)
 
-    def add_task(self, task: Task):
-        """add a task to the current tasks"""
-        self._tasks.append(task)
-        if self._is_running:
-            self.loop.create_task(task.run())
+    def add_cron_task(self, year=None, month=None, day=None, week=None, day_of_week=None, hour=None,
+                      minute=None, second=None, start_date=None, end_date=None, timezone=None,
+                      jitter=None):
+        """decorator, add a cron type task"""
+        trigger = CronTrigger(year=year, month=month, day=day, week=week,
+                              day_of_week=day_of_week, hour=hour, minute=minute, second=second,
+                              start_date=start_date, end_date=end_date, timezone=timezone, jitter=jitter)
+        return lambda func: self.scheduler.add_job(func, trigger)
+
+    def add_date_task(self, run_date=None, timezone=None):
+        """decorator, add a date type task"""
+        trigger = DateTrigger(run_date=run_date, timezone=timezone)
+        return lambda func: self.scheduler.add_job(func, trigger)
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
@@ -302,8 +318,7 @@ class Bot(AsyncRunnable):
 
         try:
             self.client.schedule()
-            for task in self._tasks:
-                task.schedule()
+            self.scheduler.start()
 
             if not self.loop:
                 self.loop = asyncio.get_event_loop()
