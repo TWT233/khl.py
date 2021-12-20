@@ -8,8 +8,29 @@ from enum import Enum
 from typing import Union, Dict, List
 
 
-class ThemeTypes(Enum):
-    NA = 'not_available'
+class Representable(ABC):
+    @property
+    @abstractmethod
+    def _repr(self) -> Union[str, Dict, List]:
+        """cast class object to JSON serializable representation"""
+        raise NotImplementedError
+
+
+class _TypeEnum(Enum):
+    """base class of all types(involved in card components)
+
+    REMIND: TypeEnum implements _repr but not inherits from Representable, since
+    " TypeError: metaclass conflict:
+    the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases "
+    """
+
+    @property
+    def _repr(self):
+        return self.value
+
+
+class ThemeTypes(_TypeEnum):
+    NA = ''
     PRIMARY = 'primary'
     SECONDARY = 'secondary'
     SUCCESS = 'success'
@@ -17,96 +38,70 @@ class ThemeTypes(Enum):
     WARNING = 'warning'
     INFO = 'info'
 
-    @property
-    def repr(self):
-        return self.value if self != ThemeTypes.NA else ''
 
-
-class SizeTypes(Enum):
-    NA = 'not_available'
+class SizeTypes(_TypeEnum):
+    NA = ''
     XS = 'xs'
     SM = 'sm'
     MD = 'md'
     LG = 'lg'
 
-    @property
-    def repr(self):
-        return self.value if self != SizeTypes.NA else ''
 
-
-class TextTypes(Enum):
+class TextTypes(_TypeEnum):
     PLAIN = 'plain-text'
     KMD = 'kmarkdown'
 
-    @property
-    def repr(self):
-        return self.value
 
-
-class ClickTypes(Enum):
+class ClickTypes(_TypeEnum):
     LINK = 'link'
     RETURN_VAL = 'return-val'
 
-    @property
-    def repr(self):
-        return self.value
 
-
-class SectionModeTypes(Enum):
+class SectionModeTypes(_TypeEnum):
     LEFT = 'left'
     RIGHT = 'right'
 
-    @property
-    def repr(self):
-        return self.value
 
-
-class FileTypes(Enum):
+class FileTypes(_TypeEnum):
     FILE = 'file'
     AUDIO = 'audio'
     VIDEO = 'video'
 
-    @property
-    def repr(self):
-        return self.value
 
-
-class CountdownModeTypes(Enum):
+class CountdownModeTypes(_TypeEnum):
     DAY = 'day'
     HOUR = 'hour'
     SECOND = 'second'
 
-    def repr(self):
-        return self.value
 
-
-def _repr(item) -> Union[str, Dict, List]:
+def _get_repr(item) -> Union[str, Dict, List]:
     """a helper function for serialization"""
-    return [_repr(i) for i in item] if isinstance(item, list) else getattr(item, 'repr', item)
+    return [_get_repr(i) for i in item] if isinstance(item, list) else getattr(item, '_repr', item)
 
 
-class _Common(ABC):
+class _Common(Representable, ABC):
     _type: str
-    theme: ThemeTypes
-    size: SizeTypes
+    _theme: ThemeTypes
+    _size: SizeTypes
 
-    def __init__(self, theme: ThemeTypes, size: SizeTypes):
+    def __init__(self, theme: Union[ThemeTypes, str, None], size: Union[SizeTypes, str, None]):
         super().__init__()
-        self.theme = theme
-        self.size = size
-
-    @property
-    def type(self) -> str:
-        return self._type
-
-    @property
-    @abstractmethod
-    def repr(self) -> Union[str, Dict, List]:
-        raise NotImplementedError
+        self._theme = ThemeTypes(theme) if theme else None
+        self._size = SizeTypes(size) if size else None
 
     def _gen_dict(self, field_list: List) -> Dict:
         d = {}
         for k in field_list:
-            if _repr(getattr(self, k, None)):
-                d[k] = _repr(getattr(self, k))
+            # get repr of k/_k(private field with exported key)
+            obj = _get_repr(getattr(self, k, None)) or _get_repr(getattr(self, '_' + k, None))
+            if obj is not None:
+                d[k] = obj
         return d
+
+
+class _Element(_Common, ABC):
+    ...
+
+
+class _Module(_Common, ABC):
+    ...
