@@ -58,7 +58,7 @@ please install certificate manually, turning to this post for guide:
 - [x] async bot.run()
 - [x] pass bot to command
 - [ ] return-as-reply(issue #22)
-- [ ] card message(delay, due to incoming changes on khl card message)
+- [x] card message(delay, due to incoming changes on khl card message)
     - default colors
 
 # CONTRIBUTION

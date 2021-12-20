@@ -1,24 +1,22 @@
-from typing import List, Dict
-
 from .card import Card
-from .interface import _repr
+from .interface import _get_repr
 
 
-class CardMessage:
+class CardMessage(list):
     """
-    can be cast to a dict, the most outside wrapper for card message
+    can be cast to a list, the most outside wrapper for card message
     """
-    cards: List[Card]
 
-    def __init__(self, cards: List[Card] = ()):
-        self.cards = list(cards)
+    def __init__(self, *cards: Card):
+        super().__init__()
+        self.extend(cards)
 
-    def append_card(self, card: Card):
-        self.cards.append(card)
+    def append(self, card: Card):
+        super().append(card)
 
-    def pop_card(self, index: int = None) -> Card:
-        return self.cards.pop(index)
+    def pop(self, __index=...) -> Card:
+        return super().pop(__index)
 
-    @property
-    def repr(self) -> List[Dict]:
-        return _repr(self.cards)
+    def __iter__(self):
+        """hack for JSON serialization"""
+        return iter([_get_repr(i) for i in self[:]])
