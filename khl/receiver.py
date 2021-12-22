@@ -54,8 +54,11 @@ class WebsocketReceiver(Receiver):
 
     async def heartbeat(self, ws_conn: ClientWebSocketResponse):
         while True:
-            await asyncio.sleep(26)
-            await ws_conn.send_json({'s': 2, 'sn': self._NEWEST_SN})
+            try:
+                await asyncio.sleep(26)
+                await ws_conn.send_json({'s': 2, 'sn': self._NEWEST_SN})
+            except Exception as e:
+                log.exception('error raised during websocket heartbeat', exc_info=e)
 
     async def start(self):
         async with ClientSession(loop=self.loop) as cs:
