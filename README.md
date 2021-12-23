@@ -26,7 +26,7 @@ bot = Bot(token='xxxxxxxxxxxxxxxxxxxxxxxxx')
 # register command, send `/hello` in channel to invoke
 @bot.command(name='hello')
 async def world(msg: Message):
-  await msg.reply('world!')
+    await msg.reply('world!')
 
 
 # everything done, go ahead now!
@@ -54,12 +54,7 @@ please install certificate manually, turning to this post for guide:
 ## feat
 
 - [ ] helper function for apis
-    - reaction related(0.1.5)
-- [x] async bot.run()
-- [x] pass bot to command
-- [ ] return-as-reply(issue #22)
-- [x] card message(delay, due to incoming changes on khl card message)
-    - default colors
+- [ ] card message(structure)
 
 # CONTRIBUTION
 
