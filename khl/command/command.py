@@ -48,7 +48,8 @@ class Command:
     @staticmethod
     def command(name: str = '', *, help: str = '', desc: str = '',
                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                lexer: Lexer = None, parser: Parser = None, rules: List[TypeRule] = ()):
+                lexer: Lexer = None, parser: Parser = None,
+                rules: List[TypeRule] = ()) -> Callable[[TypeHandler], 'Command']:
         """
         decorator, to wrap a func into a Command
 
