@@ -1,5 +1,6 @@
+import asyncio
 import logging
-from typing import Optional, List, Callable, Union, Pattern
+from typing import Optional, List, Callable, Union, Pattern, Dict
 
 from khl import Message
 from .command import Command
@@ -10,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 class CommandManager:
-    _cmd_map: dict
+    _cmd_map: Dict[str, Command]
 
     def __init__(self):
         self._cmd_map = {}
@@ -58,19 +59,9 @@ class CommandManager:
             del self._cmd_map[name]
         return cmd
 
-    async def handle(self, msg: Message, filter_args: dict):
+    async def handle(self, loop, msg: Message, filter_args: dict):
         for name, cmd in self._cmd_map.items():
-            try:
-                filtered, params = cmd.split_params([k for k in filter_args])
-
-                filled = [filter_args[k] for k in filtered]
-                args = cmd.prepare(msg, params)
-
-                await cmd.execute(msg, *filled, *args)
-            except Lexer.NotMatched:
-                continue
-            except Exception as e:
-                log.exception(f'error handling command: {cmd.name}', exc_info=e)
+            asyncio.ensure_future(cmd.handle(msg, filter_args), loop=loop)
 
     def __setitem__(self, name: str, cmd: Command):
         if cmd.name in self._cmd_map:
