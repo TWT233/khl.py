@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import logging
-from typing import Callable, Coroutine, List, Union, Pattern, Any, Type
+from typing import Callable, Coroutine, List, Union, Pattern, Type, Any
 
 from khl.message import Message
 from .lexer import Lexer, RELexer, DefaultLexer
@@ -11,7 +11,7 @@ from .rule import TypeRule
 log = logging.getLogger(__name__)
 
 TypeHandler = Callable[..., Coroutine]
-TypeEHandler = Callable[[Message, Any, Exception], Coroutine]
+TypeEHandler = Callable[[Exception, Message, Any], Coroutine]
 
 
 class Command:
@@ -27,10 +27,9 @@ class Command:
     parser: Parser
 
     rules: List[TypeRule]
-    exception_handlers: List[TypeEHandler]
 
     def __init__(self, name: str, handler: TypeHandler, help: str, desc: str, lexer: Lexer, parser: Parser,
-                 rules: List[TypeRule], exception_handlers: List[TypeEHandler]):
+                 rules: List[TypeRule]):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
         self.handler = handler
@@ -45,13 +44,11 @@ class Command:
         self.lexer = lexer
         self.parser = parser
         self.rules = list(rules)
-        self.exception_handlers = list(exception_handlers)
 
     @staticmethod
     def command(name: str = '', *, help: str = '', desc: str = '',
                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                lexer: Lexer = None, parser: Parser = None,
-                rules: List[TypeRule] = (), exception_handlers: List[TypeEHandler] = ()):
+                lexer: Lexer = None, parser: Parser = None, rules: List[TypeRule] = ()):
         """
         decorator, to wrap a func into a Command
 
@@ -64,7 +61,6 @@ class Command:
         :param lexer: (Advanced) explicitly set the lexer
         :param parser: (Advanced) explicitly set the parser
         :param rules: command executed if all rules are checked
-        :param exception_handlers: executed when exception raised
         :return: wrapped Command
         """
         if not lexer and regex:
@@ -73,11 +69,21 @@ class Command:
 
         def decorator(handler: TypeHandler):
             default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)))
-            return Command(name, handler, help, desc, lexer or default_lexer, parser, rules, exception_handlers)
+            return Command(name, handler, help, desc, lexer or default_lexer, parser, rules)
 
         return decorator
 
-    def split_params(self, ignores: List[Type]) -> (List[Type], List[inspect.Parameter]):
+    async def handle(self, msg: Message, predefined_args: dict):
+        try:
+            filtered, params = self._split_params([k for k in predefined_args])
+            args = [predefined_args[k] for k in filtered] + self.parser.parse(self.lexer.lex(msg), params)
+            await self.execute(msg, *args)
+        except Lexer.NotMatched:
+            return
+        except Exception as e:
+            log.exception(f'error handling command: {self.name}', exc_info=e)
+
+    def _split_params(self, ignores: List[Type]) -> (List[Type], List[inspect.Parameter]):
         """get parameters that need to be parsed according to `ignores`
 
         :param ignores: list of types that need to be filtered
@@ -92,24 +98,6 @@ class Command:
             if issubclass(params[0].annotation, t) or issubclass(t, params[0].annotation):
                 filtered.append(params.pop(0).annotation)
         return filtered, params
-
-    def prepare(self, msg: Message, params: List[inspect.Parameter]) -> List:
-        """
-        parse msg, prepare arg list from the msg
-
-        :param msg: the msg going to be lex and parsed
-        :param params:
-        :return:
-        """
-        tokens = self._lex(msg)
-        args = self._parse(tokens, params)
-        return args
-
-    def _lex(self, msg: Message) -> List[str]:
-        return self.lexer.lex(msg)
-
-    def _parse(self, tokens: List[str], params: List[inspect.Parameter]) -> List:
-        return self.parser.parse(tokens, params)
 
     async def execute(self, msg: Message, *args):
         """
@@ -136,19 +124,3 @@ class Command:
             return bool(await rule(msg))
         else:
             return bool(rule(msg))
-
-    def on_check(self, rule: TypeRule):
-        ...
-
-    def on_error(self, exception_handler: TypeEHandler):
-        self.exception_handlers.append(exception_handler)
-
-    async def cover_exception(self, msg: Message, bot, e: Exception):
-        """
-        executed when an exception is raised. If this func raise, there is no fallback
-        
-        :param msg: the message caused exception
-        :param bot: the bot received the msg
-        :param e: the exception raised
-        """
-        await asyncio.gather(*[h(msg, bot, e) for h in self.exception_handlers])

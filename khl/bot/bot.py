@@ -97,7 +97,7 @@ class Bot(AsyncRunnable):
         """
 
         async def handler(msg: Message):
-            await self.command.handle(msg, {Message: msg, Bot: self})
+            await self.command.handle(self.loop, msg, {Message: msg, Bot: self})
 
         return handler
 
