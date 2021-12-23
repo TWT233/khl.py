@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List, Optional, Union, Pattern, Type
+from typing import Dict, Callable, List, Optional, Union, Type
 
 from apscheduler.events import EVENT_JOB_ERROR
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -8,12 +8,10 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from .command import Command
-from .lexer import Lexer
-from .parser import Parser
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import User, Channel, RawMessage, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
+from ..command import CommandManager
 
 log = logging.getLogger(__name__)
 
@@ -24,6 +22,7 @@ class Bot(AsyncRunnable):
     """
     # components
     client: Client
+    command: CommandManager
     scheduler: AsyncIOScheduler
 
     # flags
@@ -31,10 +30,9 @@ class Bot(AsyncRunnable):
 
     # internal containers
     _me: Optional[User]
-    _cmd_index: Dict[str, Command]
     _event_index: Dict[EventTypes, List[Callable]]
 
-    def __init__(self, *, token: str = '', cert: Cert = None, client: Client = None, gate: Gateway = None,
+    def __init__(self, token: str, *, cert: Cert = None, client: Client = None, gate: Gateway = None,
                  out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
         """
         The most common usage: ``Bot(token='xxxxxx')``
@@ -55,12 +53,12 @@ class Bot(AsyncRunnable):
         self.client.register(MessageTypes.TEXT, self._make_msg_handler())
         self.client.register(MessageTypes.SYS, self._make_event_handler())
 
+        self.command = CommandManager()
         self.scheduler = AsyncIOScheduler()
 
         self._is_running = False
 
         self._me = None
-        self._cmd_index = {}
         self._event_index = {}
         self._tasks = []
 
@@ -104,18 +102,7 @@ class Bot(AsyncRunnable):
         """
 
         async def handler(msg: Message):
-            for name, cmd in self._cmd_index.items():
-                try:
-                    filtered, params = cmd.params([Message, Bot])
-
-                    filled = self._fill_filtered_params(msg, filtered)
-                    args = cmd.prepare(msg, params)
-
-                    await cmd.execute(msg, *filled, *args)
-                except Lexer.NotMatched:
-                    continue
-                except Exception as e:
-                    log.exception(f'error handling command: {cmd.name}', exc_info=e)
+            await self.command.handle(msg, {Message: msg, Bot: self})
 
         return handler
 
@@ -139,49 +126,6 @@ class Bot(AsyncRunnable):
                 await h(self, event)
 
         return handler
-
-    def add_command(self, cmd: Command) -> Command:
-        """
-        register the cmd on current Bot
-
-        :param cmd: the Command going to be registered
-        :return: the cmd
-        """
-        if cmd.name in self._cmd_index:
-            raise ValueError(f'cmd: {cmd.name} already exists')
-        self._cmd_index[cmd.name] = cmd
-        log.debug(f'cmd: {cmd.name} added')
-        return cmd
-
-    def get_command(self, name: str) -> Optional[Command]:
-        return self._cmd_index.get(name, None)
-
-    def remove_command(self, name: str):
-        if name in self._cmd_index:
-            del self._cmd_index[name]
-
-    def command(self, name: str = '', *, help: str = '', desc: str = '',
-                aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                lexer: Lexer = None, parser: Parser = None, rules: List[Callable] = ()):
-        """
-        decorator, wrap a function in Command and register it on current Bot
-
-        :param name: the name of this Command, also used to trigger command in DefaultLexer
-        :param aliases: (DefaultLexer only) you can also trigger the command with aliases
-        :param prefixes: (DefaultLexer only) command prefix, default use '/'
-        :param regex: (RELexer only) pattern for the command
-        :param help: detailed manual
-        :param desc: short introduction
-        :param lexer: (Advanced) explicitly set the lexer
-        :param parser: (Advanced) explicitly set the parser
-        :param rules: only be executed if all rules are met
-        :return: wrapped Command
-        """
-        args = {'help': help, 'desc': desc,
-                'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
-                'lexer': lexer, 'parser': parser, 'rules': rules}
-
-        return lambda func: self.add_command(Command.command(name, **args)(func))
 
     def add_event_handler(self, type: EventTypes, handler: Callable):
         if type not in self._event_index:

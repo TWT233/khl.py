@@ -3,10 +3,10 @@ import inspect
 import logging
 from typing import Callable, Coroutine, List, Union, Pattern, Any, Type
 
+from khl.message import Message
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule
-from ..message import Message
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class Command:
 
         return decorator
 
-    def params(self, ignores: List[Type]) -> (List[Type], List[inspect.Parameter]):
+    def split_params(self, ignores: List[Type]) -> (List[Type], List[inspect.Parameter]):
         """get parameters that need to be parsed according to `ignores`
 
         :param ignores: list of types that need to be filtered
@@ -89,7 +89,7 @@ class Command:
         for t in ignores:
             if len(params) <= 0:
                 break
-            if t == params[0].annotation:
+            if issubclass(params[0].annotation, t) or issubclass(t, params[0].annotation):
                 filtered.append(params.pop(0).annotation)
         return filtered, params
 
