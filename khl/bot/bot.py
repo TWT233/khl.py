@@ -1,17 +1,12 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List, Optional, Union, Type
-
-from apscheduler.events import EVENT_JOB_ERROR
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.date import DateTrigger
-from apscheduler.triggers.interval import IntervalTrigger
+from typing import Dict, Callable, List, Optional, Union
 
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
-from .. import User, Channel, RawMessage, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
+from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
+from ..task import TaskManager
 
 log = logging.getLogger(__name__)
 
@@ -23,7 +18,7 @@ class Bot(AsyncRunnable):
     # components
     client: Client
     command: CommandManager
-    scheduler: AsyncIOScheduler
+    task: TaskManager
 
     # flags
     _is_running: bool
@@ -54,7 +49,7 @@ class Bot(AsyncRunnable):
         self.client.register(MessageTypes.SYS, self._make_event_handler())
 
         self.command = CommandManager()
-        self.scheduler = AsyncIOScheduler()
+        self.task = TaskManager()
 
         self._is_running = False
 
@@ -106,16 +101,6 @@ class Bot(AsyncRunnable):
 
         return handler
 
-    def _fill_filtered_params(self, msg: Message, filtered: List[Type]) -> List:
-        filled = []
-        for i in filtered:
-            if issubclass(i, RawMessage):
-                filled.append(msg)
-                continue
-            if issubclass(i, Bot):
-                filled.append(self)
-        return filled
-
     def _make_event_handler(self) -> Callable:
         async def handler(event: Event):
             if event.event_type not in self._event_index:
@@ -142,27 +127,6 @@ class Bot(AsyncRunnable):
         :return: original func
         """
         return lambda func: self.add_event_handler(type, func)
-
-    def add_interval_task(self, weeks=0, days=0, hours=0, minutes=0, seconds=0, start_date=None,
-                          end_date=None, timezone=None, jitter=None):
-        """decorator, add a interval type task"""
-        trigger = IntervalTrigger(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds,
-                                  start_date=start_date, end_date=end_date, timezone=timezone, jitter=jitter)
-        return lambda func: self.scheduler.add_job(func, trigger)
-
-    def add_cron_task(self, year=None, month=None, day=None, week=None, day_of_week=None, hour=None,
-                      minute=None, second=None, start_date=None, end_date=None, timezone=None,
-                      jitter=None):
-        """decorator, add a cron type task"""
-        trigger = CronTrigger(year=year, month=month, day=day, week=week,
-                              day_of_week=day_of_week, hour=hour, minute=minute, second=second,
-                              start_date=start_date, end_date=end_date, timezone=timezone, jitter=jitter)
-        return lambda func: self.scheduler.add_job(func, trigger)
-
-    def add_date_task(self, run_date=None, timezone=None):
-        """decorator, add a date type task"""
-        trigger = DateTrigger(run_date=run_date, timezone=timezone)
-        return lambda func: self.scheduler.add_job(func, trigger)
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
@@ -272,17 +236,10 @@ class Bot(AsyncRunnable):
             msg = self._make_temp_msg(msg)
         return await msg.delete_reaction(emoji, user)
 
-    async def _schedule_tasks(self):
-        def task_exc_logger(event):
-            log.exception(f'error raised during task', exc_info=event.exception)
-
-        self.scheduler.add_listener(task_exc_logger, EVENT_JOB_ERROR)
-        self.scheduler.start()
-
     async def start(self):
         if self._is_running:
             raise RuntimeError('this bot is already running')
-        asyncio.ensure_future(self._schedule_tasks(), loop=self.loop)
+        self.task.schedule()
         await self.client.start()
 
     def run(self):
