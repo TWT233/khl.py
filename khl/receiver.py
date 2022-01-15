@@ -153,7 +153,7 @@ class WebhookReceiver(Receiver):
 
         self.app.router.add_post(self.route, on_recv)
 
-        runner = web.AppRunner(self.app, access_log_class=None)
+        runner = web.AppRunner(self.app)
         await runner.setup()  # runner use its own loop, can not be set
         site = web.TCPSite(runner, '0.0.0.0', self.port)
 
