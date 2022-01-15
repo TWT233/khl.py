@@ -27,7 +27,7 @@ class Bot(AsyncRunnable):
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[Callable]]
 
-    def __init__(self, token: str, *, cert: Cert = None, client: Client = None, gate: Gateway = None,
+    def __init__(self, token: str = '', *, cert: Cert = None, client: Client = None, gate: Gateway = None,
                  out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
         """
         The most common usage: ``Bot(token='xxxxxx')``
