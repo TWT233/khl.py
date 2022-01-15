@@ -207,6 +207,13 @@ class Message:
 
     @staticmethod
     @req('GET')
+    def view(
+            msg_id
+    ):
+        ...
+
+    @staticmethod
+    @req('GET')
     def list(
             target_id,
             msg_id,
