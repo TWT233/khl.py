@@ -1,6 +1,10 @@
-[> 加入我们的 khl 服务器 | Join our server on khl](https://kaihei.co/JJE0Es)
-
 # khl.py
+
+[![pypi version](https://img.shields.io/pypi/v/khl.py?label=latest&logo=pypi)](https://pypi.org/project/khl.py/)
+![GitHub last commit](https://img.shields.io/github/last-commit/TWT233/khl.py?logo=github)
+
+[![khl server](https://img.shields.io/badge/JOIN%20OUR%20CHAT-%23khl.py-blue)](https://kaihei.co/JJE0Es)
+![github stars](https://img.shields.io/github/stars/TWT233/khl.py?style=social)
 
 Python SDK for [kaiheila.cn](https://www.kaiheila.cn/) API
 
@@ -36,18 +40,6 @@ bot.run()
 ```
 
 For more example and tutorial, please turn to [example](./example)
-
-## notes for Mac OSX users:
-
-if you encounter this error:
-
-```
-ssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1123)
-```
-
-please install certificate manually, turning to this post for guide:
-
-[certificate verify failed: unable to get local issuer certificate](https://stackoverflow.com/a/58525755)
 
 # short-term roadmap
 
