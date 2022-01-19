@@ -1,11 +1,12 @@
 import asyncio
 import logging
-from typing import Optional, List, Callable, Union, Pattern, Dict
+from typing import Optional, List, Union, Pattern, Dict
 
 from khl import Message
 from .command import Command
 from .lexer import Lexer
 from .parser import Parser
+from .rule import TypeRule
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class CommandManager:
 
     def __call__(self, name: str = '', *, help: str = '', desc: str = '',
                  aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                 lexer: Lexer = None, parser: Parser = None, rules: List[Callable] = ()):
+                 lexer: Lexer = None, parser: Parser = None, rules: List[TypeRule] = ()):
         """
         decorator, wrap a function in Command and register it on current Bot
 
