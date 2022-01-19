@@ -127,6 +127,6 @@ class EventTypes(Enum):
 
     JOINED_CHANNEL = 'joined_channel'
     EXITED_CHANNEL = 'exited_channel'
-    USER_UPDATE = 'user_update'
+    USER_UPDATED = 'user_updated'
     SELF_JOINED_GUILD = 'self_joined_guild'
     SELF_EXITED_GUILD = 'self_exited_guild'
