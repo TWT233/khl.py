@@ -3,7 +3,7 @@
 [![pypi version](https://img.shields.io/pypi/v/khl.py?label=latest&logo=pypi)](https://pypi.org/project/khl.py/)
 ![GitHub last commit](https://img.shields.io/github/last-commit/TWT233/khl.py?logo=github)
 
-[![khl server](https://img.shields.io/badge/JOIN%20OUR%20CHAT-%23khl.py-blue)](https://kaihei.co/JJE0Es)
+[![khl server](https://www.kaiheila.cn/api/v3/badge/guild?guild_id=7236941486257903&style=3)](https://kaihei.co/JJE0Es)
 ![github stars](https://img.shields.io/github/stars/TWT233/khl.py?style=social)
 
 Python SDK for [kaiheila.cn](https://www.kaiheila.cn/) API
