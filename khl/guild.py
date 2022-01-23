@@ -3,7 +3,7 @@ from typing import List, Dict, Union
 from . import api
 from .channel import Channel, public_channel_factory
 from .gateway import Requestable
-from .interface import LazyLoadable, ChannelTypes
+from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes
 from .role import Role
 from .user import User
 
@@ -146,3 +146,17 @@ class Guild(LazyLoadable, Requestable):
     async def leave(self):
         """leave from this guild"""
         return await self.gate.exec_req(api.Guild.leave(guild_id=self.id))
+
+    async def get_mute_list(self,return_type:str='detail'):
+        """get mute list from this guild"""
+        return await self.gate.exec_req(api.GuildMute.list(guild_id=self.id,return_type=return_type))
+    
+    async def create_mute(self,user: Union[User, str],type:GuildMuteTypes):
+        """create mute on this guild"""
+        user_id = user.id if isinstance(user, User) else user
+        return await self.gate.exec_req(api.GuildMute.create(guild_id=self.id,user_id=user_id,type=type.value))
+    
+    async def delete_mute(self,user: Union[User, str],type:GuildMuteTypes):
+        """delete mute from this guild"""
+        user_id = user.id if isinstance(user, User) else user
+        return await self.gate.exec_req(api.GuildMute.delete(guild_id=self.id,user_id=user_id,type=type.value))

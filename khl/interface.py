@@ -130,3 +130,10 @@ class EventTypes(Enum):
     USER_UPDATED = 'user_updated'
     SELF_JOINED_GUILD = 'self_joined_guild'
     SELF_EXITED_GUILD = 'self_exited_guild'
+
+class GuildMuteTypes(IntEnum):
+    """
+    types of guild-mute
+    """
+    MIC = 1
+    HEADSET = 2
