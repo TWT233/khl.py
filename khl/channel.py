@@ -2,9 +2,11 @@ import json
 from abc import ABC, abstractmethod
 from typing import Union, List, overload, Dict
 
-from . import api
+from khl.role import Role
+
+from . import api, User
 from .gateway import Requestable, Gateway
-from .interface import LazyLoadable, MessageTypes, ChannelTypes
+from .interface import LazyLoadable, MessageTypes, ChannelTypes, InviteDurationTypes, InviteSettingTimesTypes
 
 
 class Channel(LazyLoadable, Requestable, ABC):
@@ -65,6 +67,34 @@ class PublicChannel(Channel, ABC):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
 
+    async def fetch_roles(self):
+        return await self.gate.exec_req(api.ChannelRole.index(channel_id=self.id))
+
+    async def create_role(self, type: str = 'user_id', id: Union[str, Role, User] = ''):
+        value = id if isinstance(id, str) else id.id
+        return await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=type, value=value))
+
+    async def update_role(self, type: str = 'user_id', id: Union[str, Role, User] = '', allow: int = 0, deny: int = 0):
+        value = id if isinstance(id, str) else id.id
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=type, value=value, allow=allow, deny=deny))
+
+    async def delete_role(self, type: str = 'user_id', id: Union[str, Role, User] = ''):
+        value = id if isinstance(id, str) else id.id
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=type, value=value))
+
+    async def list_invite(self, page: int = None, page_size: int = None):
+        return await self.gate.exec_req(api.Invite.list(channel_id=self.id, page=page, page_size=page_size))
+
+    async def creat_invite(self,
+                           duration: InviteDurationTypes = InviteDurationTypes.SEVEN_DAYS,
+                           setting_times: InviteSettingTimesTypes = InviteSettingTimesTypes.UNLIMITED):
+        return await self.gate.exec_req(
+            api.Invite.create(channel_id=self.id, duration=duration.value, setting_times=setting_times.value))
+
+    async def delete_invite(self, url_code: str):
+        return await self.gate.exec_req(api.Invite.delete(channel_id=self.id, url_code=url_code))
+
 
 class PublicTextChannel(PublicChannel):
     """
@@ -115,12 +145,15 @@ class PublicVoiceChannel(PublicChannel):
 
     a placeholder now for future design/adaption
     """
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     async def send(self, content: Union[str, List], **kwargs):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
+
+    async def move(self, users: List[str, User]):
+        user_ids = [user.id if isinstance(user, User) else user for user in users]
+        return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_ids))
 
 
 def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:

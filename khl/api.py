@@ -414,6 +414,12 @@ class User:
     ):
         ...
 
+    @staticmethod
+    @req('POST')
+    def offline(
+    ):
+        ...
+
 
 class Asset:
 
@@ -543,6 +549,8 @@ class Invite:
     def list(
             guild_id,
             channel_id,
+            page,
+            page_size
     ):
         ...
 
@@ -551,6 +559,8 @@ class Invite:
     def create(
             guild_id,
             channel_id,
+            duration,
+            setting_times
     ):
         ...
 
@@ -560,5 +570,44 @@ class Invite:
             guild_id,
             channel_id,
             url_code,
+    ):
+        ...
+
+
+class Blacklist:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            guild_id,
+            target_id,
+            remark,
+            del_msg_days
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            guild_id,
+            target_id
+    ):
+        ...
+        
+        
+class Badge:
+
+    @staticmethod
+    @req('GET')
+    def guild(
+            guild_id,
+            style
     ):
         ...

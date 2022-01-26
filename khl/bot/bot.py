@@ -2,6 +2,7 @@ import asyncio
 import logging
 from typing import Dict, Callable, List, Optional, Union
 
+from .. import api
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
@@ -27,8 +28,16 @@ class Bot(AsyncRunnable):
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[Callable]]
 
-    def __init__(self, token: str = '', *, cert: Cert = None, client: Client = None, gate: Gateway = None,
-                 out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
+    def __init__(self,
+                 token: str = '',
+                 *,
+                 cert: Cert = None,
+                 client: Client = None,
+                 gate: Gateway = None,
+                 out: HTTPRequester = None,
+                 compress: bool = True,
+                 port=5000,
+                 route='/khl-wh'):
         """
         The most common usage: ``Bot(token='xxxxxx')``
 
@@ -95,7 +104,6 @@ class Bot(AsyncRunnable):
         """
         construct a function to receive msg from client, and interpret it with _cmd_index
         """
-
         async def handler(msg: Message):
             await self.command.handle(self.loop, msg, {Message: msg, Bot: self})
 
@@ -239,8 +247,28 @@ class Bot(AsyncRunnable):
     async def start(self):
         if self._is_running:
             raise RuntimeError('this bot is already running')
+        self._is_running = True
         self.task.schedule()
         await self.client.start()
+
+    async def offline(self):
+        if not self._is_running:
+            raise RuntimeError('this bot is not running')
+        await self.client.gate.exec_req(api.User.offline())
+        log.info('bot offline')
+
+    async def get_intimacy(self, user: Union[str, User]):
+        user_id = user.id if isinstance(user, User) else user
+        return await self.client.gate.exec_req(api.Intimacy.index(user_id=user_id))
+
+    async def update_intimacy(self,
+                              user: Union[str, User],
+                              score: int = None,
+                              social_info: str = None,
+                              img_id: str = None):
+        user_id = user.id if isinstance(user, User) else user
+        return await self.client.gate.exec_req(
+            api.Intimacy.update(user_id=user_id, score=score, social_info=social_info, img_id=img_id))
 
     def run(self):
         if not self.loop:

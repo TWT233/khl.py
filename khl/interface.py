@@ -131,9 +131,35 @@ class EventTypes(Enum):
     SELF_JOINED_GUILD = 'self_joined_guild'
     SELF_EXITED_GUILD = 'self_exited_guild'
 
+
 class GuildMuteTypes(IntEnum):
     """
     types of guild-mute
     """
     MIC = 1
     HEADSET = 2
+
+
+class InviteDurationTypes(IntEnum):
+    """
+    types of InviteDuration
+    """
+    NEVER = 0
+    HALF_AN_HOUR = 1800
+    ONE_HOUR = 3600
+    SIX_HOURS = 21600
+    TWELVE_HOURS = 43200
+    ONE_DAY = 86400
+    SEVEN_DAYS = 604800
+
+
+class InviteSettingTimesTypes(IntEnum):
+    """
+    types of InviteSettingTimes
+    """
+    UNLIMITED = -1
+    ONE_TIME = 1
+    FIVE_TIMES = 5
+    TWENTY_FIVE_TIMES = 25
+    FIFTY_TIMES = 50
+    ONE_HUNDRED_TIMES = 100

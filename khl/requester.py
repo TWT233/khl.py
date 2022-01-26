@@ -27,18 +27,28 @@ class HTTPRequester:
 
         async with self._cs.request(method, f'{API}/{route}', **params) as res:
             log.debug(f'req: {method} {route}: {params}')
-            rsp = await res.json()
-            if rsp['code'] != 0:
-                raise HTTPRequester.APIRequestFailed(method, route, params, rsp['code'], rsp['message'])
+            if res.content_type == 'application/json':
+                rsp = await res.json()
+                if rsp['code'] != 0:
+                    raise HTTPRequester.APIRequestFailed(method, route, params, rsp['code'], rsp['message'])
+                else:
+                    log.debug(f'req done: {rsp}')
+                return rsp['data']
             else:
+                rsp = await res.read()
                 log.debug(f'req done: {rsp}')
-            return rsp['data']
+                return rsp
 
     async def exec_req(self, r: _Req):
         return await self.request(r.method, r.route, **r.params)
 
-    async def exec_pagination_req(self, r: _Req, *, begin_page: int = 1, end_page: int = None,
-                                  page_size: int = 50, sort: str = '') -> List:
+    async def exec_pagination_req(self,
+                                  r: _Req,
+                                  *,
+                                  begin_page: int = 1,
+                                  end_page: int = None,
+                                  page_size: int = 50,
+                                  sort: str = '') -> List:
         """
         exec pagination requests, iter from ``begin_page`` to the ``end_page``, ``end_page=None`` means to the end
 

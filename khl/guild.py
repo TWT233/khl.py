@@ -1,9 +1,11 @@
+from os import remove
 from typing import List, Dict, Union
+from PIL import Image
 
 from . import api
 from .channel import Channel, public_channel_factory
 from .gateway import Requestable
-from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes
+from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes, InviteDurationTypes, InviteSettingTimesTypes
 from .role import Role
 from .user import User
 
@@ -125,8 +127,12 @@ class Guild(LazyLoadable, Requestable):
         role_id = role.id if isinstance(role, Role) else role
         return await self.gate.exec_req(api.GuildRole.revoke(guild_id=self.id, user_id=user.id, role_id=role_id))
 
-    async def create_channel(self, name: str, type: ChannelTypes = None, category: str = None,
-                             limit_amount: int = None, voice_quality: int = None):
+    async def create_channel(self,
+                             name: str,
+                             type: ChannelTypes = None,
+                             category: str = None,
+                             limit_amount: int = None,
+                             voice_quality: int = None):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
         if type:
@@ -147,16 +153,59 @@ class Guild(LazyLoadable, Requestable):
         """leave from this guild"""
         return await self.gate.exec_req(api.Guild.leave(guild_id=self.id))
 
-    async def get_mute_list(self,return_type:str='detail'):
+    async def get_mute_list(self, return_type: str = 'detail'):
         """get mute list from this guild"""
-        return await self.gate.exec_req(api.GuildMute.list(guild_id=self.id,return_type=return_type))
-    
-    async def create_mute(self,user: Union[User, str],type:GuildMuteTypes):
+        return await self.gate.exec_req(api.GuildMute.list(guild_id=self.id, return_type=return_type))
+
+    async def mute(self, user: Union[User, str], type: GuildMuteTypes):
         """create mute on this guild"""
         user_id = user.id if isinstance(user, User) else user
-        return await self.gate.exec_req(api.GuildMute.create(guild_id=self.id,user_id=user_id,type=type.value))
-    
-    async def delete_mute(self,user: Union[User, str],type:GuildMuteTypes):
+        return await self.gate.exec_req(api.GuildMute.create(guild_id=self.id, user_id=user_id, type=type.value))
+
+    async def unmute(self, user: Union[User, str], type: GuildMuteTypes):
         """delete mute from this guild"""
         user_id = user.id if isinstance(user, User) else user
-        return await self.gate.exec_req(api.GuildMute.delete(guild_id=self.id,user_id=user_id,type=type.value))
+        return await self.gate.exec_req(api.GuildMute.delete(guild_id=self.id, user_id=user_id, type=type.value))
+
+    async def get_blacklist(self):
+        """get blacklist from this guild"""
+        return await self.gate.exec_req(api.Blacklist.list(guild_id=self.id))
+
+    async def ban(self, user: Union[User, str], remark: str = None, del_msg_days: int = 0):
+        """ban user on this guild"""
+        target_id = user.id if isinstance(user, User) else user
+        return await self.gate.exec_req(
+            api.Blacklist.create(guild_id=self.id, target_id=target_id, remark=remark, del_msg_days=del_msg_days))
+
+    async def unban(self, user: Union[User, str]):
+        """unban user on this guild"""
+        target_id = user.id if isinstance(user, User) else user
+        return await self.gate.exec_req(api.Blacklist.delete(guild_id=self.id, target_id=target_id))
+
+    async def get_badge(self, style: int = 0):
+        """get badge from this guild"""
+        return await self.gate.exec_req(api.Badge.guild(guild_id=self.id, style=style))
+
+    async def fetch_emojis(self, page: int = None, page_size: int = None):
+        return await self.gate.exec_req(api.GuildEmoji.list(guild_id=self.id, page=page, page_size=page_size))
+
+    async def create_emoji(self, name: str, emoji: str):
+        return await self.gate.exec_req(api.GuildEmoji.create(guild_id=self.id, name=name, emoji=open(emoji, 'rb')))
+
+    async def update_emoji(self, name: str, id: str):
+        return await self.gate.exec_req(api.GuildEmoji.update(name=name, id=id))
+
+    async def delete_emoji(self, id: str):
+        return await self.gate.exec_req(api.GuildEmoji.delete(id=id))
+
+    async def list_invite(self, page: int = None, page_size: int = None):
+        return await self.gate.exec_req(api.Invite.list(guild_id=self.id, page=page, page_size=page_size))
+
+    async def creat_invite(self,
+                           duration: InviteDurationTypes = InviteDurationTypes.SEVEN_DAYS,
+                           setting_times: InviteSettingTimesTypes = InviteSettingTimesTypes.UNLIMITED):
+        return await self.gate.exec_req(
+            api.Invite.create(guild_id=self.id, duration=duration.value, setting_times=setting_times.value))
+
+    async def delete_invite(self, url_code: str):
+        return await self.gate.exec_req(api.Invite.delete(guild_id=self.id, url_code=url_code))
