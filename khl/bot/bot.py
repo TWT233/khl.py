@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List, Optional, Union
+from typing import Dict, Callable, List, Optional, Union, Coroutine
 
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
@@ -9,6 +9,8 @@ from ..command import CommandManager
 from ..task import TaskManager
 
 log = logging.getLogger(__name__)
+
+TypeEventHandler = Callable[['Bot', Event], Coroutine]
 
 
 class Bot(AsyncRunnable):
@@ -25,7 +27,7 @@ class Bot(AsyncRunnable):
 
     # internal containers
     _me: Optional[User]
-    _event_index: Dict[EventTypes, List[Callable]]
+    _event_index: Dict[EventTypes, List[TypeEventHandler]]
 
     def __init__(self, token: str = '', *, cert: Cert = None, client: Client = None, gate: Gateway = None,
                  out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
@@ -112,7 +114,7 @@ class Bot(AsyncRunnable):
 
         return handler
 
-    def add_event_handler(self, type: EventTypes, handler: Callable):
+    def add_event_handler(self, type: EventTypes, handler: TypeEventHandler):
         if type not in self._event_index:
             self._event_index[type] = []
         self._event_index[type].append(handler)
@@ -124,9 +126,12 @@ class Bot(AsyncRunnable):
         decorator, register a function to handle events of the type
 
         :param type: the type
-        :return: original func
         """
-        return lambda func: self.add_event_handler(type, func)
+
+        def dec(func: TypeEventHandler):
+            self.add_event_handler(type, func)
+
+        return dec
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
