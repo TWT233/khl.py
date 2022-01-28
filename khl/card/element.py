@@ -65,4 +65,4 @@ class Element:
 
         @property
         def _repr(self) -> Union[Dict, str]:
-            return self._gen_dict(['type', 'value', 'click', 'text'])
+            return self._gen_dict(['type', 'value', 'click', 'text', 'theme'])
