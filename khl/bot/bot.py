@@ -155,6 +155,10 @@ class Bot(AsyncRunnable):
         """fetch details of a public channel from khl"""
         return await self.client.fetch_public_channel(channel_id)
 
+    async def delete_channel(self, channel_id: str):
+        """delete a channel, permission required"""
+        return await self.client.delete_channel(channel_id)
+
     async def fetch_guild(self, guild_id: str) -> Guild:
         """fetch details of a guild from khl"""
         guild = Guild(_gate_=self.client.gate, id=guild_id)

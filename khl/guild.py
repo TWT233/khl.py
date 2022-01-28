@@ -139,6 +139,9 @@ class Guild(LazyLoadable, Requestable):
             params['voice_quality'] = voice_quality
         return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
 
+    async def delete_channel(self, channel: Channel):
+        return await self.gate.exec_req(api.Channel.delete(channel.id))
+
     async def kickout(self, user: Union[User, str]):
         target_id = user.id if isinstance(user, User) else user
         return await self.gate.exec_req(api.Guild.kickout(guild_id=self.id, target_id=target_id))

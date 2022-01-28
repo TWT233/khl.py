@@ -123,6 +123,9 @@ class Client(Requestable, AsyncRunnable):
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
+    async def delete_channel(self, channel_id: str):
+        return await self.gate.exec_req(api.Channel.delete(channel_id))
+
     async def list_guild(self) -> List[Guild]:
         """list guilds which the client joined"""
         guilds_data = (await self.gate.exec_pagination_req(api.Guild.list()))
