@@ -129,7 +129,7 @@ class Guild(LazyLoadable, Requestable):
                              limit_amount: int = None, voice_quality: int = None):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
-        if type:
+        if type is not None:
             params['type'] = type.value
         if category:
             params['parent_id'] = category
