@@ -185,3 +185,35 @@ class Module:
                 d['startTime'] = int(self.start.timestamp() * 1000)
             d['endTime'] = int(self.end.timestamp() * 1000)
             return d
+
+    class Container(_Module):
+        # 除_type和ImageGroup不一样 其余完全一致
+        # class Container(ImageGroup):
+        #     _type = 'container'
+        # 偷懒一点这样也没什么问题(
+        _type = 'container'
+        _elements: List[Element.Image]
+
+        def __init__(self, *images: Element.Image):
+            if not 1 <= len(images) <= 9:
+                raise ValueError('element length unacceptable, should: 9 >= len >= 1')
+            self._elements = list(images)
+            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+
+        def append(self, image: Element.Image):
+            if len(self._elements) >= 9:
+                raise ValueError('element max length exceeded(9)')
+            self._elements.append(image)
+
+        def pop(self, index: int):
+            if len(self._elements) <= 1:
+                raise ValueError('element min length exceeded(1)')
+            return self._elements.pop(index)
+
+        def len(self) -> int:
+            return len(self._elements)
+
+        @property
+        def _repr(self) -> Union[Dict, str]:
+            return self._gen_dict(['type', 'elements'])
+

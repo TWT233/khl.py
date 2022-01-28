@@ -105,3 +105,7 @@ class _Element(_Common, ABC):
 
 class _Module(_Common, ABC):
     ...
+
+
+class _Struct(_Common, ABC):
+    ...
