@@ -87,3 +87,9 @@ class CommandManager:
 
     def __getitem__(self, item) -> Optional[Command]:
         return self._cmd_map.get(item, None)
+
+    def __iter__(self):
+        return iter(self._cmd_map)
+
+    def items(self) -> [str, Command]:
+        return self._cmd_map.items()
