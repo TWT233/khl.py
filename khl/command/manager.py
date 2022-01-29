@@ -4,7 +4,7 @@ from typing import Optional, List, Union, Pattern, Dict
 
 from khl import Message
 from .command import Command
-from .lexer import Lexer
+from .lexer import Lexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule
 
@@ -78,6 +78,20 @@ class CommandManager:
     async def handle(self, loop, msg: Message, filter_args: dict):
         for name, cmd in self._cmd_map.items():
             asyncio.ensure_future(cmd.handle(msg, filter_args), loop=loop)
+
+    def update_prefixes(self, *prefixes: str) -> List[Command]:
+        """update command prefixes in the Manager if command uses DefaultLexer
+
+        :return: updated commands
+        """
+        prefixes = set(prefixes)
+        updated = []
+        for _, cmd in self.items():
+            if not isinstance(cmd.lexer, DefaultLexer):
+                continue
+            cmd.lexer.prefixes = prefixes
+            updated.append(cmd)
+        return updated
 
     def __setitem__(self, name: str, cmd: Command):
         if cmd.name in self._cmd_map:
