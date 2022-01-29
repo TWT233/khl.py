@@ -4,7 +4,7 @@ import json
 from khl import Bot, Message
 from khl.command import Rule
 
-with open('./config/config.json', 'r', encoding='utf-8') as f:
+with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 # init Bot

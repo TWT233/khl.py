@@ -5,7 +5,7 @@ from khl import Message, Bot
 
 # load config from config/config.json, replace `path` to your own config file
 # config template: `./config/config.json.example`
-with open('./config/config.json', 'r', encoding='utf-8') as f:
+with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 # init Bot
