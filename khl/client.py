@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import logging
-from typing import Dict, List, Callable, Coroutine
+from typing import Dict, List, Callable, Coroutine, Union
 
 from . import api
 from .channel import public_channel_factory, PublicChannel
@@ -13,7 +13,7 @@ from .user import User
 
 log = logging.getLogger(__name__)
 
-TypeHandler = Callable[..., Coroutine]
+TypeHandler = Callable[[Union['Message', 'Event']], Coroutine]
 
 
 class Client(Requestable, AsyncRunnable):
