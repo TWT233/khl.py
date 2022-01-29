@@ -29,8 +29,16 @@ class Bot(AsyncRunnable):
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
 
-    def __init__(self, token: str = '', *, cert: Cert = None, client: Client = None, gate: Gateway = None,
-                 out: HTTPRequester = None, compress: bool = True, port=5000, route='/khl-wh'):
+    def __init__(self,
+                 token: str = '',
+                 *,
+                 cert: Cert = None,
+                 client: Client = None,
+                 gate: Gateway = None,
+                 out: HTTPRequester = None,
+                 compress: bool = True,
+                 port=5000,
+                 route='/khl-wh'):
         """
         The most common usage: ``Bot(token='xxxxxx')``
 
@@ -55,7 +63,6 @@ class Bot(AsyncRunnable):
 
         self._is_running = False
 
-        self._me = None
         self._event_index = {}
         self._tasks = []
 
@@ -104,6 +111,7 @@ class Bot(AsyncRunnable):
         return handler
 
     def _make_event_handler(self) -> Callable:
+
         async def handler(event: Event):
             if event.event_type not in self._event_index:
                 return

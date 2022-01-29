@@ -125,8 +125,12 @@ class Guild(LazyLoadable, Requestable):
         role_id = role.id if isinstance(role, Role) else role
         return await self.gate.exec_req(api.GuildRole.revoke(guild_id=self.id, user_id=user.id, role_id=role_id))
 
-    async def create_channel(self, name: str, type: ChannelTypes = None, category: str = None,
-                             limit_amount: int = None, voice_quality: int = None):
+    async def create_channel(self,
+                             name: str,
+                             type: ChannelTypes = None,
+                             category: str = None,
+                             limit_amount: int = None,
+                             voice_quality: int = None):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
         if type is not None:

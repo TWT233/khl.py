@@ -32,10 +32,18 @@ class Gateway:
         """
         return await self.requester.exec_req(r)
 
-    async def exec_pagination_req(self, r: _Req, *, begin_page: int = 1, end_page: int = None,
-                                  page_size: int = 50, sort: str = '') -> List:
-        return await self.requester.exec_pagination_req(r, begin_page=begin_page, end_page=end_page,
-                                                        page_size=page_size, sort=sort)
+    async def exec_pagination_req(self,
+                                  r: _Req,
+                                  *,
+                                  begin_page: int = 1,
+                                  end_page: int = None,
+                                  page_size: int = 50,
+                                  sort: str = '') -> List:
+        return await self.requester.exec_pagination_req(r,
+                                                        begin_page=begin_page,
+                                                        end_page=end_page,
+                                                        page_size=page_size,
+                                                        sort=sort)
 
     async def run(self, in_queue: asyncio.Queue):
         self.receiver.pkg_queue = in_queue
