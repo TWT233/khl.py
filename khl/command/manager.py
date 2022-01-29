@@ -17,9 +17,17 @@ class CommandManager:
     def __init__(self):
         self._cmd_map = {}
 
-    def __call__(self, name: str = '', *, help: str = '', desc: str = '',
-                 aliases: List[str] = (), prefixes: List[str] = ('/',), regex: Union[str, Pattern] = '',
-                 lexer: Lexer = None, parser: Parser = None, rules: List[TypeRule] = ()):
+    def __call__(self,
+                 name: str = '',
+                 *,
+                 help: str = '',
+                 desc: str = '',
+                 aliases: List[str] = (),
+                 prefixes: List[str] = ('/', ),
+                 regex: Union[str, Pattern] = '',
+                 lexer: Lexer = None,
+                 parser: Parser = None,
+                 rules: List[TypeRule] = ()):
         """
         decorator, wrap a function in Command and register it on current Bot
 
@@ -34,9 +42,16 @@ class CommandManager:
         :param rules: only be executed if all rules are met
         :return: wrapped Command
         """
-        args = {'help': help, 'desc': desc,
-                'aliases': aliases, 'prefixes': prefixes, 'regex': regex,
-                'lexer': lexer, 'parser': parser, 'rules': rules}
+        args = {
+            'help': help,
+            'desc': desc,
+            'aliases': aliases,
+            'prefixes': prefixes,
+            'regex': regex,
+            'lexer': lexer,
+            'parser': parser,
+            'rules': rules
+        }
 
         return lambda func: self.add(Command.command(name, **args)(func))
 
