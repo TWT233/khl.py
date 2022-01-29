@@ -118,6 +118,23 @@ class Client(Requestable, AsyncRunnable):
             self._me = User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.me())))
         return self._me
 
+    @property
+    def me(self) -> User:
+        """
+        get client itself corresponding User
+
+        RECOMMEND: use ``await fetch_me()``
+
+        CAUTION: please call ``await fetch_me()`` first to load data from khl server
+
+        designed as 'empty-then-fetch' will break the rule 'net-related is async'
+
+        :return: the client's underlying User
+        """
+        if self._me and self._me.is_loaded():
+            return self._me
+        raise ValueError('not loaded, please call `await fetch_me()` first')
+
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
         """fetch details of a public channel from khl"""
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))

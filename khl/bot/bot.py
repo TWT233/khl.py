@@ -135,9 +135,7 @@ class Bot(AsyncRunnable):
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``"""
-        if not self._me or not self._me.is_loaded():
-            self._me = await self.client.fetch_me(force_update)
-        return self._me
+        return await self.client.fetch_me(force_update)
 
     @property
     def me(self) -> User:
@@ -152,9 +150,7 @@ class Bot(AsyncRunnable):
 
         :return: the bot's underlying User
         """
-        if self._me and self._me.is_loaded():
-            return self._me
-        raise ValueError('not loaded, please call `await fetch_me()` first')
+        return self.client.me
 
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
         """fetch details of a public channel from khl"""
