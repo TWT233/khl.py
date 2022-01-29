@@ -25,11 +25,12 @@ class Lexer(ABC):
         raise NotImplementedError
 
     class LexerException(Exception):
+
         def __init__(self, msg: Message):
             self.msg = msg
 
     class NotMatched(LexerException):
-        pass
+        ...
 
 
 class DefaultLexer(Lexer):
@@ -62,11 +63,9 @@ class DefaultLexer(Lexer):
                 arg_list = shlex.split(msg.content)
             except Exception:
                 raise DefaultLexer.MalformedContent(msg)
-
             # check if trigger exists
             if arg_list[0][len(prefix):] not in self.triggers:
                 raise Lexer.NotMatched(msg)
-            
             return arg_list[1:]  # arg_list[0] is trigger
 
     class MalformedContent(Lexer.LexerException):
