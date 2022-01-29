@@ -32,7 +32,7 @@ class Parser:
         """
         ret = []
         for i in range(len(tokens)):
-            arg_type = params[i].annotation
+            arg_type = params[min(i, len(params) - 1)].annotation
 
             # no type hint for t
             if arg_type == inspect.Parameter.empty:
@@ -71,15 +71,18 @@ class Parser:
         pass
 
     class TooMuchArgs(ParserException):
+
         def __init__(self, expected: int, exact: int, func: Callable):
             self.expected = expected
             self.exact = exact
             self.func = func
 
     class ParseFuncNotExists(ParserException):
+
         def __init__(self, expected: inspect.Parameter):
             self.expected = expected
 
     class ParseException(ParserException):
+
         def __init__(self, err: Exception):
             self.err = err
