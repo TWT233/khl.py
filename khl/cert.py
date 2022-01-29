@@ -29,12 +29,7 @@ class Cert:
         webhook cert
         """
 
-    def __init__(self,
-                 *,
-                 type: Types = Types.NOTSET,
-                 token: str,
-                 verify_token: str = '',
-                 encrypt_key: str = ''):
+    def __init__(self, *, type: Types = Types.NOTSET, token: str, verify_token: str = '', encrypt_key: str = ''):
         """
         all fields from bot config panel
         """
@@ -58,8 +53,7 @@ class Cert:
         if not self.encrypt_key:
             return ''
         data = base64.b64decode(data)
-        data = AES.new(key=self.encrypt_key.encode().ljust(32, b'\x00'),
-                       mode=AES.MODE_CBC,
+        data = AES.new(key=self.encrypt_key.encode().ljust(32, b'\x00'), mode=AES.MODE_CBC,
                        iv=data[0:16]).decrypt(base64.b64decode(data[16:]))
         data = Padding.unpad(data, 16)
         return data.decode('utf-8')

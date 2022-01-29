@@ -13,6 +13,7 @@ API = f'https://www.kaiheila.cn/api/v3'
 
 
 class HTTPRequester:
+
     def __init__(self, cert: Cert):
         self._cert = cert
         self._cs: ClientSession = ClientSession()
@@ -37,8 +38,13 @@ class HTTPRequester:
     async def exec_req(self, r: _Req):
         return await self.request(r.method, r.route, **r.params)
 
-    async def exec_pagination_req(self, r: _Req, *, begin_page: int = 1, end_page: int = None,
-                                  page_size: int = 50, sort: str = '') -> List:
+    async def exec_pagination_req(self,
+                                  r: _Req,
+                                  *,
+                                  begin_page: int = 1,
+                                  end_page: int = None,
+                                  page_size: int = 50,
+                                  sort: str = '') -> List:
         """
         exec pagination requests, iter from ``begin_page`` to the ``end_page``, ``end_page=None`` means to the end
 
@@ -68,6 +74,7 @@ class HTTPRequester:
         return ret
 
     class APIRequestFailed(Exception):
+
         def __init__(self, method, route, params, err_code, err_message):
             self.method = method
             self.route = route

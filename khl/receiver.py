@@ -62,14 +62,9 @@ class WebsocketReceiver(Receiver):
 
     async def start(self):
         async with ClientSession(loop=self.loop) as cs:
-            headers = {
-                'Authorization': f'Bot {self._cert.token}',
-                'Content-type': 'application/json'
-            }
+            headers = {'Authorization': f'Bot {self._cert.token}', 'Content-type': 'application/json'}
             params = {'compress': 1 if self.compress else 0}
-            async with cs.get(f"{API}/gateway/index",
-                              headers=headers,
-                              params=params) as res:
+            async with cs.get(f"{API}/gateway/index", headers=headers, params=params) as res:
                 res_json = await res.json()
                 if res_json['code'] != 0:
                     log.error(f'getting gateway: {res_json}')
@@ -99,6 +94,7 @@ class WebsocketReceiver(Receiver):
 
 
 class WebhookReceiver(Receiver):
+
     def __init__(self, cert: Cert, *, port: int, route: str, compress: bool):
         self._cert = cert
         self.port = port
@@ -125,6 +121,7 @@ class WebhookReceiver(Receiver):
         return False
 
     async def start(self):
+
         async def on_recv(request: web.Request):
             try:
                 data = await request.read()

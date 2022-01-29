@@ -56,6 +56,7 @@ class User(LazyLoadable, Requestable):
         """
         if not self._channel:
             self._channel = PrivateChannel(**(await self.gate.exec_req(api.UserChat.create(target_id=self.id))),
-                                           _lazy_loaded_=True, _gate_=self.gate)
+                                           _lazy_loaded_=True,
+                                           _gate_=self.gate)
 
         return await self._channel.send(content, **kwargs)
