@@ -37,7 +37,7 @@ A: 「verify_token」「encrypt_key」这两项是为 webhook 准备的，我们
 ```python
 # 用 json 读取 config.json，装载到 config 里
 # 注意文件路径，要是提示找不到文件的话，就 cd 一下工作目录/改一下这里
-with open('./config/config.json', 'r', encoding='utf-8') as f:
+with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 # 用读取来的 config 初始化 bot，字段对应即可
@@ -48,14 +48,22 @@ bot = Bot(token=config['token'])
 
 ## 用配置文件的话，运行代码的方式要变吗
 
-要的，但也很简单：保证你的工作目录在 `example` 文件夹下即可，然后：
+要的，但也很简单：保证你的工作目录在示例代码文件夹内即可，然后：
 
 ```shell
-python ex02_config_file/ex02.py
+python ex02.py
 ```
 
-怎么看工作目录？ 在命令行中输入 pwd，看看结尾是 `khl.py/example` 还是 `khl.py`，前者是正确的
+怎么看工作目录？ 在命令行中输入 pwd，看看结尾是 `example` 还是 `example/ex02_config_file`，后者是正确的
+
+*（这里使用 ex02 作为例子，如果大家读后续的其他 ex，记得换到对应的目录内）*
 
 为什么要这么做？ 因为我们在代码里是用相对路径定位 `config.json`，文件夹层级乱了就找不到了
 
-除了改工作目录，当然也可以改代码里的文件路径寻址方式，这里就不展开细说
+*除了改工作目录，当然也可以改代码里的文件路径寻址方式，这里就不展开细说*
+
+*另：在代码中写死路径是一种很不好的习惯，经常会让程序表现和使用者预期不符 /
+让使用方法难以理解（比如我们这里就让使用方法难以理解了：如果你换个调用姿势还跑不起来）
+但这是为了示例尽量简单，否则处理路径的代码就已经不短了*
+
+*推荐使用 os.path 来解决这种 hardcoded path 问题*

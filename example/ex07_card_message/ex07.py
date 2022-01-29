@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from khl import Bot, Message, EventTypes, Event
 from khl.card import CardMessage, Card, Module, Element, ClickTypes, CountdownModeTypes, ThemeTypes
 
-with open('./config/config.json', 'r', encoding='utf-8') as f:
+with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 # init Bot
