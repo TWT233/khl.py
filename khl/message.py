@@ -103,14 +103,19 @@ class Message(RawMessage, Requestable, ABC):
         """
         ...
 
-    async def reply(self, content: Union[str, List] = '', use_quote: bool = True, **kwargs):
+    async def reply(self,
+                    content: Union[str, List] = '',
+                    use_quote: bool = True,
+                    *,
+                    type: MessageTypes = None,
+                    **kwargs):
         """
         reply to a msg, content can also be a card
         """
         if use_quote:
             kwargs['quote'] = self.id
 
-        return await self.ctx.channel.send(content, **kwargs)
+        return await self.ctx.channel.send(content, type=type, **kwargs)
 
     async def delete(self):
         return await self.gate.exec_req(api.Message.delete(msg_id=self.id))
@@ -161,8 +166,18 @@ class PublicMessage(Message):
         req = api.Message.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
         return await self.gate.exec_req(req)
 
-    async def reply(self, content: Union[str, List] = '', use_quote: bool = True, is_temp: bool = False, **kwargs):
-        return await super().reply(content, use_quote, temp_target_id=self.author_id if is_temp else '', **kwargs)
+    async def reply(self,
+                    content: Union[str, List] = '',
+                    use_quote: bool = True,
+                    is_temp: bool = False,
+                    *,
+                    type: MessageTypes = None,
+                    **kwargs):
+        return await super().reply(content,
+                                   use_quote,
+                                   temp_target_id=self.author_id if is_temp else '',
+                                   type=type,
+                                   **kwargs)
 
 
 class PrivateMessage(Message):
