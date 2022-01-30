@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 from khl import Bot, Message, EventTypes, Event
-from khl.card import CardMessage, Card, Module, Element, ClickTypes, CountdownModeTypes, ThemeTypes
+from khl.card import CardMessage, Card, Module, Element, ClickTypes, CountdownModeTypes, ThemeTypes, Struct
 
 with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
@@ -49,9 +49,14 @@ async def button(msg: Message):
                     Element.Button('Truth', ClickTypes.RETURN_VAL, 'RED', theme=ThemeTypes.DANGER),
                     Element.Button('Wonderland', ClickTypes.RETURN_VAL, 'BLUE')),
                 Module.Divider(),
-                Module.Section(
-                    'another kind of button, user will goto the link when clicks the button:',
-                    Element.Button('link button', ClickTypes.LINK, 'https://github.com/TWT233/khl.py')))))
+                Module.Section('another kind of button, user will goto the link when clicks the button:',
+                               Element.Button('link button', ClickTypes.LINK, 'https://github.com/TWT233/khl.py')))))
+
+
+# struct example
+@bot.command()
+async def struct(msg: Message):
+    await msg.reply(CardMessage(Card(Module.Section(Struct.Paragraph(3, 'a', 'b', 'c')))))
 
 
 @bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
