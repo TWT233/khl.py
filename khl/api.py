@@ -6,6 +6,8 @@ from typing import Dict, Callable
 
 log = logging.getLogger(__name__)
 
+_RE_ROUTE = re.compile(r'(?<!^)(?=[A-Z])')
+
 
 class _Req:
 
@@ -21,7 +23,7 @@ def req(method: str, **http_fields):
 
         @functools.wraps(func)
         def req_maker(*args, **kwargs) -> _Req:
-            route = re.sub(r'(?<!^)(?=[A-Z])', '-', func.__qualname__).lower().replace('.', '/')
+            route = _RE_ROUTE.sub('-', func.__qualname__).lower().replace('.', '/')
 
             # dump args into kwargs
             param_names = list(inspect.signature(func).parameters.keys())
