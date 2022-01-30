@@ -9,6 +9,7 @@ from typing import Union, Dict, List
 
 
 class Representable(ABC):
+
     @property
     @abstractmethod
     def _repr(self) -> Union[str, Dict, List]:
@@ -29,49 +30,45 @@ class _TypeEnum(Enum):
         return self.value
 
 
-class ThemeTypes(_TypeEnum):
-    NA = ''
-    PRIMARY = 'primary'
-    SECONDARY = 'secondary'
-    SUCCESS = 'success'
-    DANGER = 'danger'
-    WARNING = 'warning'
-    INFO = 'info'
+class Types:
 
+    class Theme(_TypeEnum):
+        NA = ''
+        PRIMARY = 'primary'
+        SECONDARY = 'secondary'
+        SUCCESS = 'success'
+        DANGER = 'danger'
+        WARNING = 'warning'
+        INFO = 'info'
 
-class SizeTypes(_TypeEnum):
-    NA = ''
-    XS = 'xs'
-    SM = 'sm'
-    MD = 'md'
-    LG = 'lg'
+    class Size(_TypeEnum):
+        NA = ''
+        XS = 'xs'
+        SM = 'sm'
+        MD = 'md'
+        LG = 'lg'
 
+    class Text(_TypeEnum):
+        PLAIN = 'plain-text'
+        KMD = 'kmarkdown'
 
-class TextTypes(_TypeEnum):
-    PLAIN = 'plain-text'
-    KMD = 'kmarkdown'
+    class Click(_TypeEnum):
+        LINK = 'link'
+        RETURN_VAL = 'return-val'
 
+    class SectionMode(_TypeEnum):
+        LEFT = 'left'
+        RIGHT = 'right'
 
-class ClickTypes(_TypeEnum):
-    LINK = 'link'
-    RETURN_VAL = 'return-val'
+    class File(_TypeEnum):
+        FILE = 'file'
+        AUDIO = 'audio'
+        VIDEO = 'video'
 
-
-class SectionModeTypes(_TypeEnum):
-    LEFT = 'left'
-    RIGHT = 'right'
-
-
-class FileTypes(_TypeEnum):
-    FILE = 'file'
-    AUDIO = 'audio'
-    VIDEO = 'video'
-
-
-class CountdownModeTypes(_TypeEnum):
-    DAY = 'day'
-    HOUR = 'hour'
-    SECOND = 'second'
+    class CountdownMode(_TypeEnum):
+        DAY = 'day'
+        HOUR = 'hour'
+        SECOND = 'second'
 
 
 def _get_repr(item) -> Union[str, Dict, List]:
@@ -81,13 +78,13 @@ def _get_repr(item) -> Union[str, Dict, List]:
 
 class _Common(Representable, ABC):
     _type: str
-    _theme: ThemeTypes
-    _size: SizeTypes
+    _theme: Types.Theme
+    _size: Types.Size
 
-    def __init__(self, theme: Union[ThemeTypes, str, None], size: Union[SizeTypes, str, None]):
+    def __init__(self, theme: Union[Types.Theme, str, None], size: Union[Types.Size, str, None]):
         super().__init__()
-        self._theme = ThemeTypes(theme) if theme else None
-        self._size = SizeTypes(size) if size else None
+        self._theme = Types.Theme(theme) if theme else None
+        self._size = Types.Size(size) if size else None
 
     def _gen_dict(self, field_list: List) -> Dict:
         d = {}

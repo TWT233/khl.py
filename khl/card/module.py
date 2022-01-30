@@ -3,7 +3,7 @@ from typing import Union, Dict, List
 
 from .struct import Struct
 from .element import Element
-from .interface import CountdownModeTypes, FileTypes, SectionModeTypes, SizeTypes, ThemeTypes, _Module
+from .interface import Types, _Module
 
 
 class Module:
@@ -14,7 +14,7 @@ class Module:
 
         def __init__(self, text: Union[Element.Text, str] = ''):
             self._text = text
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
         def text(self) -> Element.Text:
@@ -32,16 +32,16 @@ class Module:
         _type = 'section'
         _text: Element.Text
         _accessory: Union[Element.Image, Element.Button, None]
-        mode: SectionModeTypes
+        mode: Types.SectionMode
 
         def __init__(self,
                      text: Union[Element.Text, str, Struct.Paragraph] = '',
                      accessory: Union[Element.Image, Element.Button, None] = None,
-                     mode: Union[SectionModeTypes, str] = SectionModeTypes.LEFT):
+                     mode: Union[Types.SectionMode, str] = Types.SectionMode.LEFT):
             self.text = text
             self.mode = mode
             self.accessory = accessory
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
         def text(self) -> Element.Text:
@@ -52,12 +52,12 @@ class Module:
             self._text = Element.Text(value) if isinstance(value, str) else value
 
         @property
-        def mode(self) -> SectionModeTypes:
+        def mode(self) -> Types.SectionMode:
             return self._mode
 
         @mode.setter
-        def mode(self, value: Union[SectionModeTypes, str]):
-            self._mode = SectionModeTypes(value) if isinstance(value, str) else value
+        def mode(self, value: Union[Types.SectionMode, str]):
+            self._mode = Types.SectionMode(value) if isinstance(value, str) else value
 
         @property
         def accessory(self) -> Union[Element.Image, Element.Button]:
@@ -66,7 +66,7 @@ class Module:
         @accessory.setter
         def accessory(self, value: Union[Element.Image, Element.Button]):
             if isinstance(value, Element.Button):
-                self.mode = SectionModeTypes.RIGHT
+                self.mode = Types.SectionMode.RIGHT
             self._accessory = value
 
         @property
@@ -81,7 +81,7 @@ class Module:
             if not 1 <= len(images) <= 9:
                 raise ValueError('element length unacceptable, should: 9 >= len >= 1')
             self._elements = list(images)
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         def append(self, image: Element.Image):
             if len(self._elements) >= 9:
@@ -106,7 +106,7 @@ class Module:
 
         def __init__(self, *elements: Element.Button):
             self._elements = list(elements)
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         def append(self, element: Element.Button):
             self._elements.append(element)
@@ -124,7 +124,7 @@ class Module:
 
         def __init__(self, *elements: Union[Element.Text, Element.Image, str]):
             self._elements = [Element.Text(i) if isinstance(i, str) else i for i in elements]
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         def append(self, element: Union[Element.Text, Element.Image, str]):
             self._elements.append(Element.Text(element) if isinstance(element, str) else element)
@@ -140,7 +140,7 @@ class Module:
         _type = 'divider'
 
         def __init__(self):
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
         def _repr(self) -> Dict:
@@ -151,42 +151,42 @@ class Module:
         title: str
         cover: str
 
-        def __init__(self, type: Union[FileTypes, str], src: str, title: str = '', cover: str = ''):
+        def __init__(self, type: Union[Types.File, str], src: str, title: str = '', cover: str = ''):
             if isinstance(type, str):
-                type = FileTypes(type)  # check if type in FileTypes
+                type = Types.File(type)  # check if type in Type.File
             self._type = type.value
             self.src = src
             self.title = title
             self.cover = cover
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
         def _repr(self) -> Dict:
             d = self._gen_dict(['type', 'src', 'title'])
-            if self._type == FileTypes.AUDIO.value and self.cover:
+            if self._type == Types.File.AUDIO.value and self.cover:
                 d['cover'] = self.cover
             return d
 
     class Countdown(_Module):
         _type = "countdown"
         end: datetime.datetime
-        mode: CountdownModeTypes
+        mode: Types.CountdownMode
         start: datetime.datetime
 
         def __init__(self,
                      end: datetime.datetime,
                      *,
-                     mode: Union[CountdownModeTypes, str] = CountdownModeTypes.HOUR,
+                     mode: Union[Types.CountdownMode, str] = Types.CountdownMode.HOUR,
                      start: datetime.datetime = None):
             self.end = end
-            self.mode = mode if isinstance(mode, CountdownModeTypes) else CountdownModeTypes(mode)
+            self.mode = mode if isinstance(mode, Types.CountdownMode) else Types.CountdownMode(mode)
             self.start = start
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
         def _repr(self) -> Dict:
             d = self._gen_dict(['type', 'mode'])
-            if self._type == CountdownModeTypes.SECOND.value and self.start:
+            if self._type == Types.CountdownMode.SECOND.value and self.start:
                 d['startTime'] = int(self.start.timestamp() * 1000)
             d['endTime'] = int(self.end.timestamp() * 1000)
             return d
@@ -203,7 +203,7 @@ class Module:
             if not 1 <= len(images) <= 9:
                 raise ValueError('element length unacceptable, should: 9 >= len >= 1')
             self._elements = list(images)
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         def append(self, image: Element.Image):
             if len(self._elements) >= 9:
