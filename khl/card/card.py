@@ -1,7 +1,7 @@
 from typing import List, Union, Tuple, Optional, Dict
 
 from .color import Color, make_color
-from .interface import ThemeTypes, SizeTypes, _Common
+from .interface import Types, _Common
 from .module import _Module
 
 
@@ -10,10 +10,11 @@ class Card(_Common):
     _color: Optional[Color]
     _modules: List[_Module]
 
-    def __init__(self, *modules: _Module,
+    def __init__(self,
+                 *modules: _Module,
                  color: Union[Color, Tuple[int, int, int], str, None] = None,
-                 theme: Union[ThemeTypes, str, None] = None,
-                 size: Union[SizeTypes, str, None] = SizeTypes.LG):
+                 theme: Union[Types.Theme, str, None] = None,
+                 size: Union[Types.Size, str, None] = Types.Size.LG):
         self._modules = list(modules)
         self._color = make_color(color)
         super().__init__(theme, size)
@@ -33,20 +34,20 @@ class Card(_Common):
         self._color = make_color(value)
 
     @property
-    def theme(self) -> ThemeTypes:
+    def theme(self) -> Types.Theme:
         return self._theme
 
     @theme.setter
-    def theme(self, value: Union[ThemeTypes, str]):
-        self._theme = ThemeTypes(value)
+    def theme(self, value: Union[Types.Theme, str]):
+        self._theme = Types.Theme(value)
 
     @property
-    def size(self) -> SizeTypes:
+    def size(self) -> Types.Size:
         return self._size
 
     @size.setter
-    def size(self, value: Union[SizeTypes, str]):
-        self._size = SizeTypes(value)
+    def size(self, value: Union[Types.Size, str]):
+        self._size = Types.Size(value)
 
     @property
     def _repr(self) -> Dict:

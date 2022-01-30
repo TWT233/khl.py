@@ -1,7 +1,7 @@
 from typing import Union, List, Dict
 
 from .element import Element
-from .interface import _Struct, SizeTypes, ThemeTypes
+from .interface import _Struct, Types
 
 
 class Struct:
@@ -16,7 +16,7 @@ class Struct:
                 raise ValueError('fields length unacceptable, should: 50 >= len >= 1')
             self._cols = cols
             self._fields = [f if isinstance(f, Element.Text) else Element.Text(f) for f in fields]
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
+            super().__init__(Types.Theme.NA, Types.Size.NA)
 
         def append(self, field: Element.Text):
             if len(self._fields) >= 50:
