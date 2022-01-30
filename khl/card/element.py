@@ -47,12 +47,13 @@ class Element:
     class Button(_Element):
         _type = 'button'
         _click: Types.Click
+        text: 'Element.Text'
         value: str
 
         def __init__(self,
-                     text: str,
-                     click: Union[Types.Click, str],
-                     value: str,
+                     text: Union['Element.Text', str],
+                     click: Union[Types.Click, str] = Types.Click.RETURN_VAL,
+                     value: str = '',
                      theme: Union[Types.Theme, str, None] = None):
             self.text = text
             self._click = click if isinstance(click, Types.Click) else Types.Click(click)
