@@ -179,7 +179,12 @@ class Bot(AsyncRunnable):
         return await self.client.list_guild()
 
     @staticmethod
-    async def send(target: Channel, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
+    async def send(target: Channel,
+                   content: Union[str, List],
+                   *,
+                   type: MessageTypes = None,
+                   temp_target_id: str = '',
+                   **kwargs):
         """
         send a msg to a channel
 
@@ -188,7 +193,7 @@ class Bot(AsyncRunnable):
         if isinstance(target, PublicTextChannel):
             kwargs['temp_target_id'] = temp_target_id
 
-        return await target.send(content, **kwargs)
+        return await target.send(content, type=type, **kwargs)
 
     async def upload_asset(self, file: Union[IO, str]) -> str:
         """DEPRECATED, will be removed in a future release: use ``create_asset()`` instead

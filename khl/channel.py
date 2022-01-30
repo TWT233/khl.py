@@ -14,7 +14,7 @@ class Channel(LazyLoadable, Requestable, ABC):
     type: ChannelTypes
 
     @abstractmethod
-    async def send(self, content: Union[str, List], **kwargs):
+    async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         """
         send a msg to the channel
         """
@@ -81,11 +81,7 @@ class PublicTextChannel(PublicChannel):
         super()._update_fields(**kwargs)
         self.slow_mode: int = kwargs.get('slow_mode')
 
-    @overload
-    async def send(self, content: Union[str, List], **kwargs):
-        ...
-
-    async def send(self, content: Union[str, List], *, temp_target_id: str = '', **kwargs):
+    async def send(self, content: Union[str, List], *, type: MessageTypes = None, temp_target_id: str = '', **kwargs):
         """
         send a msg to the channel
 
@@ -93,16 +89,14 @@ class PublicTextChannel(PublicChannel):
         """
         # if content is card msg, then convert it to plain str
         if isinstance(content, List):
-            kwargs['type'] = MessageTypes.CARD
+            type = MessageTypes.CARD
             content = json.dumps(content)
-        if 'type' not in kwargs:
-            kwargs['type'] = MessageTypes.TEXT
+        type = type if type is not None else MessageTypes.TEXT
 
         # merge params
         kwargs['target_id'] = self.id
         kwargs['content'] = content
-        if isinstance(kwargs['type'], MessageTypes):
-            kwargs['type'] = kwargs['type'].value
+        kwargs['type'] = type.value
         if temp_target_id:
             kwargs['temp_target_id'] = temp_target_id
 
@@ -181,13 +175,13 @@ class PrivateChannel(Channel):
     def target_user_avatar(self) -> str:
         return self.target_info.get('avatar') if self.target_info else None
 
-    async def send(self, content: Union[str, List], **kwargs):
+    async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         # if content is card msg, then convert it to plain str
         if isinstance(content, List):
-            kwargs['type'] = MessageTypes.CARD.value
+            type = MessageTypes.CARD
             content = json.dumps(content)
-        if 'type' not in kwargs:
-            kwargs['type'] = MessageTypes.TEXT
+        else:
+            type = type if type is not None else MessageTypes.TEXT
 
         # merge params
         if self.code:
@@ -195,7 +189,6 @@ class PrivateChannel(Channel):
         else:
             kwargs['target_id'] = self.target_user_id
         kwargs['content'] = content
-        if isinstance(kwargs['type'], MessageTypes):
-            kwargs['type'] = kwargs['type'].value
+        kwargs['type'] = type.value
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
