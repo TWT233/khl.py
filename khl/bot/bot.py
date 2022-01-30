@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Callable, List, Optional, Union, Coroutine
+from typing import Dict, Callable, List, Optional, Union, Coroutine, IO
 
 from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
@@ -190,12 +190,19 @@ class Bot(AsyncRunnable):
 
         return await target.send(content, **kwargs)
 
-    async def upload_asset(self, file: str) -> str:
-        """upload ``file`` to khl, and return the url to the file, alias for ``create_asset``"""
-        return await self.client.create_asset(file)
+    async def upload_asset(self, file: Union[IO, str]) -> str:
+        """DEPRECATED, will be removed in a future release: use ``create_asset()`` instead
 
-    async def create_asset(self, file: str) -> str:
-        """upload ``file`` to khl, and return the url to the file"""
+        upload ``file`` to khl, and return the url to the file, alias for ``create_asset``
+
+        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO"""
+        log.info('CAUTION: Bot.upload_asset() is DEPRECATED, please use create_asset() instead')
+        return await self.create_asset(file)
+
+    async def create_asset(self, file: Union[IO, str]) -> str:
+        """upload ``file`` to khl, and return the url to the file
+
+        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO"""
         return await self.client.create_asset(file)
 
     async def kickout(self, guild: Guild, user: Union[User, str]):

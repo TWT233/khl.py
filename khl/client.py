@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import logging
-from typing import Dict, List, Callable, Coroutine, Union
+from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
 from .channel import public_channel_factory, PublicChannel
@@ -100,6 +100,7 @@ class Client(Requestable, AsyncRunnable):
 
     @staticmethod
     def _handle_safe(handler: TypeHandler):
+
         async def safe_handler(msg):
             try:
                 await handler(msg)
@@ -108,9 +109,13 @@ class Client(Requestable, AsyncRunnable):
 
         return safe_handler
 
-    async def create_asset(self, file: str) -> str:
-        """upload ``file`` to khl, and return the url to the file"""
-        return (await self.gate.exec_req(api.Asset.create(file=open(file, 'rb'))))['url']
+    async def create_asset(self, file: Union[IO, str]) -> str:
+        """upload ``file`` to khl, and return the url to the file
+
+        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        """
+        file = open(file, 'rb') if isinstance(file, str) else file
+        return (await self.gate.exec_req(api.Asset.create(file=file)))['url']
 
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the ``User`` on the client"""
