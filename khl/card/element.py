@@ -1,8 +1,6 @@
-from typing import Union, Dict, List
+from typing import Union, Dict
 
 from .interface import ClickTypes, TextTypes, ThemeTypes, SizeTypes, _Element
-
-from .field import Fields
 
 
 class Element:
