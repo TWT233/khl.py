@@ -4,4 +4,4 @@ from .color import Color
 from .element import Element
 from .interface import (ThemeTypes, TextTypes, SizeTypes, ClickTypes, SectionModeTypes, CountdownModeTypes, FileTypes)
 from .module import Module
-from .struct import Paragraph
+from .struct import Struct

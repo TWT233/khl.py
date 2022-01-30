@@ -1,11 +1,13 @@
 import datetime
 from typing import Union, Dict, List
 
+from .struct import Struct
 from .element import Element
 from .interface import CountdownModeTypes, FileTypes, SectionModeTypes, SizeTypes, ThemeTypes, _Module
 
 
 class Module:
+
     class Header(_Module):
         _type = 'header'
         _text: Element.Text
@@ -32,7 +34,8 @@ class Module:
         _accessory: Union[Element.Image, Element.Button, None]
         mode: SectionModeTypes
 
-        def __init__(self, text: Union[Element.Text, str] = '',
+        def __init__(self,
+                     text: Union[Element.Text, str, Struct.Paragraph] = '',
                      accessory: Union[Element.Image, Element.Button, None] = None,
                      mode: Union[SectionModeTypes, str] = SectionModeTypes.LEFT):
             self.text = text
@@ -170,7 +173,9 @@ class Module:
         mode: CountdownModeTypes
         start: datetime.datetime
 
-        def __init__(self, end: datetime.datetime, *,
+        def __init__(self,
+                     end: datetime.datetime,
+                     *,
                      mode: Union[CountdownModeTypes, str] = CountdownModeTypes.HOUR,
                      start: datetime.datetime = None):
             self.end = end
@@ -216,4 +221,3 @@ class Module:
         @property
         def _repr(self) -> Union[Dict, str]:
             return self._gen_dict(['type', 'elements'])
-
