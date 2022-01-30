@@ -222,21 +222,8 @@ class Bot(AsyncRunnable):
             raise ValueError('can not modify guild from other gate')
         return await guild.leave()
 
-    async def _make_temp_msg(self, msg_id: str) -> Message:
-        return Message(msg_id=msg_id, _gate_=self.client.gate)
-
-    async def delete_message(self, msg: Union[Message, str]):
-        """delete msg
-
-        wraps `Message.delete`
-
-        :param msg: the msg, accepts Message and msg_id(str)
-        """
-        if isinstance(msg, str):
-            msg = self._make_temp_msg(msg)
-        return await msg.delete()
-
-    async def add_reaction(self, msg: Union[Message, str], emoji: str):
+    @staticmethod
+    async def add_reaction(msg: Message, emoji: str):
         """add emoji to msg's reaction list
 
         wraps `Message.add_reaction`
@@ -244,11 +231,10 @@ class Bot(AsyncRunnable):
         :param msg: accepts `Message` and msg_id(str)
         :param emoji: 😘
         """
-        if isinstance(msg, str):
-            msg = self._make_temp_msg(msg)
         return await msg.add_reaction(emoji)
 
-    async def delete_reaction(self, msg: Union[Message, str], emoji: str, user: User = None):
+    @staticmethod
+    async def delete_reaction(msg: Message, emoji: str, user: User = None):
         """delete emoji from msg's reaction list
 
         wraps `Message.delete_reaction`
@@ -257,8 +243,6 @@ class Bot(AsyncRunnable):
         :param emoji: 😘
         :param user: whose reaction, delete others added reaction requires channel msg admin permission
         """
-        if isinstance(msg, str):
-            msg = self._make_temp_msg(msg)
         return await msg.delete_reaction(emoji, user)
 
     async def start(self):
