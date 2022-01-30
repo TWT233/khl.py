@@ -41,17 +41,18 @@ bot.run()
 
 For more example and tutorial, please turn to [example](./example)
 
-# short-term roadmap
+# FAQ
 
-## feat
+when question encountered during using khl.py,
+please refer to [our wiki](https://github.com/TWT233/khl.py/wiki) for FAQ set
 
-- [ ] helper function for apis
-- [ ] card message(structure)
+if your question has not been listed yet, please [create a issue](https://github.com/TWT233/khl.py/issues/new/choose)
+or [join our talk channel](https://kaihei.co/JJE0Es) for help
 
 # CONTRIBUTION
 
-welcome! we are glad to get help from community hands, and don't be shy to show your code, we can improve it together
-even if it's not perfect right now
+welcome! we are glad to get help from community hands, and don't be shy to show your code,
+we can improve it together even if it's not perfect right now
 
 if there is any bug/perf/feature request, we are willing to deal with your issue/pull request!
 
