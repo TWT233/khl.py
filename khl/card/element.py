@@ -4,6 +4,7 @@ from .interface import ClickTypes, TextTypes, ThemeTypes, SizeTypes, _Element
 
 
 class Element:
+
     class Text(_Element):
         content: str
         emoji: bool
@@ -48,7 +49,10 @@ class Element:
         _click: ClickTypes
         value: str
 
-        def __init__(self, text: str, click: Union[ClickTypes, str], value: str,
+        def __init__(self,
+                     text: str,
+                     click: Union[ClickTypes, str],
+                     value: str,
                      theme: Union[ThemeTypes, str, None] = None):
             self.text = text
             self._click = click if isinstance(click, ClickTypes) else ClickTypes(click)
@@ -66,4 +70,3 @@ class Element:
         @property
         def _repr(self) -> Union[Dict, str]:
             return self._gen_dict(['type', 'value', 'click', 'text', 'theme'])
-
