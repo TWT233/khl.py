@@ -69,29 +69,3 @@ class Element:
         def _repr(self) -> Union[Dict, str]:
             return self._gen_dict(['type', 'value', 'click', 'text', 'theme'])
 
-    class Paragraph(_Element):
-        _type = 'paragraph'
-        _cols: int
-        _fields: List[Fields]
-
-        def __init__(self, cols: int, *field: Fields):
-            self._cols = cols
-            self._fields = list(field)
-            super().__init__(ThemeTypes.NA, SizeTypes.NA)
-
-        def append(self, field: Fields):
-            if len(self._fields) >= self._cols:
-                raise ValueError(f'fields max length exceeded({self._cols})')
-            self._fields.append(field)
-
-        def pop(self, index: int):
-            if len(self._fields) <= 1:
-                raise ValueError('fields min length exceeded(1)')
-            return self._fields.pop(index)
-
-        def len(self):
-            return len(self._fields)
-
-        @property
-        def _repr(self) -> Union[str, Dict]:
-            return self._gen_dict(['type', 'cols', 'fields'])
