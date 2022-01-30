@@ -52,8 +52,8 @@ class Element:
 
         def __init__(self,
                      text: Union['Element.Text', str],
-                     click: Union[Types.Click, str] = Types.Click.RETURN_VAL,
                      value: str = '',
+                     click: Union[Types.Click, str] = Types.Click.RETURN_VAL,
                      theme: Union[Types.Theme, str, None] = None):
             self.text = text
             self._click = click if isinstance(click, Types.Click) else Types.Click(click)
