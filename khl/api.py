@@ -31,7 +31,13 @@ def req(method: str, **http_fields):
                 kwargs[param_names[i]] = args[i]
 
             # merge http_fields with kwargs
-            params = {'data' if method == 'POST' else 'params': kwargs}
+            payload_key = 'params'  # GET: params=
+            if method == 'POST':
+                payload_key = 'json'  # POST: in default json=
+                if http_fields.pop('headers', {}).pop('Content-Type', None) is not None:
+                    payload_key = 'data'  # POST: in special cases(like guild-emoji/create) use data=
+
+            params = {payload_key: kwargs}
             params.update(http_fields)
 
             return _Req(method, route, params)
