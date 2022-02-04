@@ -1,10 +1,11 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Union, List, overload, Dict
+from typing import Union, List, Dict
 
 from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes
+from .role import Role
 
 
 class Channel(LazyLoadable, Requestable, ABC):
@@ -26,6 +27,71 @@ class Channel(LazyLoadable, Requestable, ABC):
         raise NotImplementedError
 
 
+class OverwritePermission:
+    role_id: int
+    allow: int
+    deny: int
+
+    def __init__(self, *, role_id: int, allow: int, deny: int):
+        self.role_id = role_id
+        self.allow = allow
+        self.deny = deny
+
+
+class UserPermission:
+    user: 'User'
+    allow: int
+    deny: int
+
+    def __init__(self, *, user: 'User', allow: int, deny: int):
+        self.user = user
+        self.allow = allow
+        self.deny = deny
+
+
+class ChannelPermission(LazyLoadable, Requestable):
+    """
+    there are
+
+    """
+    _id: str  # bound channel id
+
+    overwrites: List[OverwritePermission]
+
+    users: List[UserPermission]
+
+    _sync: int
+
+    @property
+    def id(self) -> str:
+        """which channel the permission belongs to"""
+        return self._id
+
+    @property
+    def sync(self) -> bool:
+        """if this channel's permission sync with category"""
+        return self._sync != 0
+
+    @sync.setter
+    def sync(self, value: bool):
+        self._sync = 1 if value else 0
+
+    def __init__(self, **kwargs):
+        self._id: str = kwargs.get('id')
+        self.gate = kwargs.get('_gate_')
+        self._load_fields(**kwargs)
+
+    def _load_fields(self, **kwargs):
+        self.overwrites = [OverwritePermission(**i) for i in kwargs.get('permission_overwrites', [])]
+        self.users = [UserPermission(**i) for i in kwargs.get('permission_users', [])]
+        self._sync = kwargs.get('permission_sync', None)
+        if self.overwrites and self.users and (self._sync is not None):
+            self._loaded = True
+
+    async def load(self):
+        self._load_fields(**await self.gate.exec_req(api.ChannelRole.index(channel_id=self.id)))
+
+
 class PublicChannel(Channel, ABC):
     name: str
     user_id: str
@@ -34,9 +100,7 @@ class PublicChannel(Channel, ABC):
     is_category: int
     parent_id: str
     level: int
-    permission_overwrites: list
-    permission_users: list
-    permission_sync: int
+    permission: ChannelPermission
 
     def __init__(self, **kwargs):
         self._id: str = kwargs.get('id')
@@ -57,13 +121,34 @@ class PublicChannel(Channel, ABC):
         self.parent_id: str = kwargs.get('parent_id')
         self.level: int = kwargs.get('level')
         self.type: ChannelTypes = kwargs.get('type') and ChannelTypes(kwargs.get('type'))
-        self.permission_overwrites: list = kwargs.get('permission_overwrites')
-        self.permission_users: list = kwargs.get('permission_users')
-        self.permission_sync: int = kwargs.get('permission_sync')
+        self.permission: ChannelPermission = ChannelPermission(**kwargs)
 
     async def load(self):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
+
+    async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
+        if force_update or not self.permission.loaded:
+            await self.permission.load()
+        return self.permission
+
+    async def create_permission(self, target: Union['User', Role]):
+        t = 'role_id' if isinstance(target, Role) else 'user_id'
+        v = target.id
+        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
+        self.permission.loaded = False
+        return d
+
+    async def update_permission(self, target: Union['User', Role], allow: int = 0, deny: int = 0) -> Role:
+        t = 'role_id' if isinstance(target, Role) else 'user_id'
+        v = target.id
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
+
+    async def delete_permission(self, target: Union['User', Role]):
+        t = 'role_id' if isinstance(target, Role) else 'user_id'
+        v = target.id
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
 
 
 class PublicTextChannel(PublicChannel):
