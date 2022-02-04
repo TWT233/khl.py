@@ -1,9 +1,9 @@
+import json
 from typing import List, Union
 
 from . import api
-from .channel import PrivateChannel
 from .gateway import Requestable
-from .interface import LazyLoadable
+from .interface import LazyLoadable, MessageTypes
 from .role import Role
 
 
@@ -26,7 +26,6 @@ class User(LazyLoadable, Requestable):
     roles: List[Role]
 
     _loaded: bool
-    _channel: PrivateChannel
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id', '')
@@ -42,21 +41,27 @@ class User(LazyLoadable, Requestable):
         self.roles = kwargs.get('roles', [])
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
-        self._channel = kwargs.get('_channel_')
         self.gate = kwargs.get('_gate_', None)
 
     async def load(self):
         pass
 
-    async def send(self, content: Union[str, List], **kwargs):
+    async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         """
         send a msg to a channel
 
         ``temp_target_id`` is only available in ChannelPrivacyTypes.GROUP
         """
-        if not self._channel:
-            self._channel = PrivateChannel(**(await self.gate.exec_req(api.UserChat.create(target_id=self.id))),
-                                           _lazy_loaded_=True,
-                                           _gate_=self.gate)
+        # if content is card msg, then convert it to plain str
+        if isinstance(content, List):
+            type = MessageTypes.CARD
+            content = json.dumps(content)
+        else:
+            type = type if type is not None else MessageTypes.TEXT
 
-        return await self._channel.send(content, **kwargs)
+        # merge params
+        kwargs['target_id'] = self.id
+        kwargs['content'] = content
+        kwargs['type'] = type.value
+
+        return await self.gate.exec_req(api.DirectMessage.create(**kwargs))

@@ -6,6 +6,7 @@ from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes
 from .role import Role
+from .user import User
 
 
 class Channel(LazyLoadable, Requestable, ABC):
@@ -39,11 +40,11 @@ class OverwritePermission:
 
 
 class UserPermission:
-    user: 'User'
+    user: User
     allow: int
     deny: int
 
-    def __init__(self, *, user: 'User', allow: int, deny: int):
+    def __init__(self, *, user: User, allow: int, deny: int):
         self.user = user
         self.allow = allow
         self.deny = deny
@@ -132,20 +133,20 @@ class PublicChannel(Channel, ABC):
             await self.permission.load()
         return self.permission
 
-    async def create_permission(self, target: Union['User', Role]):
+    async def create_permission(self, target: Union[User, Role]):
         t = 'role_id' if isinstance(target, Role) else 'user_id'
         v = target.id
         d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
         self.permission.loaded = False
         return d
 
-    async def update_permission(self, target: Union['User', Role], allow: int = 0, deny: int = 0) -> Role:
+    async def update_permission(self, target: Union[User, Role], allow: int = 0, deny: int = 0) -> Role:
         t = 'role_id' if isinstance(target, Role) else 'user_id'
         v = target.id
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
-    async def delete_permission(self, target: Union['User', Role]):
+    async def delete_permission(self, target: Union[User, Role]):
         t = 'role_id' if isinstance(target, Role) else 'user_id'
         v = target.id
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
@@ -261,19 +262,4 @@ class PrivateChannel(Channel):
         return self.target_info.get('avatar') if self.target_info else None
 
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
-        # if content is card msg, then convert it to plain str
-        if isinstance(content, List):
-            type = MessageTypes.CARD
-            content = json.dumps(content)
-        else:
-            type = type if type is not None else MessageTypes.TEXT
-
-        # merge params
-        if self.code:
-            kwargs['chat_code'] = self.code
-        else:
-            kwargs['target_id'] = self.target_user_id
-        kwargs['content'] = content
-        kwargs['type'] = type.value
-
-        return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
+        return await User(id=self.id, _gate_=self.gate).send(content, type=type, **kwargs)
