@@ -49,8 +49,17 @@ class LazyLoadable(ABC):
         """
         raise NotImplementedError
 
+    @property
+    def loaded(self) -> bool:
+        """check if loaded"""
+        return self._loaded
+
+    @loaded.setter
+    def loaded(self, v: bool):
+        self._loaded = v
+
     def is_loaded(self) -> bool:
-        """
+        """DEPRECATED: use ``.loaded`` prop, simpler in code and clearer in semantic
         Check if loaded
 
         :return: bool
@@ -130,6 +139,7 @@ class EventTypes(Enum):
     USER_UPDATED = 'user_updated'
     SELF_JOINED_GUILD = 'self_joined_guild'
     SELF_EXITED_GUILD = 'self_exited_guild'
+
 
 class GuildMuteTypes(IntEnum):
     """
