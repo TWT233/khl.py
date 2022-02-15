@@ -21,19 +21,23 @@ class HTTPRequester:
     def __del__(self):
         asyncio.get_event_loop().run_until_complete(self._cs.close())
 
-    async def request(self, method: str, route: str, **params) -> Union[dict, list]:
+    async def request(self, method: str, route: str, **params) -> Union[dict, list, bytes]:
         headers = params.pop('headers', {})
-        headers['Authorization'] = f'Bot {self._cert.token}'
         params['headers'] = headers
 
+        log.debug(f'req: {method} {route}: {params}')
+        headers['Authorization'] = f'Bot {self._cert.token}'  # ensure token will not be logged
         async with self._cs.request(method, f'{API}/{route}', **params) as res:
-            log.debug(f'req: {method} {route}: {params}')
-            rsp = await res.json()
-            if rsp['code'] != 0:
-                raise HTTPRequester.APIRequestFailed(method, route, params, rsp['code'], rsp['message'])
+            if res.content_type == 'application/json':
+                rsp = await res.json()
+                if rsp['code'] != 0:
+                    params.get('headers', {})['Authorization'] = f'Bot TOKEN_HERE'  # pick token out
+                    raise HTTPRequester.APIRequestFailed(method, route, params, rsp['code'], rsp['message'])
+                rsp = rsp['data']
             else:
-                log.debug(f'req done: {rsp}')
-            return rsp['data']
+                rsp = await res.read()
+            log.debug(f'rsp: {rsp}')
+            return rsp
 
     async def exec_req(self, r: _Req):
         return await self.request(r.method, r.route, **r.params)
