@@ -78,6 +78,12 @@ class HTTPRequester:
         return ret
 
     class APIRequestFailed(Exception):
+        """
+        Raised when khl.py received non-zero error code from remote server. 
+        By default, params (request body) is not included when calling __str__ on it, to avoid leaking credential 
+        into logs; if request body is needed for debug purpose, consider explicitly catching this exception and 
+        call repr(...) with the exception instance.
+        """
 
         def __init__(self, method, route, params, err_code, err_message):
             self.method = method
@@ -85,3 +91,6 @@ class HTTPRequester:
             self.params = params
             self.err_code = err_code
             self.err_message = err_message
+        
+        def __str__(self):
+            return f"Requesting '{self.method} {self.route}' failed with {self.err_code}: {self.err_message}"
