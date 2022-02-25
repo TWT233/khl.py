@@ -91,5 +91,4 @@ class RELexer(Lexer):
         m = self.pattern.fullmatch(msg.content)
         if not m:
             raise Lexer.NotMatched(msg)
-        if m.groups():
-            return [m[i] for i in range(1, len(m.groups()) + 1) if m.start(i) < len(msg.content)]
+        return [m[i] for i in range(1, len(m.groups()) + 1) if m.start(i) < len(msg.content)]
