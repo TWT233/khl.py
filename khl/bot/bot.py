@@ -228,7 +228,7 @@ class Bot(AsyncRunnable):
 
         wraps `Message.add_reaction`
 
-        :param msg: accepts `Message` and msg_id(str)
+        :param msg: accepts `Message`
         :param emoji: 😘
         """
         return await msg.add_reaction(emoji)
@@ -239,7 +239,7 @@ class Bot(AsyncRunnable):
 
         wraps `Message.delete_reaction`
 
-        :param msg: accepts `Message` and msg_id(str)
+        :param msg: accepts `Message`
         :param emoji: 😘
         :param user: whose reaction, delete others added reaction requires channel msg admin permission
         """
