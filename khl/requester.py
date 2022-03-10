@@ -25,18 +25,17 @@ class HTTPRequester:
         headers = params.pop('headers', {})
         params['headers'] = headers
 
-        log.debug(f'req: {method} {route}: {params}')
-        headers['Authorization'] = f'Bot {self._cert.token}'  # ensure token will not be logged
+        log.debug(f'{method} {route}: req: {params}')  # token is excluded
+        headers['Authorization'] = f'Bot {self._cert.token}'
         async with self._cs.request(method, f'{API}/{route}', **params) as res:
             if res.content_type == 'application/json':
                 rsp = await res.json()
                 if rsp['code'] != 0:
-                    params.get('headers', {})['Authorization'] = f'Bot TOKEN_HERE'  # pick token out
                     raise HTTPRequester.APIRequestFailed(method, route, params, rsp['code'], rsp['message'])
                 rsp = rsp['data']
             else:
                 rsp = await res.read()
-            log.debug(f'rsp: {rsp}')
+            log.debug(f'{method} {route}: rsp: {rsp}')
             return rsp
 
     async def exec_req(self, r: _Req):
@@ -91,6 +90,6 @@ class HTTPRequester:
             self.params = params
             self.err_code = err_code
             self.err_message = err_message
-        
+
         def __str__(self):
             return f"Requesting '{self.method} {self.route}' failed with {self.err_code}: {self.err_message}"
