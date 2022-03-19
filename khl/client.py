@@ -4,7 +4,7 @@ import logging
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
-from .channel import public_channel_factory, PublicChannel
+from .channel import public_channel_factory, PublicChannel, Channel
 from .gateway import Gateway, Requestable
 from .guild import Guild
 from .interface import AsyncRunnable, MessageTypes
@@ -145,8 +145,8 @@ class Client(Requestable, AsyncRunnable):
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
-    async def delete_channel(self, channel_id: str):
-        return await self.gate.exec_req(api.Channel.delete(channel_id))
+    async def delete_channel(self, channel: Union[Channel, str]):
+        return await self.gate.exec_req(api.Channel.delete(channel if isinstance(channel, str) else channel.id))
 
     async def list_guild(self) -> List[Guild]:
         """list guilds which the client joined"""
