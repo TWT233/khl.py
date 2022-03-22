@@ -366,7 +366,7 @@ class User:
 class Asset:
 
     @staticmethod
-    @req('POST')
+    @req('POST', headers={'Content-Type': 'form-data'})
     def create(file):
         ...
 
