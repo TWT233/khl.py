@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union, Dict
+from typing import List, Union, Dict, IO
 
 from . import api
 from .channel import Channel, public_channel_factory, PublicChannel
@@ -243,3 +243,30 @@ class Guild(LazyLoadable, Requestable):
         """delete mute from this guild"""
         user_id = user.id if isinstance(user, User) else user
         return await self.gate.exec_req(api.GuildMute.delete(guild_id=self.id, user_id=user_id, type=type.value))
+
+    async def fetch_emoji_list(self) -> List[Dict]:
+        """fetch guild emoji list
+        :returns a list of emoji dict, dict contains {'name', 'id', 'user_info': who uploaded the emoji}
+        """
+        return await self.gate.exec_pagination_req(api.GuildEmoji.list(guild_id=self.id))
+
+    async def create_emoji(self, emoji: Union[IO, str], *, name: str = None):
+        """upload a custom emoji to the guild
+
+        :returns a emoji dict, refer to fetch_emoji_list() doc
+        """
+        emoji = open(emoji, 'rb') if isinstance(emoji, str) else emoji
+        params = {'guild_id': self.id, 'emoji': emoji}
+        if name is not None:
+            params['name'] = name
+        return await self.gate.exec_req(api.GuildEmoji.create(**params))
+
+    async def update_emoji(self, id: str, *, name: str = None):
+        """update a custom emoji's name"""
+        params = {'id': id}
+        if name is not None:
+            params['name'] = name
+        return await self.gate.exec_req(api.GuildEmoji.update(**params))
+
+    async def delete_emoji(self, id: str):
+        return await self.gate.exec_req(api.GuildEmoji.delete(id))
