@@ -2,7 +2,9 @@ import functools
 import inspect
 import logging
 import re
-from typing import Dict, Callable
+from typing import Dict, Callable, Tuple
+
+import aiohttp
 
 log = logging.getLogger(__name__)
 
@@ -30,21 +32,49 @@ def req(method: str, **http_fields):
             for i in range(len(args)):
                 kwargs[param_names[i]] = args[i]
 
-            # merge http_fields with kwargs
-            payload_key = 'params'  # GET: params=
-            if method == 'POST':
-                payload_key = 'json'  # POST: in default json=
-                if http_fields.pop('headers', {}).pop('Content-Type', None) is not None:
-                    payload_key = 'data'  # POST: in special cases(like guild-emoji/create) use data=
-
-            params = {payload_key: kwargs}
-            params.update(http_fields)
-
+            params = _merge_params(method, http_fields, kwargs)
             return _Req(method, route, params)
 
         return req_maker
 
     return _method
+
+
+def _merge_params(method: str, http_fields: dict, req_args: dict) -> dict:
+    payload = req_args
+    payload_key = 'params'  # default payload_key: params=
+    if method == 'POST':
+        payload_key = 'json'  # POST: in default json=
+
+        content_type = http_fields.get('headers', {}).get('Content-Type', None)
+        if content_type == 'multipart/form-data':
+            payload_key, payload = _build_form_payload(req_args)
+            http_fields = _remove_content_type(http_fields)  # headers of form-data req are delegated to aiohttp
+        elif content_type is not None:
+            raise ValueError(f'unrecognized Content-Type {content_type}')
+
+    params = {payload_key: payload}
+    params.update(http_fields)
+    return params
+
+
+def _remove_content_type(http_fields: dict) -> dict:
+    """in some situation, such as content-type=multipart/form-data,
+    content-type should be delegated to aiohttp to auto-generate,
+    thus content-type is required to be removed in http_fields
+    """
+    if http_fields.get('headers', {}).get('Content-Type', None) is not None:
+        http_fields = http_fields.copy()
+        http_fields['headers'] = http_fields.get('headers', {}).copy()
+        del http_fields['headers']['Content-Type']
+    return http_fields
+
+
+def _build_form_payload(req_args: dict) -> Tuple[str, aiohttp.FormData]:
+    data = aiohttp.FormData()
+    for k, v in req_args.items():
+        data.add_field(k, v)
+    return 'data', data
 
 
 class Guild:
@@ -366,7 +396,7 @@ class User:
 class Asset:
 
     @staticmethod
-    @req('POST', headers={'Content-Type': 'form-data'})
+    @req('POST', headers={'Content-Type': 'multipart/form-data'})
     def create(file):
         ...
 
