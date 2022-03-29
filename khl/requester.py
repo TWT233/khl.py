@@ -57,7 +57,7 @@ class HTTPRequester:
         """
         ret = []
         current_page = begin_page
-        while end_page is None or current_page < end_page:
+        while end_page is None or current_page <= end_page:
             r.params['params']['page'] = current_page
             r.params['params']['page_size'] = page_size
             if sort:
