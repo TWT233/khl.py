@@ -530,3 +530,42 @@ class Invite:
         url_code,
     ):
         ...
+
+
+class Game:
+
+    @staticmethod
+    @req('POST')
+    def create(
+        name,
+        process_name,
+        icon,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def update(
+        id,
+        name,
+        icon,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(id):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def activity(
+        id,
+        data_type,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def deleteActivity():
+        ...
