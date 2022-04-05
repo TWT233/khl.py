@@ -5,6 +5,7 @@ from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
 from .channel import public_channel_factory, PublicChannel, Channel
+from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild
 from .interface import AsyncRunnable, MessageTypes
@@ -152,6 +153,37 @@ class Client(Requestable, AsyncRunnable):
         """list guilds which the client joined"""
         guilds_data = (await self.gate.exec_pagination_req(api.Guild.list()))
         return [Guild(_gate_=self.gate, _lazy_loaded_=True, **i) for i in guilds_data]
+
+    async def create_game(self, name, process_name: str, icon: str) -> Game:
+        data = {
+            'name': name,
+        }
+        if process_name is not None:
+            data['process_name'] = process_name
+        if icon is not None:
+            data['icon'] = icon
+        game_data = (await self.gate.exec_req(api.Game.create(**data)))
+        return Game(**game_data)
+
+    async def update_game(self, id: int, name: str, icon: str) -> Game:
+        data = {
+            'id': id
+        }
+        if name is not None:
+            data['name'] = name
+        if icon is not None:
+            data['icon'] = icon
+        game_data = (await self.gate.exec_req(api.Game.update(**data)))
+        return Game(**game_data)
+
+    async def delete_game(self, id: int):
+        await self.gate.exec_req(api.Game.delete(id=id))
+
+    async def update_playing_game(self, id: int, data_type: int):
+        await self.gate.exec_req(api.Game.activity(id=id, data_type=data_type))
+
+    async def delete_playing_game(self):
+        await self.gate.exec_req(api.Game.deleteActivity())
 
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))

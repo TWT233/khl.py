@@ -6,6 +6,7 @@ from .. import AsyncRunnable, MessageTypes, EventTypes  # interfaces & basics
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
+from ..game import Game
 from ..task import TaskManager
 
 log = logging.getLogger(__name__)
@@ -244,6 +245,41 @@ class Bot(AsyncRunnable):
         :param user: whose reaction, delete others added reaction requires channel msg admin permission
         """
         return await msg.delete_reaction(emoji, user)
+
+    async def create_game(self, name: str, process_name: str = None, icon: str = None) -> Game:
+        """
+        
+        Create a new game
+
+        """
+        return await self.client.create_game(name, process_name, icon)
+
+    async def update_game(self, id: int, name: str = None, icon: str = None) -> Game:
+        """
+
+        Update game
+
+        """
+        return await self.client.update_game(id, name, icon)
+
+    async def delete_game(self, id: int):
+        """
+
+        Delete game
+
+        """
+        await self.client.delete_game(id)
+
+    async def update_playing_game(self, id: int, data_type: int = 1):
+        """
+
+        Activity Game
+
+        """
+        await self.client.update_playing_game(id, data_type)
+
+    async def delete_playing_game(self):
+        await self.client.delete_playing_game()
 
     async def start(self):
         if self._is_running:
