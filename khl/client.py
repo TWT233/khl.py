@@ -154,6 +154,19 @@ class Client(Requestable, AsyncRunnable):
         guilds_data = (await self.gate.exec_pagination_req(api.Guild.list()))
         return [Guild(_gate_=self.gate, _lazy_loaded_=True, **i) for i in guilds_data]
 
+    async def list_game(self,
+                        *,
+                        begin_page: int = 1,
+                        end_page: int = None,
+                        page_size: int = 50,
+                        sort: str = '') -> List[Game]:
+        games = await self.gate.exec_pagination_req(api.Game(),
+                                                    begin_page=begin_page,
+                                                    end_page=end_page,
+                                                    page_size=page_size,
+                                                    sort=sort)
+        return [Game(**game_data) for game_data in games]
+
     async def create_game(self, name, process_name: str, icon: str) -> Game:
         data = {
             'name': name,
@@ -166,9 +179,7 @@ class Client(Requestable, AsyncRunnable):
         return Game(**game_data)
 
     async def update_game(self, id: int, name: str, icon: str) -> Game:
-        data = {
-            'id': id
-        }
+        data = {'id': id}
         if name is not None:
             data['name'] = name
         if icon is not None:
@@ -176,13 +187,13 @@ class Client(Requestable, AsyncRunnable):
         game_data = (await self.gate.exec_req(api.Game.update(**data)))
         return Game(**game_data)
 
-    async def delete_game(self, id: int):
-        await self.gate.exec_req(api.Game.delete(id=id))
+    async def delete_game(self, game: Union[Game, int]):
+        await self.gate.exec_req(api.Game.delete(id=game if isinstance(game, int) else game.id))
 
-    async def update_playing_game(self, id: int, data_type: int):
-        await self.gate.exec_req(api.Game.activity(id=id, data_type=data_type))
+    async def update_playing_game(self, game: Union[Game, int], data_type: int):
+        await self.gate.exec_req(api.Game.activity(id=game if isinstance(game, int) else game.id, data_type=data_type))
 
-    async def delete_playing_game(self):
+    async def stop_playing_game(self):
         await self.gate.exec_req(api.Game.deleteActivity())
 
     async def start(self):

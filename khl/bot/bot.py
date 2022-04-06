@@ -246,6 +246,14 @@ class Bot(AsyncRunnable):
         """
         return await msg.delete_reaction(emoji, user)
 
+    async def list_game(self,
+                        *,
+                        begin_page: int = 1,
+                        end_page: int = None,
+                        page_size: int = 50,
+                        sort: str = '') -> List[Game]:
+        return await self.client.list_game(begin_page=begin_page, end_page=end_page, page_size=page_size, sort=sort)
+
     async def create_game(self, name: str, process_name: str = None, icon: str = None) -> Game:
         """
         
@@ -262,24 +270,34 @@ class Bot(AsyncRunnable):
         """
         return await self.client.update_game(id, name, icon)
 
-    async def delete_game(self, id: int):
+    async def delete_game(self, game: Union[Game, int]):
         """
 
         Delete game
 
-        """
-        await self.client.delete_game(id)
-
-    async def update_playing_game(self, id: int, data_type: int = 1):
-        """
-
-        Activity Game
+        :param game: accepts both Game object and bare id(int type)
 
         """
-        await self.client.update_playing_game(id, data_type)
+        await self.client.delete_game(game)
 
-    async def delete_playing_game(self):
-        await self.client.delete_playing_game()
+    async def update_playing_game(self, game: Union[Game, int], data_type: int = 1):
+        """
+
+        update current playing game status
+
+        :param game: accepts both Game object and bare id(int type)
+        :param data_type: 1 in default(means playing type is game)
+
+        """
+        await self.client.update_playing_game(game, data_type)
+
+    async def stop_playing_game(self):
+        """
+
+        clear current playing game status
+
+        """
+        await self.client.stop_playing_game()
 
     async def start(self):
         if self._is_running:
