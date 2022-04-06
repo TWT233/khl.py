@@ -533,10 +533,11 @@ class Invite:
 
 
 @req('GET')
-class Game:
+def game():
+    ...
 
-    def __init__(self):
-        ...
+
+class Game:
 
     @staticmethod
     @req('POST')

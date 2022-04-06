@@ -160,7 +160,7 @@ class Client(Requestable, AsyncRunnable):
                         end_page: int = None,
                         page_size: int = 50,
                         sort: str = '') -> List[Game]:
-        games = await self.gate.exec_pagination_req(api.Game(),
+        games = await self.gate.exec_pagination_req(api.game(),
                                                     begin_page=begin_page,
                                                     end_page=end_page,
                                                     page_size=page_size,
