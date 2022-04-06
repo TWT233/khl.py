@@ -532,7 +532,11 @@ class Invite:
         ...
 
 
+@req('GET')
 class Game:
+
+    def __init__(self):
+        ...
 
     @staticmethod
     @req('POST')
