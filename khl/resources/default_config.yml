@@ -1,0 +1,12 @@
+# Configure file for khl.py
+
+# =========================================
+# |            Basic Configure            |
+# =========================================
+
+# put your khl bot token here
+token: ''
+
+# The list of directory path where MCDR will search for plugin to load
+plugin_directories:
+- plugin
