@@ -2,6 +2,10 @@ import os.path
 import pkgutil
 import sys
 from argparse import ArgumentParser
+from ruamel import yaml
+
+from ..config.config import Config
+from ..plugin.plugin_manager import PluginManager
 
 
 def entry_point():
@@ -37,6 +41,16 @@ def environment_check():
 def run_bot():
     if not environment_check():
         raise Exception('Use "python -m khl init" to initialize khl.py first')
+    with open('config.yml', 'r', encoding='utf-8') as f:
+        config = Config(**yaml.round_trip_load(f))
+
+    plugin_manager = PluginManager(config)
+    plugin_manager.load_plugins()
+
+    try:
+        plugin_manager.interface.bot.run()
+    except KeyboardInterrupt:
+        plugin_manager.unload_plugins()
 
 
 def initialize_environment():

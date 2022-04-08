@@ -310,5 +310,5 @@ class Bot(AsyncRunnable):
             self.loop = asyncio.get_event_loop()
         try:
             self.loop.run_until_complete(self.start())
-        except KeyboardInterrupt:
-            log.info('see you next time')
+        except KeyboardInterrupt as e:
+            raise e
