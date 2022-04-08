@@ -1,9 +1,7 @@
-import asyncio
 import os
 from typing import List
 
 from khl import Message, MessageTypes
-
 from .plugin_interface import PluginInterface
 from .type.plugin import Plugin
 from ..config.config import Config
@@ -16,12 +14,12 @@ class PluginManager:
     def __init__(self, config: Config) -> None:
         self.plugins = []
         self.config = config
-        self.interface = PluginInterface(self.config.token)
+        self.interface = PluginInterface(self)
         self.interface.bot.client.register(MessageTypes.TEXT, self.on_message)
-        self._loot = asyncio.get_event_loop()
 
     def search_all_plugin(self):
         self.plugins.clear()
+        self.plugins.append(Plugin('khl.plugin.builtin.khl_plugin'))
         for DIR in self.config.plugin_directories:
             file_list = os.listdir(DIR)
             for file in file_list:
