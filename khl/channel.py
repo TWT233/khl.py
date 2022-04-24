@@ -177,7 +177,7 @@ class PublicTextChannel(PublicChannel):
         if isinstance(content, List):
             type = MessageTypes.CARD
             content = json.dumps(content)
-        type = type if type is not None else MessageTypes.TEXT
+        type = type if type is not None else MessageTypes.KMD
 
         # merge params
         kwargs['target_id'] = self.id
