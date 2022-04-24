@@ -57,7 +57,7 @@ class User(LazyLoadable, Requestable):
             type = MessageTypes.CARD
             content = json.dumps(content)
         else:
-            type = type if type is not None else MessageTypes.TEXT
+            type = type if type is not None else MessageTypes.KMD
 
         # merge params
         kwargs['target_id'] = self.id
