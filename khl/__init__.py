@@ -9,7 +9,7 @@ from .client import Client
 
 # concepts
 from .role import Role
-from .user import User
+from .user import User, GuildUser
 from .channel import Channel, PublicTextChannel, PrivateChannel, PublicChannel
 from .guild import Guild
 from .context import Context
