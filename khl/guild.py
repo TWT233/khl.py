@@ -6,7 +6,7 @@ from .channel import Channel, public_channel_factory, PublicChannel
 from .gateway import Requestable
 from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes
 from .role import Role
-from .user import User
+from .user import User, GuildUser
 
 log = logging.getLogger(__name__)
 
@@ -161,11 +161,11 @@ class Guild(LazyLoadable, Requestable):
         users = await self.gate.exec_pagination_req(api.Guild.userList(guild_id=self.id, channel_id=channel.id))
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
-    async def fetch_user(self, user_id: str) -> User:
+    async def fetch_user(self, user_id: str) -> GuildUser:
         """get user object from user_id, can only fetch user in current guild
         """
         user = await self.gate.exec_req(api.User.view(user_id=user_id, guild_id=self.id))
-        return User(_gate_=self.gate, _lazy_loaded_=True, **user)
+        return GuildUser(_gate_=self.gate, _lazy_loaded_=True, **user)
 
     async def set_user_nickname(self, user: User, new_nickname: str):
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=user.id))

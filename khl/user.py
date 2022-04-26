@@ -65,3 +65,10 @@ class User(LazyLoadable, Requestable):
         kwargs['type'] = type.value
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
+
+
+class GuildUser(User):
+    def __init__(self, **kwargs):
+        self.joined_at = kwargs.get('joined_at', 0)
+        self.active_time = kwargs.get('active_time', 0)
+        super().__init__(**kwargs)
