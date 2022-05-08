@@ -196,5 +196,16 @@ class Client(Requestable, AsyncRunnable):
     async def stop_playing_game(self):
         await self.gate.exec_req(api.Game.deleteActivity())
 
+    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: str = None) -> PublicChannel:
+        params = {'channel_id': channel_id}
+        if name is not None:
+            params['name'] = name
+        if topic is not None:
+            params['topic'] = topic
+        if slow_mode is not None:
+            params['slow_mode'] = slow_mode
+        channel_data = await self.gate.exec_req(api.Channel.update(**params))
+        return public_channel_factory(_gate_=self.gate, **channel_data)
+
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
