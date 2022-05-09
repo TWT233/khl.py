@@ -23,9 +23,11 @@ class Channel(LazyLoadable, Requestable, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, *, name: str = None, topic: str = None, slow_mode: str = None):
+    async def update(self, *, name: str = None, topic: str = None):
         """
         update channel
+
+        slow_mode not supported
         """
         raise NotImplementedError
 
@@ -135,14 +137,14 @@ class PublicChannel(Channel, ABC):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
 
-    async def update(self, name: str = None, topic: str = None, slow_mode: str = None):
+    async def update(self, name: str = None, topic: str = None):
         params = {'channel_id': self.id}
         if name is not None:
             params['name'] = name
         if topic is not None:
             params['topic'] = topic
-        if slow_mode is not None:
-            params['slow_mode'] = slow_mode
+        # if slow_mode is not None:
+        #     params['slow_mode'] = slow_mode
         await self.gate.exec_req(api.Channel.update(**params))
 
     async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:

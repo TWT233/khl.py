@@ -301,8 +301,13 @@ class Bot(AsyncRunnable):
         """
         await self.client.stop_playing_game()
 
-    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: str = None) -> PublicChannel:
-        return await self.client.update_channel(channel_id, name, topic, slow_mode)
+    async def update_channel(self, channel_id: str, name: str = None, topic: str = None) -> PublicChannel:
+        """
+        update channel
+
+        slow_mode not supported
+        """
+        return await self.client.update_channel(channel_id, name, topic)
 
     async def start(self):
         if self._is_running:
