@@ -130,7 +130,7 @@ class PublicChannel(Channel, ABC):
 
     async def update(self, name: str = None, topic: str = None, slow_mode: [int, SlowModeTypes] = None):
         """
-        update channel
+        update channel's settings
         """
         params = {'channel_id': self.id}
         if name is not None:
