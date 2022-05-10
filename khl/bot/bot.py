@@ -7,6 +7,7 @@ from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway,
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
 from ..game import Game
+from ..interface import SlowModeTypes
 from ..task import TaskManager
 
 log = logging.getLogger(__name__)
@@ -301,13 +302,13 @@ class Bot(AsyncRunnable):
         """
         await self.client.stop_playing_game()
 
-    async def update_channel(self, channel_id: str, name: str = None, topic: str = None) -> PublicChannel:
+    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: [int, SlowModeTypes] = None) -> PublicChannel:
         """
         update channel
 
         slow_mode not supported
         """
-        return await self.client.update_channel(channel_id, name, topic)
+        return await self.client.update_channel(channel_id, name, topic, slow_mode)
 
     async def start(self):
         if self._is_running:

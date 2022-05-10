@@ -4,7 +4,7 @@ from typing import Union, List, Dict
 
 from . import api
 from .gateway import Requestable, Gateway
-from .interface import LazyLoadable, MessageTypes, ChannelTypes
+from .interface import LazyLoadable, MessageTypes, ChannelTypes, SlowModeTypes
 from .role import Role
 from .user import User
 
@@ -19,15 +19,6 @@ class Channel(LazyLoadable, Requestable, ABC):
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         """
         send a msg to the channel
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def update(self, *, name: str = None, topic: str = None):
-        """
-        update channel
-
-        slow_mode not supported
         """
         raise NotImplementedError
 
@@ -137,14 +128,22 @@ class PublicChannel(Channel, ABC):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
 
-    async def update(self, name: str = None, topic: str = None):
+    async def update(self, name: str = None, topic: str = None, slow_mode: [int, SlowModeTypes] = None):
+        """
+        update channel
+        """
         params = {'channel_id': self.id}
         if name is not None:
             params['name'] = name
         if topic is not None:
             params['topic'] = topic
-        # if slow_mode is not None:
-        #     params['slow_mode'] = slow_mode
+        if slow_mode is not None:
+            if isinstance(slow_mode, int):
+                if slow_mode not in SlowModeTypes._value2member_map_:
+                    raise ValueError('Unsupported value: ' + str(slow_mode))
+                params['slow_mode'] = slow_mode
+            elif isinstance(slow_mode, SlowModeTypes):
+                params['slow_mode'] = slow_mode.value
         await self.gate.exec_req(api.Channel.update(**params))
 
     async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
