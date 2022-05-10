@@ -128,7 +128,7 @@ class PublicChannel(Channel, ABC):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
 
-    async def update(self, name: str = None, topic: str = None, slow_mode: [int, SlowModeTypes] = None):
+    async def update(self, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None):
         """
         update channel's settings
         """

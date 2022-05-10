@@ -196,7 +196,7 @@ class Client(Requestable, AsyncRunnable):
     async def stop_playing_game(self):
         await self.gate.exec_req(api.Game.deleteActivity())
 
-    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: [int, SlowModeTypes] = None) -> PublicChannel:
+    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
         params = {'channel_id': channel_id}
         if name is not None:
             params['name'] = name
