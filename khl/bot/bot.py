@@ -302,7 +302,7 @@ class Bot(AsyncRunnable):
         """
         await self.client.stop_playing_game()
 
-    async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None, slow_mode: [int, SlowModeTypes] = None):
+    async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None):
         """
         update channel's settings
         """
