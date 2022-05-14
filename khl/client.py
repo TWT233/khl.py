@@ -146,6 +146,9 @@ class Client(Requestable, AsyncRunnable):
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
+    async def fetch_user(self, user_id: str) -> User:
+        return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(user_id))))
+
     async def delete_channel(self, channel: Union[Channel, str]):
         return await self.gate.exec_req(api.Channel.delete(channel if isinstance(channel, str) else channel.id))
 

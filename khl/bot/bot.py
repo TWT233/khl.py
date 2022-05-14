@@ -167,6 +167,9 @@ class Bot(AsyncRunnable):
         """fetch details of a public channel from khl"""
         return await self.client.fetch_public_channel(channel_id)
 
+    async def fetch_user(self, user_id: str) -> User:
+        return await self.client.fetch_user(user_id)
+
     async def delete_channel(self, channel: Union[Channel, str]):
         """delete a channel, permission required"""
         return await self.client.delete_channel(channel)
