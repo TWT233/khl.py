@@ -64,7 +64,7 @@ class DefaultLexer(Lexer):
             except Exception:
                 raise DefaultLexer.MalformedContent(msg)
             # check if trigger exists
-            if len(arg_list) > 0 and arg_list[0] not in self.triggers:
+            if (arg_list[0] if len(arg_list) > 0 else '') not in self.triggers:
                 raise Lexer.NotMatched(msg)
             return arg_list[1:]  # arg_list[0] is trigger
 
