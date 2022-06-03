@@ -162,13 +162,8 @@ class Guild(LazyLoadable, Requestable):
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
     async def fetch_joined_channel(self, user: User, page: int = 1, page_size: int = 50) -> List[PublicChannel]:
-        response = await self.gate.exec_req(api.ChannelUser.getJoinedChannel(page=page, page_size=page_size, guild_id=self.id, user_id=user.id))
-        channels = list()
-        if 'items' in response:
-            if len(response['items']) > 0:
-                for item in response['items']:
-                    channels.append(public_channel_factory(self.gate, **item))
-        return channels
+        channels = await self.gate.exec_pagination_req(api.ChannelUser.getJoinedChannel(page=page, page_size=page_size, guild_id=self.id, user_id=user.id))
+        return [public_channel_factory(self.gate, **i) for i in channels]
 
     async def fetch_user(self, user_id: str) -> GuildUser:
         """get user object from user_id, can only fetch user in current guild
