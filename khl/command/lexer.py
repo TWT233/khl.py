@@ -60,11 +60,11 @@ class DefaultLexer(Lexer):
 
         for prefix in matched_prefixes:
             try:
-                arg_list = shlex.split(msg.content)
+                arg_list = shlex.split(msg.content[len(prefix):])
             except Exception:
                 raise DefaultLexer.MalformedContent(msg)
             # check if trigger exists
-            if arg_list[0][len(prefix):] not in self.triggers:
+            if (arg_list[0] if len(arg_list) > 0 else '') not in self.triggers:
                 raise Lexer.NotMatched(msg)
             return arg_list[1:]  # arg_list[0] is trigger
 
