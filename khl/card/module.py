@@ -186,7 +186,7 @@ class Module:
         @property
         def _repr(self) -> Dict:
             d = self._gen_dict(['type', 'mode'])
-            if self._type == Types.CountdownMode.SECOND.value and self.start:
+            if self.mode == Types.CountdownMode.SECOND and self.start:
                 d['startTime'] = int(self.start.timestamp() * 1000)
             d['endTime'] = int(self.end.timestamp() * 1000)
             return d
