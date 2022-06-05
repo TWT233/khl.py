@@ -40,6 +40,7 @@ class Types:
         DANGER = 'danger'
         WARNING = 'warning'
         INFO = 'info'
+        NONE = 'none'
 
     class Size(_TypeEnum):
         NA = ''
