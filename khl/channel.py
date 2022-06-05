@@ -128,7 +128,7 @@ class PublicChannel(Channel, ABC):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
 
-    async def update(self, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None):
+    async def update(self, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None) -> dict:
         """
         update channel's settings
         """
@@ -139,12 +139,14 @@ class PublicChannel(Channel, ABC):
             params['topic'] = topic
         if slow_mode is not None:
             if isinstance(slow_mode, int):
-                if slow_mode not in SlowModeTypes._value2member_map_:
+                if slow_mode not in SlowModeTypes.possible_value():
                     raise ValueError('Unsupported value: ' + str(slow_mode))
                 params['slow_mode'] = slow_mode
             elif isinstance(slow_mode, SlowModeTypes):
                 params['slow_mode'] = slow_mode.value
-        await self.gate.exec_req(api.Channel.update(**params))
+        rt = await self.gate.exec_req(api.Channel.update(**params))
+        await self.load()
+        return rt
 
     async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
         if force_update or not self.permission.loaded:
