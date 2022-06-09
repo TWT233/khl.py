@@ -184,6 +184,11 @@ class Channel:
     def moveUser(target_id, user_ids):
         ...
 
+    @staticmethod
+    @req('POST')
+    def update(channel_id, name, topic, slow_mode):
+        ...
+
 
 class ChannelRole:
 

@@ -2,6 +2,7 @@ r"""Some Interfaces"""
 import asyncio
 from abc import ABC, abstractmethod
 from enum import IntEnum, Enum
+from typing import Any, Dict
 
 
 class AsyncRunnable(ABC):
@@ -147,3 +148,26 @@ class GuildMuteTypes(IntEnum):
     """
     MIC = 1
     HEADSET = 2
+
+
+class SlowModeTypes(IntEnum):
+    """
+    types of slow mode
+    """
+    FIVE_SEC = 5000
+    TEN_SEC = 10000
+    FIFTEEN_SEC = 15000
+    THIRTY_SEC = 30000
+    ONE_MIN = 60000
+    TWO_MIN = 120000
+    FIVE_MIN = 300000
+    TEN_MIN = 600000
+    FIFTEEN_MIN = 900000
+    THIRTY_MIN = 1800000
+    ONE_HOUR = 3600000
+    TWO_HOUR = 7200000
+    SIX_HOUR = 21600000
+
+    @classmethod
+    def possible_value(cls) -> Dict[Any, Enum]:
+        return cls._value2member_map_

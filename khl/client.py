@@ -8,7 +8,7 @@ from .channel import public_channel_factory, PublicChannel, Channel
 from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild
-from .interface import AsyncRunnable, MessageTypes
+from .interface import AsyncRunnable, MessageTypes, SlowModeTypes
 from .message import RawMessage, Event, PublicMessage, PrivateMessage
 from .user import User
 
@@ -198,6 +198,10 @@ class Client(Requestable, AsyncRunnable):
 
     async def stop_playing_game(self):
         await self.gate.exec_req(api.Game.deleteActivity())
+
+    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
+        channel_data = await PublicChannel(_gate_=self.gate, id=channel_id).update(name, topic, slow_mode)
+        return public_channel_factory(_gate_=self.gate, **channel_data)
 
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
