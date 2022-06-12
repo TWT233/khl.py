@@ -227,6 +227,19 @@ class ChannelRole:
         ...
 
 
+class ChannelUser:
+
+    @staticmethod
+    @req('GET')
+    def getJoinedChannel(
+        page,
+        page_size,
+        guild_id,
+        user_id
+    ):
+        ...
+
+
 class Message:
 
     @staticmethod
