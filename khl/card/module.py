@@ -146,6 +146,17 @@ class Module:
         def _repr(self) -> Dict:
             return {'type': 'divider'}
 
+    class Invite(_Module):
+        _type = 'invite'
+
+        def __init__(self, code: str=''):
+            self._code = code
+            super().__init__(Types.Theme.NA, Types.Size.NA)
+
+        @property
+        def _repr(self) -> Dict:
+            return {'type': 'invite', 'code': self._code}
+
     class File(_Module):
         src: str
         title: str
