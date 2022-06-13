@@ -1,9 +1,13 @@
+import re
 import datetime
 from typing import Union, Dict, List
 
 from .struct import Struct
 from .element import Element
 from .interface import Types, _Module
+
+_RE_INVITE_CODE = re.compile(r'^[a-zA-Z0-9]{6}$')
+_RE_INVITE_LINK = re.compile(r'^https://kaihei\.co/[a-zA-Z0-9]{6}$')
 
 
 class Module:
@@ -145,6 +149,31 @@ class Module:
         @property
         def _repr(self) -> Dict:
             return {'type': 'divider'}
+
+    class Invite(_Module):
+        _type = 'invite'
+
+        def __init__(self, code: str=''):
+            if _RE_INVITE_CODE.match(code) or _RE_INVITE_LINK.match(code):
+                self._code = code
+            else:
+                raise ValueError('invite code or invite link is not valid')
+            super().__init__(Types.Theme.NA, Types.Size.NA)
+
+        @property
+        def code(self) -> str:
+            return self._code
+
+        @code.setter
+        def code(self, value: str):
+            if _RE_INVITE_CODE.match(value) or _RE_INVITE_LINK.match(value):
+                self._code = value
+            else:
+                raise ValueError('invite code or invite link is not valid')
+
+        @property
+        def _repr(self) -> Dict:
+            return self._gen_dict(['type', 'code'])
 
     class File(_Module):
         src: str
