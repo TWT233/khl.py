@@ -1,3 +1,4 @@
+import re
 import datetime
 from typing import Union, Dict, List
 
@@ -148,9 +149,14 @@ class Module:
 
     class Invite(_Module):
         _type = 'invite'
+        _invite_code_pattern = re.compile(r'^[a-zA-Z0-9]{6}$')
+        _invite_link_pattern = re.compile(r'^https://kaihei\.co/[a-zA-Z0-9]{6}$')
 
         def __init__(self, code: str=''):
-            self._code = code
+            if self._invite_code_pattern.match(code) or self._invite_link_pattern.match(code):
+                self._code = code
+            else:
+                raise ValueError('invite code or invite link is not valid')
             super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
@@ -159,11 +165,14 @@ class Module:
 
         @code.setter
         def code(self, value: str):
-            self._code = value
+            if self._invite_code_pattern.match(value) or self._invite_link_pattern.match(value):
+                self._code = value
+            else:
+                raise ValueError('invite code or invite link is not valid')
 
         @property
         def _repr(self) -> Dict:
-            return {'type': 'invite', 'code': self._code}
+            return self._gen_dict(['type', 'code'])
 
     class File(_Module):
         src: str
