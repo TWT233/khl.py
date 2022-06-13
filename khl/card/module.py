@@ -154,6 +154,14 @@ class Module:
             super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
+        def code(self) -> str:
+            return self._code
+
+        @code.setter
+        def code(self, value: str):
+            self._code = value
+
+        @property
         def _repr(self) -> Dict:
             return {'type': 'invite', 'code': self._code}
 
