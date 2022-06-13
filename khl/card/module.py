@@ -6,6 +6,9 @@ from .struct import Struct
 from .element import Element
 from .interface import Types, _Module
 
+_RE_INVITE_CODE = re.compile(r'^[a-zA-Z0-9]{6}$')
+_RE_INVITE_LINK = re.compile(r'^https://kaihei\.co/[a-zA-Z0-9]{6}$')
+
 
 class Module:
 
@@ -149,11 +152,9 @@ class Module:
 
     class Invite(_Module):
         _type = 'invite'
-        _invite_code_pattern = re.compile(r'^[a-zA-Z0-9]{6}$')
-        _invite_link_pattern = re.compile(r'^https://kaihei\.co/[a-zA-Z0-9]{6}$')
 
         def __init__(self, code: str=''):
-            if self._invite_code_pattern.match(code) or self._invite_link_pattern.match(code):
+            if _RE_INVITE_CODE.match(code) or _RE_INVITE_LINK.match(code):
                 self._code = code
             else:
                 raise ValueError('invite code or invite link is not valid')
@@ -165,7 +166,7 @@ class Module:
 
         @code.setter
         def code(self, value: str):
-            if self._invite_code_pattern.match(value) or self._invite_link_pattern.match(value):
+            if _RE_INVITE_CODE.match(value) or _RE_INVITE_LINK.match(value):
                 self._code = value
             else:
                 raise ValueError('invite code or invite link is not valid')
