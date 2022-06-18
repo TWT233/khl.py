@@ -57,7 +57,7 @@ class Bot(AsyncRunnable):
         if not token and not cert:
             raise ValueError('require token or cert')
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
-        msg_handler=self._make_msg_handler()
+        msg_handler = self._make_msg_handler()
         self.client.register(MessageTypes.TEXT, msg_handler)
         self.client.register(MessageTypes.KMD, msg_handler)
         self.client.register(MessageTypes.SYS, self._make_event_handler())
