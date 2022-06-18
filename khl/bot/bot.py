@@ -13,6 +13,7 @@ from ..task import TaskManager
 log = logging.getLogger(__name__)
 
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
+MessageHandler = Callable[[Message], Coroutine]
 
 
 class Bot(AsyncRunnable):
@@ -30,6 +31,7 @@ class Bot(AsyncRunnable):
     # internal containers
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
+    _message_index: List[MessageHandler]
 
     def __init__(self,
                  token: str = '',
@@ -58,16 +60,26 @@ class Bot(AsyncRunnable):
             raise ValueError('require token or cert')
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
         msg_handler = self._make_msg_handler()
+        message_handler = self._make_message_handler()
         self.client.register(MessageTypes.TEXT, msg_handler)
         self.client.register(MessageTypes.KMD, msg_handler)
-        self.client.register(MessageTypes.SYS, self._make_event_handler())
 
+        self.client.register(MessageTypes.TEXT, message_handler)
+        self.client.register(MessageTypes.KMD, message_handler)
+        self.client.register(MessageTypes.IMG, message_handler)
+        self.client.register(MessageTypes.AUDIO, message_handler)
+        self.client.register(MessageTypes.VIDEO, message_handler)
+        self.client.register(MessageTypes.FILE, message_handler)
+        self.client.register(MessageTypes.CARD, message_handler)
+
+        self.client.register(MessageTypes.SYS, self._make_event_handler())
         self.command = CommandManager()
         self.task = TaskManager()
 
         self._is_running = False
 
         self._event_index = {}
+        self._message_index = []
         self._tasks = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
@@ -126,6 +138,14 @@ class Bot(AsyncRunnable):
 
         return handler
 
+    def _make_message_handler(self) -> Callable:
+
+        async def handler(msg: Message):
+            for h in self._message_index:
+                await h(msg)
+
+        return handler
+
     def add_event_handler(self, type: EventTypes, handler: TypeEventHandler):
         if type not in self._event_index:
             self._event_index[type] = []
@@ -142,6 +162,22 @@ class Bot(AsyncRunnable):
 
         def dec(func: TypeEventHandler):
             self.add_event_handler(type, func)
+
+        return dec
+
+    def add_message_handler(self, handler: MessageHandler):
+        self._message_index.append(handler)
+        log.debug(f'message_handler {handler.__qualname__} added')
+        return handler
+
+    def on_message(self):
+        """
+        decorator, register a function to handle messages
+
+        """
+
+        def dec(func: MessageHandler):
+            self.add_message_handler(func)
 
         return dec
 
