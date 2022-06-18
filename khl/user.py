@@ -44,6 +44,12 @@ class User(LazyLoadable, Requestable):
         self.gate = kwargs.get('_gate_', None)
 
     async def fetch_roles(self, guild_id: str) -> List[Role]:
+        """
+        Get the user roles in this guild
+
+        :param guild_id: Guild id
+        :return: A list for Role
+        """
         guild_roles = (await self.gate.exec_pagination_req(api.GuildRole.list(guild_id)))
         rt: List[Role] = []
         for role in guild_roles:
