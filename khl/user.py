@@ -23,7 +23,7 @@ class User(LazyLoadable, Requestable):
     avatar: str
     vip_avatar: str
     mobile_verified: bool
-    roles: List[Role]
+    roles: List[int]
 
     _loaded: bool
 
