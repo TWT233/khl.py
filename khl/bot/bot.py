@@ -13,6 +13,7 @@ from ..task import TaskManager
 log = logging.getLogger(__name__)
 
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
+MessageHandler = Callable[[Message], Coroutine]
 
 
 class Bot(AsyncRunnable):
@@ -57,11 +58,10 @@ class Bot(AsyncRunnable):
         if not token and not cert:
             raise ValueError('require token or cert')
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
-        msg_handler=self._make_msg_handler()
+        msg_handler = self._make_msg_handler()
         self.client.register(MessageTypes.TEXT, msg_handler)
         self.client.register(MessageTypes.KMD, msg_handler)
         self.client.register(MessageTypes.SYS, self._make_event_handler())
-
         self.command = CommandManager()
         self.task = TaskManager()
 
@@ -133,6 +133,12 @@ class Bot(AsyncRunnable):
         log.debug(f'event_handler {handler.__qualname__} for {type} added')
         return handler
 
+    def add_message_handler(self, handler: MessageHandler, *except_type: MessageTypes):
+        """`except_type` is an exclusion list"""
+        for type in MessageTypes:
+            if type not in except_type:
+                self.client.register(type, handler)
+
     def on_event(self, type: EventTypes):
         """
         decorator, register a function to handle events of the type
@@ -142,6 +148,17 @@ class Bot(AsyncRunnable):
 
         def dec(func: TypeEventHandler):
             self.add_event_handler(type, func)
+
+        return dec
+
+    def on_message(self, *except_type: MessageTypes):
+        """
+        decorator, register a function to handle messages
+        :param except_type: excepted types
+        """
+
+        def dec(func: MessageHandler):
+            self.add_message_handler(func, *set(except_type + (MessageTypes.SYS,)))
 
         return dec
 
