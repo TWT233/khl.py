@@ -199,8 +199,10 @@ class Client(Requestable, AsyncRunnable):
     async def stop_playing_game(self):
         await self.gate.exec_req(api.Game.deleteActivity())
 
-    async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
-        channel_data = await PublicChannel(_gate_=self.gate, id=channel_id).update(name, topic, slow_mode)
+    async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None,
+                             slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
+        channel = channel if isinstance(channel, PublicChannel) else await self.fetch_public_channel(channel)
+        channel_data = await channel.update(name, topic, slow_mode)
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
     async def start(self):
