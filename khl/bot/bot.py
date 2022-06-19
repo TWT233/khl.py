@@ -154,7 +154,7 @@ class Bot(AsyncRunnable):
 
         except_type = except_type if len(except_type) != 0 else [MessageTypes.SYS]
         if MessageTypes.SYS not in except_type:
-            except_type.append(MessageTypes.SYS)
+            except_type = (*except_type, MessageTypes.SYS)
 
         def dec(func: MessageHandler):
             self.client.add_message_handler(func, *except_type)
