@@ -1,3 +1,6 @@
+from .interface import RoleTypes
+
+
 class Role:
     """
     `Standard Object`
@@ -11,6 +14,7 @@ class Role:
     hoist: int
     mentionable: int
     permissions: int
+    type: RoleTypes
 
     def __init__(self, **kwargs):
         self.id: int = kwargs.get("role_id", 0)
@@ -20,6 +24,7 @@ class Role:
         self.hoist: int = kwargs.get("hoist", 0)
         self.mentionable: int = kwargs.get("mentionable", 0)
         self.permissions: int = kwargs.get("permissions", 0)
+        self.type: RoleTypes = RoleTypes(kwargs.get("type", 0))
 
     def has_permission(self, bit_value: int) -> bool:
         """

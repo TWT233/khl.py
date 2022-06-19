@@ -171,3 +171,13 @@ class SlowModeTypes(IntEnum):
     @classmethod
     def possible_value(cls) -> Dict[Any, Enum]:
         return cls._value2member_map_
+
+
+class RoleTypes(IntEnum):
+    """
+    types of role type
+    """
+    UserCreated = 0
+    BotSpecified = 1
+    Booster = 2
+    Everyone = 255
