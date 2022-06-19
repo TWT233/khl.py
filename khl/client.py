@@ -4,7 +4,7 @@ import logging
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
-from .channel import public_channel_factory, PublicChannel, Channel
+from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
 from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild
@@ -200,7 +200,19 @@ class Client(Requestable, AsyncRunnable):
         await self.gate.exec_req(api.Game.deleteActivity())
 
     async def update_channel(self, channel_id: str, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
-        channel_data = await PublicChannel(_gate_=self.gate, id=channel_id).update(name, topic, slow_mode)
+        params = {'channel_id': channel_id}
+        if name is not None:
+            params['name'] = name
+        if topic is not None:
+            params['topic'] = topic
+        if slow_mode is not None:
+            if isinstance(slow_mode, int):
+                if slow_mode not in SlowModeTypes.possible_value():
+                    raise ValueError('Unsupported value: ' + str(slow_mode))
+                params['slow_mode'] = slow_mode
+            elif isinstance(slow_mode, SlowModeTypes):
+                params['slow_mode'] = slow_mode.value
+        channel_data = await self.gate.exec_req(api.Channel.update(**params))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
     async def start(self):
