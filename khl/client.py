@@ -4,7 +4,7 @@ import logging
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
-from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
+from .channel import public_channel_factory, PublicChannel, Channel
 from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild
