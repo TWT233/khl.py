@@ -23,7 +23,6 @@ class User(LazyLoadable, Requestable):
     avatar: str
     vip_avatar: str
     mobile_verified: bool
-    roles: List[Role]
 
     _loaded: bool
 
@@ -38,7 +37,6 @@ class User(LazyLoadable, Requestable):
         self.avatar = kwargs.get('avatar', '')
         self.vip_avatar = kwargs.get('vip_avatar', '')
         self.mobile_verified = kwargs.get('mobile_verified', False)
-        self.roles = kwargs.get('roles', [])
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
         self.gate = kwargs.get('_gate_', None)
@@ -65,10 +63,3 @@ class User(LazyLoadable, Requestable):
         kwargs['type'] = type.value
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
-
-
-class GuildUser(User):
-    def __init__(self, **kwargs):
-        self.joined_at = kwargs.get('joined_at', 0)
-        self.active_time = kwargs.get('active_time', 0)
-        super().__init__(**kwargs)

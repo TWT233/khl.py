@@ -6,9 +6,36 @@ from .channel import Channel, public_channel_factory, PublicChannel
 from .gateway import Requestable
 from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes
 from .role import Role
-from .user import User, GuildUser
+from .user import User
 
 log = logging.getLogger(__name__)
+
+
+class GuildUser(User):
+    guild_id: str
+    joined_at: int
+    active_time: int
+    roles: List[int]
+
+    def __init__(self, **kwargs):
+        self.roles = kwargs.get('roles', [])
+        self.guild_id = kwargs.get('guild_id', '')
+        self.joined_at = kwargs.get('joined_at', 0)
+        self.active_time = kwargs.get('active_time', 0)
+        super().__init__(**kwargs)
+
+    async def fetch_roles(self) -> List[Role]:
+        """
+        Get the user roles in this guild
+
+        :return: A list for Role
+        """
+        guild_roles = (await self.gate.exec_pagination_req(api.GuildRole.list(self.guild_id)))
+        rt: List[Role] = []
+        for role in guild_roles:
+            if role['role_id'] in self.roles:
+                rt.append(Role(**role))
+        return rt
 
 
 class ChannelCategory(Requestable):
@@ -169,7 +196,7 @@ class Guild(LazyLoadable, Requestable):
         """get user object from user_id, can only fetch user in current guild
         """
         user = await self.gate.exec_req(api.User.view(user_id=user_id, guild_id=self.id))
-        return GuildUser(_gate_=self.gate, _lazy_loaded_=True, **user)
+        return GuildUser(guild_id=self.id, _gate_=self.gate, _lazy_loaded_=True, **user)
 
     async def set_user_nickname(self, user: User, new_nickname: str):
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=user.id))
