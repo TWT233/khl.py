@@ -23,7 +23,6 @@ class User(LazyLoadable, Requestable):
     avatar: str
     vip_avatar: str
     mobile_verified: bool
-    roles: List[int]
 
     _loaded: bool
 
@@ -38,24 +37,9 @@ class User(LazyLoadable, Requestable):
         self.avatar = kwargs.get('avatar', '')
         self.vip_avatar = kwargs.get('vip_avatar', '')
         self.mobile_verified = kwargs.get('mobile_verified', False)
-        self.roles = kwargs.get('roles', [])
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
         self.gate = kwargs.get('_gate_', None)
-
-    async def fetch_roles(self, guild_id: str) -> List[Role]:
-        """
-        Get the user roles in this guild
-
-        :param guild_id: Guild id
-        :return: A list for Role
-        """
-        guild_roles = (await self.gate.exec_pagination_req(api.GuildRole.list(guild_id)))
-        rt: List[Role] = []
-        for role in guild_roles:
-            if role['role_id'] in self.roles:
-                rt.append(Role(**role))
-        return rt
 
     async def load(self):
         pass
@@ -79,10 +63,3 @@ class User(LazyLoadable, Requestable):
         kwargs['type'] = type.value
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
-
-
-class GuildUser(User):
-    def __init__(self, **kwargs):
-        self.joined_at = kwargs.get('joined_at', 0)
-        self.active_time = kwargs.get('active_time', 0)
-        super().__init__(**kwargs)
