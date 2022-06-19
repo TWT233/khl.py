@@ -60,17 +60,10 @@ class Bot(AsyncRunnable):
             raise ValueError('require token or cert')
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
         msg_handler = self._make_msg_handler()
-        message_handler = self._make_message_handler()
         self.client.register(MessageTypes.TEXT, msg_handler)
         self.client.register(MessageTypes.KMD, msg_handler)
 
-        self.client.register(MessageTypes.TEXT, message_handler)
-        self.client.register(MessageTypes.KMD, message_handler)
-        self.client.register(MessageTypes.IMG, message_handler)
-        self.client.register(MessageTypes.AUDIO, message_handler)
-        self.client.register(MessageTypes.VIDEO, message_handler)
-        self.client.register(MessageTypes.FILE, message_handler)
-        self.client.register(MessageTypes.CARD, message_handler)
+        self.client.register_all(self._make_message_handler(), MessageTypes.SYS)
 
         self.client.register(MessageTypes.SYS, self._make_event_handler())
         self.command = CommandManager()

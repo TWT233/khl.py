@@ -47,6 +47,17 @@ class Client(Requestable, AsyncRunnable):
             self._handler_map[type] = []
         self._handler_map[type].append(handler)
 
+    def register_all(self, handler: TypeHandler, except_type: Union[List[MessageTypes], MessageTypes] = None):
+        """`except_type` is an exclusion list"""
+        if except_type is None:
+            except_type = []
+        else:
+            except_type = except_type if isinstance(except_type, List) else [except_type]
+
+        for type in MessageTypes:
+            if type not in except_type:
+                self.register(type, handler)
+
     async def handle_pkg(self):
         """
         consume `pkg` from `event_queue`
