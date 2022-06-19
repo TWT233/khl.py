@@ -1,6 +1,8 @@
 # infra
 from .interface import AsyncRunnable, LazyLoadable
-from .interface import MessageTypes, ChannelTypes, ChannelPrivacyTypes, EventTypes, GuildMuteTypes, SlowModeTypes
+from .interface import (MessageTypes, ChannelTypes, ChannelPrivacyTypes, EventTypes, GuildMuteTypes, SlowModeTypes,
+                        RoleTypes)
+from .interface import RoleTypes
 from .cert import Cert
 from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
 from .requester import HTTPRequester
