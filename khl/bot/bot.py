@@ -31,7 +31,6 @@ class Bot(AsyncRunnable):
     # internal containers
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
-    _message_index: List[MessageHandler]
 
     def __init__(self,
                  token: str = '',
@@ -62,9 +61,6 @@ class Bot(AsyncRunnable):
         msg_handler = self._make_msg_handler()
         self.client.register(MessageTypes.TEXT, msg_handler)
         self.client.register(MessageTypes.KMD, msg_handler)
-
-        self.client.register_all(self._make_message_handler(), MessageTypes.SYS)
-
         self.client.register(MessageTypes.SYS, self._make_event_handler())
         self.command = CommandManager()
         self.task = TaskManager()
@@ -131,14 +127,6 @@ class Bot(AsyncRunnable):
 
         return handler
 
-    def _make_message_handler(self) -> Callable:
-
-        async def handler(msg: Message):
-            for h in self._message_index:
-                await h(msg)
-
-        return handler
-
     def add_event_handler(self, type: EventTypes, handler: TypeEventHandler):
         if type not in self._event_index:
             self._event_index[type] = []
@@ -158,19 +146,18 @@ class Bot(AsyncRunnable):
 
         return dec
 
-    def add_message_handler(self, handler: MessageHandler):
-        self._message_index.append(handler)
-        log.debug(f'message_handler {handler.__qualname__} added')
-        return handler
-
-    def on_message(self):
+    def on_message(self, *except_type: MessageTypes):
         """
         decorator, register a function to handle messages
-
+        :param except_type: excepted types
         """
 
+        except_type = except_type if len(except_type) != 0 else [MessageTypes.SYS]
+        if MessageTypes.SYS not in except_type:
+            except_type.append(MessageTypes.SYS)
+
         def dec(func: MessageHandler):
-            self.add_message_handler(func)
+            self.client.add_message_handler(func, *except_type)
 
         return dec
 
