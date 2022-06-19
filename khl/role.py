@@ -24,7 +24,7 @@ class Role:
         self.hoist: int = kwargs.get("hoist", 0)
         self.mentionable: int = kwargs.get("mentionable", 0)
         self.permissions: int = kwargs.get("permissions", 0)
-        self.type: RoleTypes = kwargs.get("type", 0)
+        self.type: RoleTypes = RoleTypes(kwargs.get("type", 0))
 
     def has_permission(self, bit_value: int) -> bool:
         """
