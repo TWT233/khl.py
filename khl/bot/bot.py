@@ -134,6 +134,12 @@ class Bot(AsyncRunnable):
         log.debug(f'event_handler {handler.__qualname__} for {type} added')
         return handler
 
+    def add_message_handler(self, handler: MessageHandler, *except_type: MessageTypes):
+        """`except_type` is an exclusion list"""
+        for type in MessageTypes:
+            if type not in except_type:
+                self.client.register(type, handler)
+
     def on_event(self, type: EventTypes):
         """
         decorator, register a function to handle events of the type
@@ -157,7 +163,7 @@ class Bot(AsyncRunnable):
             except_type = (*except_type, MessageTypes.SYS)
 
         def dec(func: MessageHandler):
-            self.client.add_message_handler(func, *except_type)
+            self.add_message_handler(func, *except_type)
 
         return dec
 
