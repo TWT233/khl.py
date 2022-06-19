@@ -68,7 +68,6 @@ class Bot(AsyncRunnable):
         self._is_running = False
 
         self._event_index = {}
-        self._message_index = []
         self._tasks = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
@@ -158,12 +157,8 @@ class Bot(AsyncRunnable):
         :param except_type: excepted types
         """
 
-        except_type = except_type if len(except_type) != 0 else [MessageTypes.SYS]
-        if MessageTypes.SYS not in except_type:
-            except_type = (*except_type, MessageTypes.SYS)
-
         def dec(func: MessageHandler):
-            self.add_message_handler(func, *except_type)
+            self.add_message_handler(func, *set(except_type + (MessageTypes.SYS,)))
 
         return dec
 
