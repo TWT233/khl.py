@@ -63,8 +63,8 @@ class DefaultLexer(Lexer):
                 arg_list = shlex.split(msg.content[len(prefix):].replace('\\','\\\\'))
             except Exception:
                 raise DefaultLexer.MalformedContent(msg)
+            arg_list = list(map(lambda x: x.replace('\\\\', '\\'), arg_list))
             # check if trigger exists
-            arg_list = map(lambda x: x.replace('\\\\', '\\'), arg_list)
             if (arg_list[0] if len(arg_list) > 0 else '') not in self.triggers:
                 raise Lexer.NotMatched(msg)
             return arg_list[1:]  # arg_list[0] is trigger
