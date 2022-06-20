@@ -141,6 +141,9 @@ class EventTypes(Enum):
     SELF_JOINED_GUILD = 'self_joined_guild'
     SELF_EXITED_GUILD = 'self_exited_guild'
 
+    PINNED_MESSAGE = 'pinned_message'
+    UNPINNED_MESSAGE = 'unpinned_message'
+
 
 class GuildMuteTypes(IntEnum):
     """
