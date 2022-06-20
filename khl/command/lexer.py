@@ -60,9 +60,10 @@ class DefaultLexer(Lexer):
 
         for prefix in matched_prefixes:
             try:
-                arg_list = shlex.split(msg.content[len(prefix):])
+                arg_list = shlex.split(msg.content[len(prefix):].replace('\\','\\\\'))
             except Exception:
                 raise DefaultLexer.MalformedContent(msg)
+            arg_list = list(map(lambda x: x.replace('\\\\', '\\'), arg_list))
             # check if trigger exists
             if (arg_list[0] if len(arg_list) > 0 else '') not in self.triggers:
                 raise Lexer.NotMatched(msg)
