@@ -7,6 +7,20 @@ from typing import Dict, Any, Callable, List
 log = logging.getLogger(__name__)
 
 
+def _get_param_type(params: List[inspect.Parameter], index: int):
+    # empty param list: str in default
+    if len(params) <= 0:
+        return str
+
+    # for *args: result = the last param type
+    result = params[min(index, len(params) - 1)].annotation
+
+    # no type hint: str in default
+    if result == inspect.Parameter.empty:
+        result = str
+    return result
+
+
 class Parser:
     """
     deal with a list of tokens made from Lexer, convert their type to match the command.handler
@@ -32,18 +46,13 @@ class Parser:
         """
         ret = []
         for i in range(len(tokens)):
-            arg_type = params[min(i, len(params) - 1)].annotation
+            param_type = _get_param_type(params, i)
 
-            # no type hint for t
-            if arg_type == inspect.Parameter.empty:
-                ret.append(tokens[i])
-                continue
-
-            if arg_type not in self._parse_funcs:
+            if param_type not in self._parse_funcs:
                 raise Parser.ParseFuncNotExists(params[i])
 
             try:
-                ret.append(self._parse_funcs[arg_type](tokens[i]))
+                ret.append(self._parse_funcs[param_type](tokens[i]))
             except Exception as e:
                 raise Parser.ParseException(e) from e
         return ret
