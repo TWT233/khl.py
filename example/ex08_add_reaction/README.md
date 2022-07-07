@@ -26,7 +26,7 @@ async def reaction_reminder(b:Bot,event:Event):
 
 建议先使用`print(event.body)`了解`event.body`的结构
 
-~~~json
+~~~
 {'channel_id': '添加回应的文字频道id', 'emoji': {'id': '[#128064;]', 'name': '[#128064;]'}, 'user_id': '添加回应的用户id', 'msg_id': '添加了回应的消息id'}
 ~~~
 
