@@ -6,6 +6,9 @@
 4. [example 03 加点辣酱：指令参数](./ex03_cmd_args)
 5. [example 04 好看的菜盘：向用户发消息的各种花活](./ex04_reply)
 5. [example 05 开点小灶：事件处理](./ex05_event)
+7. [example 06 来电话啦：条件消息](./ex06_add_rule)
+8. [example 07 摆盘：卡片消息](./ex07_card_message)
+9. [example 08 互动起来：消息回应](./ex08_add_reaction)
 
 appendix. [Dive into khl.py: 设计 khl.py](./appendix_dive_into_khlpy)
 
