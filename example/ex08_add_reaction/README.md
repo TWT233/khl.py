@@ -24,7 +24,7 @@ async def reaction_reminder(b:Bot,event:Event):
     await b.send(channel,f"you add reaction{event.body['emoji']['id']}") 
 ~~~
 
-建议先使用`print(event.body)`了解`event.body`的结构
+建议先使用`print(event.body)`了解`event.body`的结构。当然，你还可以去阅读官方API文档[【频道相关事件】](https://developer.kaiheila.cn/doc/event/channel#%E9%A2%91%E9%81%93%E6%B6%88%E6%81%AF%E6%9B%B4%E6%96%B0)来了解这部分内容。
 
 ~~~
 {'channel_id': '添加回应的文字频道id', 'emoji': {'id': '[#128064;]', 'name': '[#128064;]'}, 'user_id': '添加回应的用户id', 'msg_id': '添加了回应的消息id'}
@@ -55,7 +55,7 @@ async def RoleSet(msg:Message):
 
 ---
 
-看`ex08.py`的30-41行，在设置角色之前，我们先要通过bot获取服务器id，并获取添加了回应的**用户对象**
+看`ex08.py`的30-41行，在设置角色之前，我们先要通过Bot获取服务器id，返回一个**服务器**对象【[Guild](../../khl/guild.py)】；并获取添加了回应的**用户**对象【[User](../../khl/user.py)】
 
 ~~~python
     # need to fetch_guild first
