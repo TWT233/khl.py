@@ -30,7 +30,7 @@ async def reaction_reminder(b:Bot,event:Event):
 @bot.on_event(EventTypes.ADDED_REACTION)
 async def reaction_set_roles(b:Bot,event:Event):
     # need to fetch_guild first
-    g = await b.fetch_guild('1234567890123456') # input guild_id here
+    g = await b.fetch_guild('xxxxxxxxxxxxx') # input guild_id here
     # fetch user who ADDED_REACTION
     u = await b.fetch_user(event.body['user_id'])
     # fetch channel of the REACTION event
