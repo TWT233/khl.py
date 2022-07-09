@@ -160,9 +160,16 @@ class PublicChannel(Channel, ABC):
         self.permission.loaded = False
         return d
 
-    async def update_permission(self, target: Union[User, Role], allow: int = 0, deny: int = 0) -> Role:
-        t = 'role_id' if isinstance(target, Role) else 'user_id'
-        v = target.id
+    async def update_permission(self, target: Union[User, Role, str], allow: int = 0, deny: int = 0) -> Role:
+        if isinstance(target, Role):
+            t = 'role_id'
+            v = target.id
+        elif isinstance(target, User):
+            t = 'user_id'
+            v = target.id
+        else:
+            t = 'role_id'
+            v = target
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
@@ -170,6 +177,14 @@ class PublicChannel(Channel, ABC):
         t = 'role_id' if isinstance(target, Role) else 'user_id'
         v = target.id
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
+
+    async def moveUser(self, user: Union[User, str]):
+        user_id = list()
+        if isinstance(user, User):
+            user_id.append(user.id)
+        else:
+            user_id.append(user)
+        return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_id))
 
 
 class PublicTextChannel(PublicChannel):
