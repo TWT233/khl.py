@@ -171,6 +171,7 @@ class Channel:
         type,
         limit_amount,
         voice_quality,
+        is_category
     ):
         ...
 
