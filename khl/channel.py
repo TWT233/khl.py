@@ -171,10 +171,6 @@ class PublicChannel(Channel, ABC):
         v = target.id
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
 
-    async def moveUser(self, user: Union[User, str]):
-        user_id = list()
-        user_id.append(user.id) if isinstance(user, User) else user_id.append(user)
-        return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_id))
 
 class PublicTextChannel(PublicChannel):
     """
@@ -225,6 +221,14 @@ class PublicVoiceChannel(PublicChannel):
 
     async def send(self, content: Union[str, List], **kwargs):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
+
+    async def moveUser(self, user: Union[User, str, List]):
+        if isinstance(user,List):
+            user_id = user
+        else:
+            user_id = list()
+            user_id.append(user.id) if isinstance(user, User) else user_id.append(user)
+        return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_id))
 
 
 def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
