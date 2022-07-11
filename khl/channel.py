@@ -171,6 +171,10 @@ class PublicChannel(Channel, ABC):
         v = target.id
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
 
+    async def moveUser(self, user: Union[User, str]):
+        user_id = list()
+        user_id.append(user.id) if isinstance(user, User) else user_id.append(user)
+        return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_id))
 
 class PublicTextChannel(PublicChannel):
     """
