@@ -165,9 +165,7 @@ class PublicChannel(Channel, ABC):
                                 role_id: int = None,
                                 allow: int = 0, deny: int = 0) -> Role:
         if target == 'by_id':
-            if user_id is None and role_id is None:
-                raise  IOError('user_id or role_id need to pass parameter')
-            elif user_id is not None:
+            if user_id is not None:
                 t = user_id
             else:
                 t = role_id
