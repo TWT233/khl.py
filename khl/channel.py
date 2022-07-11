@@ -160,9 +160,14 @@ class PublicChannel(Channel, ABC):
         self.permission.loaded = False
         return d
 
-    async def update_permission(self, target: Union[User, Role], allow: int = 0, deny: int = 0) -> Role:
-        t = 'role_id' if isinstance(target, Role) else 'user_id'
-        v = target.id
+    async def update_permission(self, user: Union[User, str] = None, role: Union[Role, str] = None, allow: int = 0,
+                                deny: int = 0) -> Role:
+        if user is not None:
+            t = 'user_id'
+            v = user.id if isinstance(user, User) else user
+        if role is not None:
+            t = 'role_id'
+            v = role.id if isinstance(role, Role) else role
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
