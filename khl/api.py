@@ -181,7 +181,7 @@ class Channel:
 
     @staticmethod
     @req('POST')
-    def move_user(target_id, user_ids):
+    def moveUser(target_id, user_ids):
         ...
 
     @staticmethod
