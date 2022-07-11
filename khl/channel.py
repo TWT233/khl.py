@@ -222,6 +222,10 @@ class PublicVoiceChannel(PublicChannel):
     async def send(self, content: Union[str, List], **kwargs):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
 
+    async def move_user(self, *users: Union[User, str]):
+        user_ids = [u.id if isinstance(u, User) else u for u in users]
+        return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_ids))
+
 
 def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
     kwargs['type'] = kwargs['type'] if isinstance(kwargs['type'], ChannelTypes) else ChannelTypes(kwargs['type'])
