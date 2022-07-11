@@ -7,6 +7,7 @@ from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes, SlowModeTypes
 from .role import Role
 from .user import User
+import array
 
 
 class Channel(LazyLoadable, Requestable, ABC):
@@ -160,16 +161,21 @@ class PublicChannel(Channel, ABC):
         self.permission.loaded = False
         return d
 
-    async def update_permission(self, target: Union[User, Role, str], allow: int = 0, deny: int = 0) -> Role:
-        if isinstance(target, Role):
-            t = 'role_id'
-            v = target.id
-        elif isinstance(target, User):
-            t = 'user_id'
-            v = target.id
+    async def update_permission(self, target: Union[User, Role, str] = 'by_id', user_id: str = None,
+                                role_id: str = None,
+                                allow: int = 0, deny: int = 0) -> Role:
+        if target == 'by_id':
+            if user_id is not None:
+                t = user_id
+            else:
+                t = role_id
         else:
-            t = 'role_id'
-            v = target
+            if isinstance(target, Role):
+                t = 'role_id'
+                v = target.id
+            elif isinstance(target, User):
+                t = 'user_id'
+                v = target.id
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
