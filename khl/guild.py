@@ -72,10 +72,7 @@ class ChannelCategory(Requestable):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id}
         if type is not None:
-            if type == ChannelTypes.CATEGORY:
-                params['is_category'] = 1
-            else:
-                params['type'] = type.value
+            params['type'] = type
         if limit_amount:
             params['limit_amount'] = limit_amount
         if voice_quality:
@@ -240,11 +237,15 @@ class Guild(LazyLoadable, Requestable):
                              type: ChannelTypes = None,
                              category: Union[str, ChannelCategory] = None,
                              limit_amount: int = None,
-                             voice_quality: int = None):
+                             voice_quality: int = None
+                             ):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
         if type is not None:
-            params['type'] = type.value
+            if type == ChannelTypes.CATEGORY:
+                params['is_category'] = 1
+            else:
+                params['type'] = type.value
         if category:
             params['parent_id'] = category if isinstance(category, str) else category.id
         if limit_amount:
