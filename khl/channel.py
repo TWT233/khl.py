@@ -223,7 +223,7 @@ class PublicVoiceChannel(PublicChannel):
         raise TypeError('now there is no PublicVoiceChannel, *hey dude we have a pkg from future*')
 
     async def moveUser(self, user: Union[User, str, List]):
-        if isinstance(user,List):
+        if isinstance(user, List):
             user_id = user
         else:
             user_id = list()

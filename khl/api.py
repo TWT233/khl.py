@@ -20,9 +20,7 @@ class _Req:
 
 
 def req(method: str, **http_fields):
-
     def _method(func: Callable):
-
         @functools.wraps(func)
         def req_maker(*args, **kwargs) -> _Req:
             route = _RE_ROUTE.sub('-', func.__qualname__).lower().replace('.', '/')
@@ -92,24 +90,24 @@ class Guild:
     @staticmethod
     @req('GET')
     def userList(
-        guild_id,
-        channel_id,
-        search,
-        role_id,
-        mobile_verified,
-        active_time,
-        joined_at,
-        page,
-        page_size,
+            guild_id,
+            channel_id,
+            search,
+            role_id,
+            mobile_verified,
+            active_time,
+            joined_at,
+            page,
+            page_size,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def nickname(
-        guild_id,
-        nickname,
-        user_id,
+            guild_id,
+            nickname,
+            user_id,
     ):
         ...
 
@@ -134,18 +132,18 @@ class GuildMute:
     @staticmethod
     @req('POST')
     def create(
-        guild_id,
-        user_id,
-        type,
+            guild_id,
+            user_id,
+            type,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(
-        guild_id,
-        user_id,
-        type,
+            guild_id,
+            user_id,
+            type,
     ):
         ...
 
@@ -165,23 +163,18 @@ class Channel:
     @staticmethod
     @req('POST')
     def create(
-        guild_id,
-        parent_id,
-        name,
-        type,
-        limit_amount,
-        voice_quality,
+            guild_id,
+            parent_id,
+            name,
+            type,
+            limit_amount,
+            voice_quality,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(channel_id):
-        ...
-
-    @staticmethod
-    @req('POST')
-    def moveUser(target_id, user_ids):
         ...
 
     @staticmethod
@@ -200,29 +193,29 @@ class ChannelRole:
     @staticmethod
     @req('POST')
     def create(
-        channel_id,
-        type,
-        value,
+            channel_id,
+            type,
+            value,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def update(
-        channel_id,
-        type,
-        value,
-        allow,
-        deny,
+            channel_id,
+            type,
+            value,
+            allow,
+            deny,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(
-        channel_id,
-        type,
-        value,
+            channel_id,
+            type,
+            value,
     ):
         ...
 
@@ -232,10 +225,10 @@ class ChannelUser:
     @staticmethod
     @req('GET')
     def getJoinedChannel(
-        page,
-        page_size,
-        guild_id,
-        user_id
+            page,
+            page_size,
+            guild_id,
+            user_id
     ):
         ...
 
@@ -250,32 +243,32 @@ class Message:
     @staticmethod
     @req('GET')
     def list(
-        target_id,
-        msg_id,
-        pin,
-        flag,
+            target_id,
+            msg_id,
+            pin,
+            flag,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def create(
-        type,
-        target_id,
-        content,
-        quote,
-        nonce,
-        temp_target_id,
+            type,
+            target_id,
+            content,
+            quote,
+            nonce,
+            temp_target_id,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def update(
-        msg_id,
-        content,
-        quote,
-        temp_target_id,
+            msg_id,
+            content,
+            quote,
+            temp_target_id,
     ):
         ...
 
@@ -338,31 +331,31 @@ class DirectMessage:
     @staticmethod
     @req('GET')
     def list(
-        chat_code,
-        target_id,
-        msg_id,
-        flag,
+            chat_code,
+            target_id,
+            msg_id,
+            flag,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def create(
-        type,
-        target_id,
-        chat_code,
-        content,
-        quote,
-        nonce,
+            type,
+            target_id,
+            chat_code,
+            content,
+            quote,
+            nonce,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def update(
-        msg_id,
-        content,
-        quote,
+            msg_id,
+            content,
+            quote,
     ):
         ...
 
@@ -405,8 +398,8 @@ class User:
     @staticmethod
     @req('GET')
     def view(
-        user_id,
-        guild_id,
+            user_id,
+            guild_id,
     ):
         ...
 
@@ -429,47 +422,47 @@ class GuildRole:
     @staticmethod
     @req('POST')
     def create(
-        name,
-        guild_id,
+            name,
+            guild_id,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def update(
-        guild_id,
-        role_id,
-        hoist,
-        mentionable,
-        permissions,
-        color,
-        name,
+            guild_id,
+            role_id,
+            hoist,
+            mentionable,
+            permissions,
+            color,
+            name,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(
-        guild_id,
-        role_id,
+            guild_id,
+            role_id,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def grant(
-        guild_id,
-        user_id,
-        role_id,
+            guild_id,
+            user_id,
+            role_id,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def revoke(
-        guild_id,
-        user_id,
-        role_id,
+            guild_id,
+            user_id,
+            role_id,
     ):
         ...
 
@@ -484,10 +477,10 @@ class Intimacy:
     @staticmethod
     @req('POST')
     def update(
-        user_id,
-        score,
-        social_info,
-        img_id,
+            user_id,
+            score,
+            social_info,
+            img_id,
     ):
         ...
 
@@ -502,17 +495,17 @@ class GuildEmoji:
     @staticmethod
     @req('POST', headers={'Content-Type': 'multipart/form-data'})
     def create(
-        name,
-        guild_id,
-        emoji,
+            name,
+            guild_id,
+            emoji,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def update(
-        name,
-        id,
+            name,
+            id,
     ):
         ...
 
@@ -527,25 +520,25 @@ class Invite:
     @staticmethod
     @req('GET')
     def list(
-        guild_id,
-        channel_id,
+            guild_id,
+            channel_id,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def create(
-        guild_id,
-        channel_id,
+            guild_id,
+            channel_id,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(
-        guild_id,
-        channel_id,
-        url_code,
+            guild_id,
+            channel_id,
+            url_code,
     ):
         ...
 
@@ -560,18 +553,18 @@ class Game:
     @staticmethod
     @req('POST')
     def create(
-        name,
-        process_name,
-        icon,
+            name,
+            process_name,
+            icon,
     ):
         ...
 
     @staticmethod
     @req('POST')
     def update(
-        id,
-        name,
-        icon,
+            id,
+            name,
+            icon,
     ):
         ...
 
@@ -583,8 +576,8 @@ class Game:
     @staticmethod
     @req('POST')
     def activity(
-        id,
-        data_type,
+            id,
+            data_type,
     ):
         ...
 
