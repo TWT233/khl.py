@@ -153,22 +153,40 @@ class PublicChannel(Channel, ABC):
             await self.permission.load()
         return self.permission
 
-    async def create_permission(self, target: Union[User, Role]):
-        t = 'role_id' if isinstance(target, Role) else 'user_id'
-        v = target.id
+    async def create_user_permission(self, target: Union[User, str]):
+        t = 'user_id' 
+        v = target.id if isinstance(target,User) else target
+        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
+        self.permission.loaded = False
+        return d
+    
+    async def update_user_permission(self, target: Union[User, str],allow: int = 0, deny: int = 0) -> Role:
+        t = 'user_id'
+        v = target.id if isinstance(target,User) else target
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
+
+    async def delete_user_permission(self, target: Union[User, str]):
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
+    
+    async def create_role_permission(self, target: Union[Role, str]):
+        t = 'role_id' 
+        v = target.id if isinstance(target,Role) else target
         d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
         self.permission.loaded = False
         return d
 
-    async def update_permission(self, target: Union[User, Role], allow: int = 0, deny: int = 0) -> Role:
-        t = 'role_id' if isinstance(target, Role) else 'user_id'
-        v = target.id
+    async def update_role_permission(self, target: Union[Role, str],allow: int = 0, deny: int = 0) -> Role:
+        t = 'role_id'
+        v = target.id if isinstance(target,Role) else target
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
-    async def delete_permission(self, target: Union[User, Role]):
-        t = 'role_id' if isinstance(target, Role) else 'user_id'
-        v = target.id
+    async def delete_role_permission(self, target: Union[Role, str]):
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
 
 
