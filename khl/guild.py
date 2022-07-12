@@ -241,7 +241,10 @@ class Guild(LazyLoadable, Requestable):
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
         if type is not None:
-            params['type'] = type.value
+            if type == ChannelTypes.CATEGORY:
+                params['is_category'] = 1
+            else:
+                params['type'] = type.value
         if category:
             params['parent_id'] = category if isinstance(category, str) else category.id
         if limit_amount:
