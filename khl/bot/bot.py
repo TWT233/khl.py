@@ -7,7 +7,7 @@ from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway,
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
 from ..game import Game
-from ..interface import SlowModeTypes
+from ..interface import SlowModeTypes,SoftwareTypes
 from ..task import TaskManager
 
 log = logging.getLogger(__name__)
@@ -314,13 +314,34 @@ class Bot(AsyncRunnable):
         """
         await self.client.update_playing_game(game, data_type)
 
-    async def stop_playing_game(self):
+    async def stop_playing_game(self,data_type: int = 1):
         """
 
         clear current playing game status
 
         """
-        await self.client.stop_playing_game()
+        await self.client.stop_playing_game(data_type)
+
+    async def update_listening_music(self, music_name:str,singer:str,software:Union[str, SoftwareTypes], data_type: int = 2):
+        """
+
+        update current listening music status
+
+        :param music_name: name of music
+        :param singer: singer of the music
+        :param software: set software to playing the music
+        :param data_type: 2 in default(means playing type is music)
+
+        """
+        await self.client.update_listening_music(music_name,singer,software,data_type)
+
+    async def stop_listening_music(self,data_type: int = 2):
+        """
+
+        clear current listening music status
+
+        """
+        await self.client.stop_listening_music(data_type)
 
     async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None):
         """

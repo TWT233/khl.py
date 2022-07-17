@@ -8,7 +8,7 @@ from .channel import public_channel_factory, PublicChannel, Channel
 from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild
-from .interface import AsyncRunnable, MessageTypes, SlowModeTypes
+from .interface import AsyncRunnable, MessageTypes, SlowModeTypes,SoftwareTypes
 from .message import RawMessage, Event, PublicMessage, PrivateMessage
 from .user import User
 
@@ -193,11 +193,17 @@ class Client(Requestable, AsyncRunnable):
     async def delete_game(self, game: Union[Game, int]):
         await self.gate.exec_req(api.Game.delete(id=game if isinstance(game, int) else game.id))
 
-    async def update_playing_game(self, game: Union[Game, int], data_type: int):
+    async def update_playing_game(self, game: Union[Game, int], data_type:int):
         await self.gate.exec_req(api.Game.activity(id=game if isinstance(game, int) else game.id, data_type=data_type))
 
-    async def stop_playing_game(self):
-        await self.gate.exec_req(api.Game.deleteActivity())
+    async def stop_playing_game(self,data_type:int):
+        await self.gate.exec_req(api.Game.deleteActivity(data_type=data_type))
+
+    async def update_listening_music(self, music_name:str,singer:str,software:Union[str, SoftwareTypes], data_type:int):
+        await self.gate.exec_req(api.Game.activity(music_name=music_name,singer=singer,software=software,data_type=data_type))
+
+    async def stop_listening_music(self,data_type:int):
+        await self.gate.exec_req(api.Game.deleteActivity(data_type=data_type))
 
     async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None,
                              slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:

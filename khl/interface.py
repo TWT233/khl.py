@@ -184,3 +184,8 @@ class RoleTypes(IntEnum):
     BotSpecified = 1
     Booster = 2
     Everyone = 255
+
+class SoftwareTypes(Enum):
+    CLOUD_MUSIC = "cloudmusic"
+    QQ_MUSIC = "qqmusic"
+    KUGOU_MUSIC = "kugou"
