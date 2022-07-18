@@ -200,7 +200,7 @@ class Client(Requestable, AsyncRunnable):
         await self.gate.exec_req(api.Game.deleteActivity(data_type=data_type))
 
     async def update_listening_music(self, music_name:str,singer:str,software:Union[str, SoftwareTypes], data_type:int):
-        await self.gate.exec_req(api.Game.activity(music_name=music_name,singer=singer,software=software,data_type=data_type))
+        await self.gate.exec_req(api.Game.activity(music_name=music_name,singer=singer,software=software if isinstance(software, str) else software.value,data_type=data_type))
 
     async def stop_listening_music(self,data_type:int):
         await self.gate.exec_req(api.Game.deleteActivity(data_type=data_type))
