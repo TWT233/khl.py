@@ -7,7 +7,7 @@ from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway,
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
 from ..game import Game
-from ..interface import SlowModeTypes,SoftwareTypes
+from ..interface import SlowModeTypes, SoftwareTypes
 from ..task import TaskManager
 
 log = logging.getLogger(__name__)
@@ -303,7 +303,7 @@ class Bot(AsyncRunnable):
         """
         await self.client.delete_game(game)
 
-    async def update_playing_game(self, game: Union[Game, int], data_type: int = 1):
+    async def update_playing_game(self, game: Union[Game, int]):
         """
 
         update current playing game status
@@ -312,17 +312,17 @@ class Bot(AsyncRunnable):
         :param data_type: 1 in default(means playing type is game)
 
         """
-        await self.client.update_playing_game(game, data_type)
+        await self.client.update_playing_game(game)
 
-    async def stop_playing_game(self,data_type: int = 1):
+    async def stop_playing_game(self):
         """
 
         clear current playing game status
 
         """
-        await self.client.stop_playing_game(data_type)
+        await self.client.stop_playing_game()
 
-    async def update_listening_music(self, music_name:str,singer:str,software:Union[str, SoftwareTypes], data_type: int = 2):
+    async def update_listening_music(self, music_name:str, singer:str, software:Union[str, SoftwareTypes]):
         """
 
         update current listening music status
@@ -333,15 +333,15 @@ class Bot(AsyncRunnable):
         :param data_type: 2 in default(means playing type is music)
 
         """
-        await self.client.update_listening_music(music_name,singer,software,data_type)
+        await self.client.update_listening_music(music_name, singer, software)
 
-    async def stop_listening_music(self,data_type: int = 2):
+    async def stop_listening_music(self):
         """
 
         clear current listening music status
 
         """
-        await self.client.stop_listening_music(data_type)
+        await self.client.stop_listening_music()
 
     async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None):
         """
