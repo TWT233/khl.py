@@ -26,8 +26,10 @@ async def reaction_reminder(b:Bot,event:Event):
 
 建议先使用`print(event.body)`了解`event.body`的结构。当然，你还可以去阅读官方API文档[【频道相关事件】](https://developer.kaiheila.cn/doc/event/channel#%E9%A2%91%E9%81%93%E6%B6%88%E6%81%AF%E6%9B%B4%E6%96%B0)来了解这部分内容。
 
+* 22年6月下旬KOOK统一了emoji显示的格式，修复了同一个emoji会有两个`['emoji']['id']`的BUG。
+
 ~~~
-{'channel_id': '添加回应的文字频道id', 'emoji': {'id': '[#128064;]', 'name': '[#128064;]'}, 'user_id': '添加回应的用户id', 'msg_id': '添加了回应的消息id'}
+{'channel_id': '添加回应的文字频道id', 'emoji': {'id': '💜', 'name': '💜'}, 'user_id': '添加回应的用户id', 'msg_id': '添加了回应的消息id'}
 ~~~
 
 ## 添加角色：通过特定emoji为用户添加特定角色
@@ -68,13 +70,16 @@ async def RoleSet(msg:Message):
 
 在服务器管理后台中，你可以右键复制用户角色(role)的ID并给机器人设置上，这样机器人才能给用户添加角色
 
-> 注意：第39行的`role_id`传参是int类型，而不是str
+* 22年6月下旬KOOK统一了emoji显示的格式，修复了同一个emoji会有两个`['emoji']['id']`的BUG。为了避免KOOK后续可能还会修改`['emoji']['id']`，本exp代码中`if`的判断一定要以当前打印的`['emoji']['id']`为准，否则会因为id不同导致无法正常匹配。
 
+*  注意：第39行的`role_id`传参是int类型，而不是str
+
+`if`判断的代码示例如下
 ~~~python
-    if event.body["emoji"]['id'] == '[#128055;]':
+    if event.body["emoji"]['id'] == '🐷':
         await g.grant_role(u,4465168)
         await b.send(channel,f"grant_role 4465168 for you",temp_target_id=event.body['user_id']) 
-    elif event.body["emoji"]['id'] == '[#128047;]':
+    elif event.body["emoji"]['id'] == '🐯':
         await g.grant_role(u,4469565)
         await b.send(channel,f"grant_role 4469565 for you",temp_target_id=event.body['user_id']) 
 ~~~

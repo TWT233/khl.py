@@ -3,7 +3,7 @@ import json
 from khl import Bot, Message, EventTypes, Event
 from khl.card import CardMessage, Card, Module
 
-with open('./config/config.json', 'r', encoding='utf-8') as f:
+with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
 
 # init Bot
@@ -41,13 +41,14 @@ async def reaction_set_roles(b:Bot,event:Event):
     await g.grant_role(u,role)
     
     # what's more,you can use reaction to set specific role for user
-    # first,checkout `event.body['emoji']['id']`for the emoji you set
+    # first, checkout `event.body['emoji']['id']`for the emoji you set
+    # print it to make sure current `['emoji']['id']`
     # then, use `if` to compare and set different roles for user
     # it's better to use " if event.body['msg_id'] == 'msg_id' " to make sure it only respond reaction to `msg_id`
-    if event.body["emoji"]['id'] == '[#128055;]':
+    if event.body["emoji"]['id'] == '🐷':
         await g.grant_role(u,4465168)
         await b.send(channel,f"grant_role 4465168 for you",temp_target_id=event.body['user_id']) 
-    elif event.body["emoji"]['id'] == '[#128047;]':
+    elif event.body["emoji"]['id'] == '🐯':
         await g.grant_role(u,4469565)
         await b.send(channel,f"grant_role 4469565 for you",temp_target_id=event.body['user_id']) 
 
