@@ -1,10 +1,11 @@
+"""parser: component used in command args handling, convert string token to fit the command signature"""
 import asyncio
 import copy
 import inspect
 import logging
 from typing import Dict, Any, Callable, List, Coroutine
 
-from .. import User, Channel, Client
+from khl import User, Channel, Client
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +46,6 @@ class Parser:
         float: lambda client, token: float(token),
         User: _parse_user,
         Channel: _parse_channel
-        # TODO: Role parser
     }
 
     def __init__(self):
@@ -62,14 +62,14 @@ class Parser:
         :raise: Parser.ArgListLenNotMatch
         """
         ret = []
-        for i in range(len(tokens)):
+        for i, v in enumerate(tokens):
             param_type = _get_param_type(params, i)
 
             if param_type not in self._parse_funcs:
                 raise Parser.ParseFuncNotExists(params[i])
 
             try:
-                call = self._parse_funcs[param_type](client, tokens[i])
+                call = self._parse_funcs[param_type](client, v)
                 if isinstance(call, Coroutine):
                     call = await call
                 ret.append(call)
@@ -77,7 +77,7 @@ class Parser:
                 raise Parser.ParseException(e) from e
         return ret
 
-    def register(self, func):  # TODO: global register
+    def register(self, func):
         """
         decorator, register the func into object restricted _parse_funcs()
 
@@ -97,21 +97,27 @@ class Parser:
         return func
 
     class ParserException(Exception):
-        pass
+        """Exception raised in Parser"""
 
     class TooMuchArgs(ParserException):
+        """user passed too many args"""
 
         def __init__(self, expected: int, exact: int, func: Callable):
+            super().__init__()
             self.expected = expected
             self.exact = exact
             self.func = func
 
     class ParseFuncNotExists(ParserException):
+        """cannot parse the string token into the expected type"""
 
         def __init__(self, expected: inspect.Parameter):
+            super().__init__()
             self.expected = expected
 
     class ParseException(ParserException):
+        """misc exception raised in parse process"""
 
         def __init__(self, err: Exception):
+            super().__init__()
             self.err = err

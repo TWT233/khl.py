@@ -1,9 +1,11 @@
+"""component context: carries environment context info for a message"""
 from .channel import Channel
 from .gateway import Requestable
 from .guild import Guild
 
 
 class Context(Requestable):
+    """carries environment context info for a message"""
     channel: Channel
     guild: Guild
 

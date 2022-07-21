@@ -12,22 +12,25 @@ from .interface import AsyncRunnable
 
 log = logging.getLogger(__name__)
 
-API = f'https://www.kaiheila.cn/api/v3'
+API = 'https://www.kaiheila.cn/api/v3'
 
 
 class Receiver(AsyncRunnable, ABC):
+    """
+    1. receive raw data from khl server
+    2. decrypt & parse raw data into pkg
+    3. put pkg into the pkg_queue() for others to use
+    """
     _queue: asyncio.Queue
-
-    @abstractmethod
-    def __init__(self):
-        raise NotImplementedError
 
     @property
     def type(self) -> str:
+        """the network type used by the receiver"""
         raise NotImplementedError
 
     @property
     def pkg_queue(self) -> asyncio.Queue:
+        """output port of the receiver"""
         return self._queue
 
     @pkg_queue.setter
@@ -36,12 +39,15 @@ class Receiver(AsyncRunnable, ABC):
 
     @abstractmethod
     async def start(self):
+        """run self"""
         raise NotImplementedError
 
 
 class WebsocketReceiver(Receiver):
+    """receive data in websocket mode"""
 
     def __init__(self, cert: Cert, compress: bool):
+        super().__init__()
         self._cert = cert
         self.compress = compress
 
@@ -53,6 +59,7 @@ class WebsocketReceiver(Receiver):
         return 'websocket'
 
     async def heartbeat(self, ws_conn: ClientWebSocketResponse):
+        """khl customized heartbeat scheme"""
         while True:
             try:
                 await asyncio.sleep(26)
@@ -76,7 +83,7 @@ class WebsocketReceiver(Receiver):
                     self._RAW_GATEWAY = res_json['data']['url']
 
                 async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
-                    asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
+                    # asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
                     log.info('[ init ] launched')
 
@@ -99,8 +106,10 @@ class WebsocketReceiver(Receiver):
 
 
 class WebhookReceiver(Receiver):
+    """receive data in webhook mode"""
 
     def __init__(self, cert: Cert, *, port: int, route: str, compress: bool):
+        super().__init__()
         self._cert = cert
         self.port = port
         self.route = route
@@ -113,12 +122,11 @@ class WebhookReceiver(Receiver):
         return 'webhook'
 
     def _is_dup(self, req: dict) -> bool:
-        # TODO: need a recycle count down ring
         sn = req.get('sn', None)
         if sn is None:
             return False
         current = time.time()
-        if sn in self.sn_dup_map.keys():
+        if sn in self.sn_dup_map:
             if current - self.sn_dup_map[sn] <= 600:
                 # 600 sec timed out
                 return True

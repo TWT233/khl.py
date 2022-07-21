@@ -6,7 +6,7 @@ from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
 from .gateway import Requestable
 from .guild import Guild
-from .interface import MessageTypes, ChannelPrivacyTypes, EventTypes
+from .types import MessageTypes, ChannelPrivacyTypes, EventTypes
 from .user import User
 
 
@@ -42,14 +42,17 @@ class RawMessage(ABC):
 
     @property
     def id(self) -> str:
+        """message's id"""
         return self._msg_id
 
     @property
     def type(self) -> MessageTypes:
+        """message's type, refer to MessageTypes for enum detail"""
         return MessageTypes(self._type)
 
     @property
     def channel_type(self) -> ChannelPrivacyTypes:
+        """type of the channel where the message in"""
         return ChannelPrivacyTypes(self._channel_type)
 
 
@@ -72,10 +75,12 @@ class Message(RawMessage, Requestable, ABC):
 
     @property
     def author(self) -> User:
+        """message author"""
         return self._author
 
     @property
     def ctx(self) -> Context:
+        """message context: channel, guild etc."""
         return self._ctx
 
     @abstractmethod
@@ -88,7 +93,6 @@ class Message(RawMessage, Requestable, ABC):
 
         :param emoji: 😘
         """
-        ...
 
     @abstractmethod
     async def delete_reaction(self, emoji: str, user: User):
@@ -101,7 +105,6 @@ class Message(RawMessage, Requestable, ABC):
         :param emoji: 😘
         :param user: whose reaction, delete others added reaction requires channel msg admin permission
         """
-        ...
 
     async def reply(self,
                     content: Union[str, List] = '',
@@ -118,6 +121,7 @@ class Message(RawMessage, Requestable, ABC):
         return await self.ctx.channel.send(content, type=type, **kwargs)
 
     async def delete(self):
+        """delete the message, permission required"""
         return await self.gate.exec_req(api.Message.delete(msg_id=self.id))
 
 
@@ -134,29 +138,34 @@ class PublicMessage(Message):
 
     @property
     def guild(self) -> Guild:
+        """the guild where the message in"""
         return self.ctx.guild
 
     @property
     def channel(self) -> PublicTextChannel:
+        """the channel where the message in"""
         if isinstance(self.ctx.channel, PublicTextChannel):
             return self.ctx.channel
-        else:
-            raise ValueError('PublicMessage should be placed in PublicTextChannel')
+        raise ValueError('PublicMessage should be placed in PublicTextChannel')
 
     @property
     def mention(self) -> List[str]:
+        """the message mentioned(also call as at/tagged) users' id"""
         return self.extra['mention']
 
     @property
     def mention_all(self) -> bool:
+        """if the message mentioned(also call as at/tagged) all"""
         return self.extra['mention_all']
 
     @property
-    def mention_roles(self) -> List:  # TODO: check type
+    def mention_roles(self) -> List:
+        """the message mentioned(also call as at/tagged) roles' id"""
         return self.extra['mention_roles']
 
     @property
     def mention_here(self) -> bool:
+        """if the message mentioned(also call as at/tagged) all online users in the channel"""
         return self.extra['mention_here']
 
     async def add_reaction(self, emoji: str):
@@ -192,10 +201,12 @@ class PrivateMessage(Message):
 
     @property
     def chat_code(self) -> str:
+        """the chat code of this private chat"""
         return self.extra['code']
 
     @property
     def channel(self) -> PrivateChannel:
+        """the message's channel"""
         return self._channel
 
     async def add_reaction(self, emoji: str):
@@ -207,14 +218,16 @@ class PrivateMessage(Message):
 
 
 class Event(RawMessage):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    """sent by system, opposites to Message, carries various types of payload"""
 
     @property
     def event_type(self) -> EventTypes:
+        """type of the event, refer to EventTypes for enum detail"""
         return EventTypes(self.extra['type'])
 
     @property
     def body(self) -> Dict:
+        """event body, a dict, refer to official docs with the event_type for the actual struct
+
+        docs: https://developer.kaiheila.cn/doc/event/event-introduction"""
         return self.extra['body']
