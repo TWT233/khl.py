@@ -596,7 +596,3 @@ class Game:
     @req('POST')
     def deleteActivity(data_type):
         ...
-
-    
-
-    
