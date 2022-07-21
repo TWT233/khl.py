@@ -586,10 +586,13 @@ class Game:
     def activity(
         id,
         data_type,
+        music_name,
+        singer,
+        software
     ):
         ...
 
     @staticmethod
     @req('POST')
-    def deleteActivity():
+    def deleteActivity(data_type):
         ...
