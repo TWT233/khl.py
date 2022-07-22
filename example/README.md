@@ -9,6 +9,7 @@
 7. [example 06 来电话啦：条件消息](./ex06_add_rule)
 8. [example 07 摆盘：卡片消息](./ex07_card_message)
 9. [example 08 互动起来：消息回应](./ex08_add_reaction)
+10. [example 09 快乐活动：在玩状态](./ex09_bot_status)
 
 appendix. [Dive into khl.py: 设计 khl.py](./appendix_dive_into_khlpy)
 
