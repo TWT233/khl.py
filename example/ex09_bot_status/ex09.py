@@ -1,8 +1,6 @@
 import json
-import aiohttp
 
-from khl import Bot, Message, EventTypes, Event, Client, PublicChannel, PublicMessage
-from khl.card import CardMessage, Card, Module, Element, Types, Struct
+from khl import Bot, Message
 
 with open('../config/config.json', 'r', encoding='utf-8') as f:
     config = json.load(f)
@@ -10,11 +8,6 @@ with open('../config/config.json', 'r', encoding='utf-8') as f:
 # init Bot
 bot = Bot(token=config['token'])
 
-
-# '/hello'
-@bot.command(name='hello')
-async def world(msg: Message):
-    await msg.reply('world!')
 
 
 # doc: https://developer.kaiheila.cn/doc/http/game
@@ -35,6 +28,7 @@ async def list_game(msg: Message):
 async def create_game(msg: Message):
    ret = await bot.create_game(name="人类一败涂地",icon="https://img.kookapp.cn/assets/2022-07/rQLmLHHWF409q09q.png")
    print(f"game_name: {ret.name} -- game_id: {ret.id}")
+
 
 # use game_id to set bot gaming status
 @bot.command()
