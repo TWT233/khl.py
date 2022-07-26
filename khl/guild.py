@@ -2,7 +2,7 @@ import logging
 from typing import List, Union, Dict, IO
 
 from . import api
-from .channel import Channel, public_channel_factory, PublicChannel
+from .channel import Channel, public_channel_factory, PublicChannel, ChannelPermission
 from .gateway import Requestable
 from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes
 from .role import Role
@@ -46,6 +46,7 @@ class ChannelCategory(Requestable):
     guild_id: str
     level: int
     limit_amount: int
+    permission: ChannelPermission
     _channels: List[PublicChannel]
 
     def __init__(self, **kwargs):
@@ -56,6 +57,7 @@ class ChannelCategory(Requestable):
         self.guild_id = kwargs.get('_guild_id_')
         self.level = kwargs.get('level')
         self.limit_amount = kwargs.get('limit_amount')
+        self.permission: ChannelPermission = ChannelPermission(**kwargs)
         self._channels = []
 
     def append(self, *channel: PublicChannel):
@@ -85,6 +87,58 @@ class ChannelCategory(Requestable):
         if channel.id not in [i.id for i in self._channels]:
             raise ValueError(f'channel {channel.id} is not belongs to this category')
         return await self.gate.exec_req(api.Channel.delete(channel.id))
+
+    async def update(self, name: str = None) -> dict:
+        """
+        update category's settings
+        """
+        params = {'channel_id': self.id}
+        if name is not None:
+            params['name'] = name
+        rt = await self.gate.exec_req(api.Channel.update(**params))
+        self.name = name
+        return rt
+
+    async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
+        if force_update or not self.permission.loaded:
+            await self.permission.load()
+        return self.permission
+
+    async def create_user_permission(self, target: Union[User, str]):
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
+        self.permission.loaded = False
+        return d
+
+    async def update_user_permission(self, target: Union[User, str],allow: int = 0, deny: int = 0) -> Role:
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
+
+    async def delete_user_permission(self, target: Union[User, str]):
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
+
+    async def create_role_permission(self, target: Union[Role, str]):
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
+        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
+        self.permission.loaded = False
+        return d
+
+    async def update_role_permission(self, target: Union[Role, str],allow: int = 0, deny: int = 0) -> Role:
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
+
+    async def delete_role_permission(self, target: Union[Role, str]):
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
 
     def __iter__(self):
         return iter(self._channels)

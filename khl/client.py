@@ -7,7 +7,7 @@ from . import api
 from .channel import public_channel_factory, PublicChannel, Channel
 from .game import Game
 from .gateway import Gateway, Requestable
-from .guild import Guild
+from .guild import Guild, ChannelCategory
 from .interface import AsyncRunnable, MessageTypes, SlowModeTypes, SoftwareTypes
 from .message import RawMessage, Event, PublicMessage, PrivateMessage
 from .user import User
@@ -145,6 +145,10 @@ class Client(Requestable, AsyncRunnable):
         """fetch details of a public channel from khl"""
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
+
+    async def fetch_category(self, category_id: str) -> ChannelCategory:
+        category_data = await self.gate.exec_req(api.Channel.view(category_id))
+        return ChannelCategory(_gate_=self.gate, **category_data)
 
     async def fetch_user(self, user_id: str) -> User:
         return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(user_id))))

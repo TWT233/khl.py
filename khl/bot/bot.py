@@ -7,6 +7,7 @@ from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway,
 from .. import User, Channel, PublicChannel, PublicTextChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
 from ..game import Game
+from ..guild import ChannelCategory
 from ..interface import SlowModeTypes, SoftwareTypes
 from ..task import TaskManager
 
@@ -184,6 +185,9 @@ class Bot(AsyncRunnable):
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
         """fetch details of a public channel from khl"""
         return await self.client.fetch_public_channel(channel_id)
+
+    async def fetch_category(self, category_id: str) -> ChannelCategory:
+        return await self.client.fetch_category(category_id)
 
     async def fetch_user(self, user_id: str) -> User:
         return await self.client.fetch_user(user_id)
