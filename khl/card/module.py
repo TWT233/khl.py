@@ -250,3 +250,15 @@ class Module:
         @property
         def _repr(self) -> Union[Dict, str]:
             return self._gen_dict(['type', 'elements'])
+
+    class Invite(_Module):
+        _type = 'invite'
+        _code: str
+
+        def __init__(self, code):
+            self._code = code
+            super().__init__(Types.Theme.NA, Types.Size.NA)
+
+        @property
+        def _repr(self) -> Union[str, Dict]:
+            return self._gen_dict(['type', 'code'])
