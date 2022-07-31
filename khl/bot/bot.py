@@ -62,7 +62,7 @@ class Bot(AsyncRunnable):
         self.client.register(MessageTypes.TEXT, msg_handler)
         self.client.register(MessageTypes.KMD, msg_handler)
         self.client.register(MessageTypes.SYS, self._make_event_handler())
-        self.command = CommandManager()
+        self.command = CommandManager(_client_=self.client)
         self.task = TaskManager()
 
         self._is_running = False

@@ -1,8 +1,9 @@
 import asyncio
+import copy
 import logging
 from typing import Optional, List, Union, Pattern, Dict
 
-from khl import Message
+from .. import Message
 from .command import Command
 from .lexer import Lexer, DefaultLexer
 from .parser import Parser
@@ -14,8 +15,9 @@ log = logging.getLogger(__name__)
 class CommandManager:
     _cmd_map: Dict[str, Command]
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._cmd_map = {}
+        self.client = kwargs.get("_client_")
 
     def __call__(self,
                  name: str = '',
@@ -61,6 +63,9 @@ class CommandManager:
         :param command: the Command going to be registered
         :return: the cmd
         """
+        copied_command = copy.copy(command)
+        if copied_command.parser is None:
+            copied_command.parser = Parser(_clinet_=self.client)
         self[command.name] = command
         return command
 

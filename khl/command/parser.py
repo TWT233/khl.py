@@ -4,6 +4,9 @@ import inspect
 import logging
 from typing import Dict, Any, Callable, List
 
+from .. import User, Channel
+
+
 log = logging.getLogger(__name__)
 
 
@@ -28,12 +31,15 @@ class Parser:
     _parse_funcs: Dict[Any, Callable] = {
         str: lambda token: token,
         int: lambda token: int(token),
-        float: lambda token: float(token)
-        # TODO: tag -> User/Channel/Role...
+        float: lambda token: float(token),
     }
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._parse_funcs = copy.copy(Parser._parse_funcs)
+        self._parse_funcs[User] = self._parse_user
+        self._parse_funcs[Channel] = self._parse_channel
+        # TODO: Role parser
+        self.client = kwargs.get("_client_")
 
     def parse(self, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
         """
@@ -75,6 +81,16 @@ class Parser:
         # insert, remember this is a replacement
         self._parse_funcs[s.return_annotation] = func
         return func
+
+    def _parse_user(self, token) -> User:
+        if not (token.startswith("(met)") and token.startswith("(met)")):
+            raise Parser.ParseException(RuntimeError("Failed to parse user"))
+        return await self.client.fetch_user(token[5, len(token) - 5])
+
+    def _parse_channel(self, token) -> Channel:
+        if not (token.startswith("(chn)") and token.startswith("(chn)")):
+            raise Parser.ParseException(RuntimeError("Failed to parse channel"))
+        return await self.client.fetch_public_channel(token[5, len(token) - 5])
 
     class ParserException(Exception):
         pass

@@ -3,7 +3,7 @@ import inspect
 import logging
 from typing import Callable, Coroutine, List, Union, Pattern, Type, Any
 
-from khl.message import Message
+from ..message import Message
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule
@@ -72,7 +72,7 @@ class Command:
         """
         if not lexer and regex:
             lexer = regex if isinstance(regex, Pattern) else RELexer(regex)
-        parser = parser or Parser()
+        parser = parser
 
         def decorator(handler: TypeHandler):
             default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)))
