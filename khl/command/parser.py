@@ -31,7 +31,7 @@ class Parser:
     _parse_funcs: Dict[Any, Callable] = {
         str: lambda token: token,
         int: lambda token: int(token),
-        float: lambda token: float(token),
+        float: lambda token: float(token)
     }
 
     def __init__(self, **kwargs):
@@ -85,12 +85,12 @@ class Parser:
     def _parse_user(self, token) -> User:
         if not (token.startswith("(met)") and token.startswith("(met)")):
             raise Parser.ParseException(RuntimeError("Failed to parse user"))
-        return await self.client.fetch_user(token[5, len(token) - 5])
+        return await self.client.fetch_user(token[5:len(token) - 5])
 
     def _parse_channel(self, token) -> Channel:
         if not (token.startswith("(chn)") and token.startswith("(chn)")):
             raise Parser.ParseException(RuntimeError("Failed to parse channel"))
-        return await self.client.fetch_public_channel(token[5, len(token) - 5])
+        return await self.client.fetch_public_channel(token[5:len(token) - 5])
 
     class ParserException(Exception):
         pass
