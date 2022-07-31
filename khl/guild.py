@@ -2,9 +2,9 @@ import logging
 from typing import List, Union, Dict, IO
 
 from . import api
-from .channel import Channel, public_channel_factory, PublicChannel, ChannelPermission
+from .channel import Channel, public_channel_factory, PublicChannel
 from .gateway import Requestable
-from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes
+from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes, MessageTypes
 from .role import Role
 from .user import User
 
@@ -38,26 +38,13 @@ class GuildUser(User):
         return rt
 
 
-class ChannelCategory(Requestable):
+class ChannelCategory(PublicChannel):
     """represent a channel set"""
-    id: str
-    name: str
-    master_id: str
-    guild_id: str
-    level: int
-    limit_amount: int
-    permission: ChannelPermission
+
     _channels: List[PublicChannel]
 
     def __init__(self, **kwargs):
-        self.gate = kwargs.get('_gate_', None)
-        self.id = kwargs.get('id')
-        self.name = kwargs.get('name')
-        self.master_id = kwargs.get('master_id')
-        self.guild_id = kwargs.get('_guild_id_')
-        self.level = kwargs.get('level')
-        self.limit_amount = kwargs.get('limit_amount')
-        self.permission: ChannelPermission = ChannelPermission(**kwargs)
+        super().__init__(**kwargs)
         self._channels = []
 
     def append(self, *channel: PublicChannel):
@@ -88,57 +75,8 @@ class ChannelCategory(Requestable):
             raise ValueError(f'channel {channel.id} is not belongs to this category')
         return await self.gate.exec_req(api.Channel.delete(channel.id))
 
-    async def update(self, name: str = None) -> dict:
-        """
-        update category's settings
-        """
-        params = {'channel_id': self.id}
-        if name is not None:
-            params['name'] = name
-        rt = await self.gate.exec_req(api.Channel.update(**params))
-        self.name = name
-        return rt
-
-    async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
-        if force_update or not self.permission.loaded:
-            await self.permission.load()
-        return self.permission
-
-    async def create_user_permission(self, target: Union[User, str]):
-        t = 'user_id'
-        v = target.id if isinstance(target, User) else target
-        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
-        self.permission.loaded = False
-        return d
-
-    async def update_user_permission(self, target: Union[User, str],allow: int = 0, deny: int = 0) -> Role:
-        t = 'user_id'
-        v = target.id if isinstance(target, User) else target
-        return await self.gate.exec_req(
-            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
-
-    async def delete_user_permission(self, target: Union[User, str]):
-        t = 'user_id'
-        v = target.id if isinstance(target, User) else target
-        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
-
-    async def create_role_permission(self, target: Union[Role, str]):
-        t = 'role_id'
-        v = target.id if isinstance(target, Role) else target
-        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
-        self.permission.loaded = False
-        return d
-
-    async def update_role_permission(self, target: Union[Role, str],allow: int = 0, deny: int = 0) -> Role:
-        t = 'role_id'
-        v = target.id if isinstance(target, Role) else target
-        return await self.gate.exec_req(
-            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
-
-    async def delete_role_permission(self, target: Union[Role, str]):
-        t = 'role_id'
-        v = target.id if isinstance(target, Role) else target
-        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
+    async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
+        raise TypeError('now there is no ChannelCategory, *hey dude we have a pkg from future*')
 
     def __iter__(self):
         return iter(self._channels)
@@ -195,7 +133,7 @@ class Guild(LazyLoadable, Requestable):
         await self.fetch_channel_list(force_update)
         return [v for v in self._channel_categories.values()]
 
-    async def fetch_channel_list(self, force_update: bool = True) -> List[PublicChannel]:
+    async def fetch_channel_list(self, force_update: bool = True, merge_channel: bool = True) -> List[PublicChannel]:
         if force_update or self._channels is None:
             raw_list = await self.gate.exec_pagination_req(api.Channel.list(guild_id=self.id))
             channels: List[PublicChannel] = []
@@ -214,7 +152,10 @@ class Guild(LazyLoadable, Requestable):
                 else:
                     self._channels.append(i)
             self._channel_categories = channel_categories
-        return self._merge_channels()
+        if merge_channel:
+            return self._merge_channels()
+        else:
+            return self._channels
 
     def _merge_channels(self) -> List[PublicChannel]:
         channels = []
@@ -291,7 +232,7 @@ class Guild(LazyLoadable, Requestable):
                              type: ChannelTypes = None,
                              category: Union[str, ChannelCategory] = None,
                              limit_amount: int = None,
-                             voice_quality: int = None):
+                             voice_quality: int = None) -> PublicChannel:
         """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
         if type is not None:
