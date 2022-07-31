@@ -575,6 +575,8 @@ class Invite:
     def list(
         guild_id,
         channel_id,
+        page,
+        page_size
     ):
         ...
 
@@ -592,8 +594,6 @@ class Invite:
         guild_id,
         channel_id,
         url_code,
-        page,
-        page_size,
         duration,
         setting_times
     ):
