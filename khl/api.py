@@ -585,17 +585,17 @@ class Invite:
     def create(
         guild_id,
         channel_id,
+        duration,
+        setting_times
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(
-        guild_id,
-        channel_id,
         url_code,
-        duration,
-        setting_times
+        guild_id,
+        channel_id
     ):
         ...
 
