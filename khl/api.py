@@ -150,6 +150,45 @@ class GuildMute:
         ...
 
 
+class Blacklist:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            guild_id,
+            target_id,
+            remark,
+            del_msg_days
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            guild_id,
+            target_id
+    ):
+        ...
+
+
+class Badge:
+
+    @staticmethod
+    @req('GET')
+    def guild(
+            guild_id,
+            style
+    ):
+        ...
+
+
 class Channel:
 
     @staticmethod
@@ -411,6 +450,12 @@ class User:
     ):
         ...
 
+    @staticmethod
+    @req('POST')
+    def offline(
+    ):
+        ...
+
 
 class Asset:
 
@@ -547,6 +592,10 @@ class Invite:
         guild_id,
         channel_id,
         url_code,
+        page,
+        page_size,
+        duration,
+        setting_times
     ):
         ...
 
@@ -595,4 +644,18 @@ class Game:
     @staticmethod
     @req('POST')
     def deleteActivity(data_type):
+        ...
+
+
+class Oauth2:
+
+    @staticmethod
+    @req("POST")
+    def token(
+        grant_type,
+        client_id,
+        client_secret,
+        code,
+        redirect_uri
+    ):
         ...
