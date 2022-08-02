@@ -66,8 +66,8 @@ class CommandManager:
         copied_command = copy.copy(command)
         if copied_command.parser is None:
             copied_command.parser = Parser(_clinet_=self.client)
-        self[command.name] = command
-        return command
+        self[command.name] = copied_command
+        return copied_command
 
     def get(self, name: str) -> Optional[Command]:
         """get command by name"""
