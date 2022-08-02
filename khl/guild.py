@@ -338,5 +338,5 @@ class Guild(LazyLoadable, Requestable):
 
     async def fetch_user_status(self, force_update: bool = True) -> GuildUserStatus:
         if force_update or self._user_status is None:
-            self._user_status = await self.gate.exec_req(api.Guild.userList(guild_id=self.id))
+            self._user_status = GuildUserStatus(**(await self.gate.exec_req(api.Guild.userList(guild_id=self.id, page_size=1))))
         return self._user_status
