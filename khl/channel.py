@@ -154,15 +154,15 @@ class PublicChannel(Channel, ABC):
         return self.permission
 
     async def create_user_permission(self, target: Union[User, str]):
-        t = 'user_id' 
-        v = target.id if isinstance(target,User) else target
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
         d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
         self.permission.loaded = False
         return d
-    
-    async def update_user_permission(self, target: Union[User, str],allow: int = 0, deny: int = 0) -> Role:
+
+    async def update_user_permission(self, target: Union[User, str], allow: int = 0, deny: int = 0) -> Role:
         t = 'user_id'
-        v = target.id if isinstance(target,User) else target
+        v = target.id if isinstance(target, User) else target
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
@@ -170,17 +170,17 @@ class PublicChannel(Channel, ABC):
         t = 'user_id'
         v = target.id if isinstance(target, User) else target
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
-    
+
     async def create_role_permission(self, target: Union[Role, str]):
-        t = 'role_id' 
-        v = target.id if isinstance(target,Role) else target
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
         d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
         self.permission.loaded = False
         return d
 
-    async def update_role_permission(self, target: Union[Role, str],allow: int = 0, deny: int = 0) -> Role:
+    async def update_role_permission(self, target: Union[Role, str], allow: int = 0, deny: int = 0) -> Role:
         t = 'role_id'
-        v = target.id if isinstance(target,Role) else target
+        v = target.id if isinstance(target, Role) else target
         return await self.gate.exec_req(
             api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
 
@@ -188,6 +188,25 @@ class PublicChannel(Channel, ABC):
         t = 'role_id'
         v = target.id if isinstance(target, Role) else target
         return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
+
+    async def list_user(self, search: str = None, role: Union[Role, str, int] = None, mobile_verified: bool = None,
+                        active_time: int = None, joined_at: int = None, page: int = 1, page_size: int = 50,
+                        filter_user_id: str = None) -> List[User]:
+        params = {'guild_id': self.guild_id, 'channel_id': self.id, 'page': page, 'page_size': page_size}
+        if search is not None:
+            params['search'] = search
+        if role is not None:
+            params['role_id'] = role.id if isinstance(role, Role) else role
+        if mobile_verified is not None:
+            params['mobile'] = 1 if mobile_verified else 0
+        if active_time is not None and active_time in [0, 1]:
+            params['active_time'] = active_time
+        if joined_at is not None and joined_at in [0, 1]:
+            params['joined_at'] = joined_at
+        if filter_user_id is not None:
+            params['filter_user_id'] = filter_user_id
+        users = await self.gate.exec_pagination_req(api.Guild.userList(**params))
+        return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
 
 class PublicTextChannel(PublicChannel):
