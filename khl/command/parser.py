@@ -2,7 +2,7 @@ import asyncio
 import copy
 import inspect
 import logging
-from typing import Dict, Any, Callable, List
+from typing import Dict, Any, Callable, List, Coroutine
 
 from .. import User, Channel
 
@@ -41,7 +41,7 @@ class Parser:
         # TODO: Role parser
         self.client = kwargs.get("_client_")
 
-    def parse(self, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
+    async def parse(self, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
         """
         parse tokens into args that types corresponding to handler's requirement
 
@@ -58,7 +58,10 @@ class Parser:
                 raise Parser.ParseFuncNotExists(params[i])
 
             try:
-                ret.append(self._parse_funcs[param_type](tokens[i]))
+                call = self._parse_funcs[param_type](tokens[i])
+                if isinstance(call, Coroutine):
+                    call = await call
+                ret.append(call)
             except Exception as e:
                 raise Parser.ParseException(e) from e
         return ret
@@ -82,12 +85,12 @@ class Parser:
         self._parse_funcs[s.return_annotation] = func
         return func
 
-    def _parse_user(self, token) -> User:
+    async def _parse_user(self, token) -> User:
         if not (token.startswith("(met)") and token.startswith("(met)")):
             raise Parser.ParseException(RuntimeError("Failed to parse user"))
         return await self.client.fetch_user(token[5:len(token) - 5])
 
-    def _parse_channel(self, token) -> Channel:
+    async def _parse_channel(self, token) -> Channel:
         if not (token.startswith("(chn)") and token.startswith("(chn)")):
             raise Parser.ParseException(RuntimeError("Failed to parse channel"))
         return await self.client.fetch_public_channel(token[5:len(token) - 5])

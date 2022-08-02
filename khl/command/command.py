@@ -83,7 +83,7 @@ class Command:
     async def handle(self, msg: Message, predefined_args: dict):
         try:
             filtered, params = self._split_params([k for k in predefined_args])
-            args = [predefined_args[k] for k in filtered] + self.parser.parse(self.lexer.lex(msg), params)
+            args = [predefined_args[k] for k in filtered] + await self.parser.parse(self.lexer.lex(msg), params)
             await self.execute(msg, *args)
         except Lexer.NotMatched:
             return

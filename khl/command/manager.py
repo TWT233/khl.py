@@ -65,7 +65,7 @@ class CommandManager:
         """
         copied_command = copy.copy(command)
         if copied_command.parser is None:
-            copied_command.parser = Parser(_clinet_=self.client)
+            copied_command.parser = Parser(_client_=self.client)
         self[command.name] = copied_command
         return copied_command
 
