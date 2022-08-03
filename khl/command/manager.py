@@ -15,9 +15,8 @@ log = logging.getLogger(__name__)
 class CommandManager:
     _cmd_map: Dict[str, Command]
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         self._cmd_map = {}
-        self.client = kwargs.get("_client_")
 
     def __call__(self,
                  name: str = '',
@@ -63,11 +62,8 @@ class CommandManager:
         :param command: the Command going to be registered
         :return: the cmd
         """
-        copied_command = copy.copy(command)
-        if copied_command.parser is None:
-            copied_command.parser = Parser(_client_=self.client)
-        self[command.name] = copied_command
-        return copied_command
+        self[command.name] = command
+        return command
 
     def get(self, name: str) -> Optional[Command]:
         """get command by name"""

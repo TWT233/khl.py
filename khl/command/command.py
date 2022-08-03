@@ -3,6 +3,7 @@ import inspect
 import logging
 from typing import Callable, Coroutine, List, Union, Pattern, Type, Any
 
+
 from ..message import Message
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
@@ -72,7 +73,7 @@ class Command:
         """
         if not lexer and regex:
             lexer = regex if isinstance(regex, Pattern) else RELexer(regex)
-        parser = parser
+        parser = parser or Parser()
 
         def decorator(handler: TypeHandler):
             default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)))
@@ -83,7 +84,8 @@ class Command:
     async def handle(self, msg: Message, predefined_args: dict):
         try:
             filtered, params = self._split_params([k for k in predefined_args])
-            args = [predefined_args[k] for k in filtered] + await self.parser.parse(self.lexer.lex(msg), params)
+            from .. import Bot
+            args = [predefined_args[k] for k in filtered] + await self.parser.parse(predefined_args[Bot].client, self.lexer.lex(msg), params)
             await self.execute(msg, *args)
         except Lexer.NotMatched:
             return
