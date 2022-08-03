@@ -9,7 +9,7 @@
 样例代码已经写好了，就是这个文件夹中的 `ex01.py`，我们先下载一下代码：
 
 ```shell
-github clone https://github.com/TWT233/khl.py.git
+git clone https://github.com/TWT233/khl.py.git
 cd khl.py/example
 ```
 
