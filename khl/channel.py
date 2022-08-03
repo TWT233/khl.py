@@ -2,6 +2,8 @@ import json
 from abc import ABC, abstractmethod
 from typing import Union, List, Dict
 
+from khl.guild import ChannelCategory
+
 from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes, SlowModeTypes
@@ -251,6 +253,8 @@ def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
         return PublicTextChannel(**kwargs, _gate_=_gate_)
     elif kwargs['type'] == ChannelTypes.VOICE:
         return PublicVoiceChannel(**kwargs, _gate_=_gate_)
+    elif kwargs['type'] == ChannelTypes.CATEGORY:
+        return ChannelCategory(**kwargs, _gate_=_gate_)
 
 
 class PrivateChannel(Channel):
