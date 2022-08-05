@@ -13,7 +13,7 @@ from .client import Client
 from .role import Role
 from .user import User
 from .channel import Channel, PublicTextChannel, PrivateChannel, PublicChannel
-from .guild import Guild, GuildUser
+from .guild import Guild, GuildUser, GuildUserStatus
 from .context import Context
 from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
 # extensions
