@@ -3,7 +3,7 @@ import inspect
 import logging
 from typing import Callable, Coroutine, List, Union, Pattern, Type, Any
 
-from khl.message import Message
+from ..message import Message, Client
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule
@@ -80,10 +80,10 @@ class Command:
 
         return decorator
 
-    async def handle(self, msg: Message, predefined_args: dict):
+    async def handle(self, msg: Message, client: Client, predefined_args: dict):
         try:
             filtered, params = self._split_params([k for k in predefined_args])
-            args = [predefined_args[k] for k in filtered] + self.parser.parse(self.lexer.lex(msg), params)
+            args = [predefined_args[k] for k in filtered] + await self.parser.parse(client, self.lexer.lex(msg), params)
             await self.execute(msg, *args)
         except Lexer.NotMatched:
             return
@@ -95,7 +95,7 @@ class Command:
 
         :param ignores: list of types that need to be filtered
 
-        :return: a tuple: (the filtered params(need to be filled in outer context), the params need to be parsed)
+        :return: a tuple: (the filtered params types(need to be filled in outer context), the params need to be parsed)
         """
         filtered = []
         params = list(inspect.signature(self.handler).parameters.values())

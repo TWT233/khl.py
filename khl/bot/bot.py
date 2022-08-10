@@ -110,7 +110,7 @@ class Bot(AsyncRunnable):
         """
 
         async def handler(msg: Message):
-            await self.command.handle(self.loop, msg, {Message: msg, Bot: self})
+            await self.command.handle(self.loop, self.client, msg, {Message: msg, Bot: self})
 
         return handler
 
@@ -158,7 +158,7 @@ class Bot(AsyncRunnable):
         """
 
         def dec(func: MessageHandler):
-            self.add_message_handler(func, *set(except_type + (MessageTypes.SYS,)))
+            self.add_message_handler(func, *set(except_type + (MessageTypes.SYS, )))
 
         return dec
 
@@ -322,7 +322,7 @@ class Bot(AsyncRunnable):
         """
         await self.client.stop_playing_game()
 
-    async def update_listening_music(self, music_name:str, singer:str, software:Union[str, SoftwareTypes]):
+    async def update_listening_music(self, music_name: str, singer: str, software: Union[str, SoftwareTypes]):
         """
 
         update current listening music status
@@ -343,7 +343,11 @@ class Bot(AsyncRunnable):
         """
         await self.client.stop_listening_music()
 
-    async def update_channel(self, channel: Union[str, PublicChannel], name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None):
+    async def update_channel(self,
+                             channel: Union[str, PublicChannel],
+                             name: str = None,
+                             topic: str = None,
+                             slow_mode: Union[int, SlowModeTypes] = None):
         """
         update channel's settings
         """
