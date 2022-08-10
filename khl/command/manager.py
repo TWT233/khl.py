@@ -3,7 +3,7 @@ import copy
 import logging
 from typing import Optional, List, Union, Pattern, Dict
 
-from .. import Message
+from .. import Message, Client
 from .command import Command
 from .lexer import Lexer, DefaultLexer
 from .parser import Parser
@@ -76,9 +76,9 @@ class CommandManager:
             del self._cmd_map[name]
         return cmd
 
-    async def handle(self, loop, msg: Message, filter_args: dict):
+    async def handle(self, loop, client: Client, msg: Message, filter_args: dict):
         for name, cmd in self._cmd_map.items():
-            asyncio.ensure_future(cmd.handle(msg, filter_args), loop=loop)
+            asyncio.ensure_future(cmd.handle(msg, client, filter_args), loop=loop)
 
     def update_prefixes(self, *prefixes: str) -> List[Command]:
         """update command prefixes in the Manager if command uses DefaultLexer

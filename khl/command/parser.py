@@ -6,7 +6,6 @@ from typing import Dict, Any, Callable, List, Coroutine
 
 from .. import User, Channel, Client
 
-
 log = logging.getLogger(__name__)
 
 
@@ -24,13 +23,13 @@ def _get_param_type(params: List[inspect.Parameter], index: int):
     return result
 
 
-async def _parse_user(token, client) -> User:
+async def _parse_user(client, token) -> User:
     if not (token.startswith("(met)") and token.startswith("(met)")):
         raise Parser.ParseException(RuntimeError("Failed to parse user"))
     return await client.fetch_user(token[5:len(token) - 5])
 
 
-async def _parse_channel(token, client) -> Channel:
+async def _parse_channel(client, token) -> Channel:
     if not (token.startswith("(chn)") and token.startswith("(chn)")):
         raise Parser.ParseException(RuntimeError("Failed to parse channel"))
     return await client.fetch_public_channel(token[5:len(token) - 5])
@@ -41,9 +40,9 @@ class Parser:
     deal with a list of tokens made from Lexer, convert their type to match the command.handler
     """
     _parse_funcs: Dict[Any, Callable] = {
-        str: lambda token, client: token,
-        int: lambda token, client: int(token),
-        float: lambda token, client: float(token),
+        str: lambda client, token: token,
+        int: lambda client, token: int(token),
+        float: lambda client, token: float(token),
         User: _parse_user,
         Channel: _parse_channel
         # TODO: Role parser
@@ -70,7 +69,7 @@ class Parser:
                 raise Parser.ParseFuncNotExists(params[i])
 
             try:
-                call = self._parse_funcs[param_type](tokens[i], client)
+                call = self._parse_funcs[param_type](client, tokens[i])
                 if isinstance(call, Coroutine):
                     call = await call
                 ret.append(call)
