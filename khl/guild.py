@@ -76,7 +76,7 @@ class ChannelCategory(PublicChannel):
         return await self.gate.exec_req(api.Channel.delete(channel.id))
 
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
-        raise TypeError('now there is no ChannelCategory, *hey dude we have a pkg from future*')
+        raise TypeError('Cannot send message to channel category')
 
     def __iter__(self):
         return iter(self._channels)
@@ -140,7 +140,7 @@ class Guild(LazyLoadable, Requestable):
             channel_categories: Dict[str, ChannelCategory] = {}
             for i in raw_list:
                 if i['is_category']:
-                    cc = ChannelCategory(_gate_=self.gate, _guild_id_=self.id, **i)
+                    cc = ChannelCategory(_gate_=self.gate, guild_id=self.id, **i)
                     channel_categories[cc.id] = cc
                 else:
                     channels.append(public_channel_factory(_gate_=self.gate, **i))

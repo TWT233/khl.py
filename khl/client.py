@@ -218,9 +218,20 @@ class Client(Requestable, AsyncRunnable):
                              name: str = None,
                              topic: str = None,
                              slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
-        channel = channel if isinstance(channel, PublicChannel) else await self.fetch_public_channel(channel)
-        channel_data = await channel.update(name, topic, slow_mode)
-        return public_channel_factory(_gate_=self.gate, **channel_data)
+        params = {'channel_id': channel if isinstance(channel, str) else channel.id}
+        if name is not None:
+            params['name'] = name
+        if topic is not None:
+            params['topic'] = topic
+        if slow_mode is not None:
+            if isinstance(slow_mode, int):
+                if slow_mode not in SlowModeTypes.possible_value():
+                    raise ValueError('Unsupported value: ' + str(slow_mode))
+                params['slow_mode'] = slow_mode
+            elif isinstance(slow_mode, SlowModeTypes):
+                params['slow_mode'] = slow_mode.value
+        channel_data = await self.gate.exec_req(api.Channel.update(**params))
+        return (await channel.load()) if isinstance(channel, PublicChannel) else public_channel_factory(_gate_=self.gate, **channel_data) if channel_data['is_category'] == 0 else ChannelCategory(_gate_=self.gate, **channel_data)
 
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))

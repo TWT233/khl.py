@@ -2,8 +2,6 @@ import json
 from abc import ABC, abstractmethod
 from typing import Union, List, Dict
 
-from khl.guild import ChannelCategory
-
 from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, MessageTypes, ChannelTypes, SlowModeTypes
@@ -119,6 +117,7 @@ class PublicChannel(Channel, ABC):
         self.name: str = kwargs.get('name')
         self.user_id: str = kwargs.get('user_id')
         self.guild_id: str = kwargs.get('guild_id')
+        self.master_id = kwargs.get('master_id')
         self.topic: str = kwargs.get('topic')
         self.is_category: int = kwargs.get('is_category')
         self.parent_id: str = kwargs.get('parent_id')
@@ -129,6 +128,7 @@ class PublicChannel(Channel, ABC):
     async def load(self):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
+        return self
 
     async def update(self, name: str = None, topic: str = None, slow_mode: Union[int, SlowModeTypes] = None) -> dict:
         """
@@ -253,8 +253,6 @@ def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
         return PublicTextChannel(**kwargs, _gate_=_gate_)
     elif kwargs['type'] == ChannelTypes.VOICE:
         return PublicVoiceChannel(**kwargs, _gate_=_gate_)
-    elif kwargs['type'] == ChannelTypes.CATEGORY:
-        return ChannelCategory(**kwargs, _gate_=_gate_)
 
 
 class PrivateChannel(Channel):

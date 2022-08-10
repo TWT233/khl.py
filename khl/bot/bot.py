@@ -351,8 +351,7 @@ class Bot(AsyncRunnable):
         """
         update channel's settings
         """
-        channel_id = channel if isinstance(channel, str) else channel.id
-        await self.client.update_channel(channel_id, name, topic, slow_mode)
+        await self.client.update_channel(channel, name, topic, slow_mode)
 
     async def start(self):
         if self._is_running:
