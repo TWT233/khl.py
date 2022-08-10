@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Union
 
@@ -103,6 +104,10 @@ class Message(RawMessage, Requestable, ABC):
         """
         ...
 
+    @abstractmethod
+    async def update(self, content: Union[str, List], quote: str = None, **kwargs):
+        pass
+
     async def reply(self,
                     content: Union[str, List] = '',
                     use_quote: bool = True,
@@ -166,6 +171,16 @@ class PublicMessage(Message):
         req = api.Message.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
         return await self.gate.exec_req(req)
 
+    async def update(self, content: Union[str, List], quote: str = None, **kwargs):
+        if self.type is not MessageTypes.CARD and isinstance(content, List):
+            raise ValueError("The content cannot be a card message")
+        params = {'msg_id': self.id, 'content': content if isinstance(content, str) else json.dumps(content)}
+        if quote is not None:
+            params['quote'] = quote
+        if 'temp_target_id' in kwargs:
+            params['temp_target_id'] = kwargs['temp_target_id']
+        return await self.gate.exec_req(api.Message.update(**params))
+
     async def reply(self,
                     content: Union[str, List] = '',
                     use_quote: bool = True,
@@ -204,6 +219,14 @@ class PrivateMessage(Message):
     async def delete_reaction(self, emoji: str, user: User = None):
         req = api.DirectMessage.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
         return await self.gate.exec_req(req)
+
+    async def update(self, content: Union[str, List], quote: str = None, **kwargs):
+        if self.type is not MessageTypes.CARD and isinstance(content, List):
+            raise ValueError("The content cannot be a card message")
+        params = {'msg_id': self.id, 'content': content if isinstance(content, str) else json.dumps(content)}
+        if quote is not None:
+            params['quote'] = quote
+        return await self.gate.exec_req(api.Message.update(**params))
 
 
 class Event(RawMessage):
