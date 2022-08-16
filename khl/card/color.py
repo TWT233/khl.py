@@ -1,18 +1,21 @@
+"""helper wrapper for color in card message"""
 import re
 from typing import Tuple, Union, Optional
 
-from .interface import Representable
+from .interface import _Representable
 
 
-class Color(Representable):
-    def __init__(self, *rgb: int, hex: str = None):
-        if (not rgb or len(rgb) != 3) and not hex:
+class Color(_Representable):
+    """abstraction of color, provides helper functions"""
+
+    def __init__(self, *rgb: int, hex_color: str = None):
+        if (not rgb or len(rgb) != 3) and not hex_color:
             raise ValueError('rgb(as a tuple) or hex required')
-        if hex:
-            m = re.match(r'^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$', hex)
-            if not m:
+        if hex_color:
+            match = re.match(r'^#?([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$', hex_color)
+            if not match:
                 raise ValueError('unacceptable hex color')
-            self._r, self._g, self._b = (int(m.group(i), 16) for i in (1, 2, 3))
+            self._r, self._g, self._b = (int(match.group(i), 16) for i in (1, 2, 3))
         else:
             self._r, self._g, self._b = (self._rgb_check(i) for i in rgb)
 
@@ -24,6 +27,7 @@ class Color(Representable):
 
     @property
     def r(self) -> int:
+        """red channel component in rgb model"""
         return self._r
 
     @r.setter
@@ -33,6 +37,7 @@ class Color(Representable):
 
     @property
     def g(self) -> int:
+        """green channel component in rgb model"""
         return self._g
 
     @g.setter
@@ -42,6 +47,7 @@ class Color(Representable):
 
     @property
     def b(self) -> int:
+        """blue channel component in rgb model"""
         return self._b
 
     @b.setter
@@ -50,6 +56,7 @@ class Color(Representable):
         self._b = value
 
     def hex(self) -> str:
+        """hex string form"""
         return self._repr
 
     @property
@@ -58,11 +65,12 @@ class Color(Representable):
 
 
 def make_color(color: Union[Color, Tuple[int, int, int], str, None]) -> Optional[Color]:
+    """helper to unify all forms of color"""
     result = None
     if isinstance(color, Color):
         result = color
     elif isinstance(color, tuple):
         result = Color(*color)
     elif isinstance(color, str):
-        result = Color(hex=color)
+        result = Color(hex_color=color)
     return result
