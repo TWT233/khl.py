@@ -5,9 +5,9 @@ from typing import List, Union, Dict, IO
 from . import api
 from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel
 from .gateway import Requestable, Gateway
-from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes, MessageTypes
+from .interface import LazyLoadable
 from .role import Role
-from .types import ChannelTypes, GuildMuteTypes
+from .types import ChannelTypes, GuildMuteTypes, MessageTypes
 from .user import User
 from .util import unpack_id
 

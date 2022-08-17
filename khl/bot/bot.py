@@ -11,7 +11,6 @@ from .. import User, Channel, PublicChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
 from ..game import Game
 from ..guild import ChannelCategory
-from ..interface import SlowModeTypes, SoftwareTypes
 from ..task import TaskManager
 
 log = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ from . import api
 from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
 from .game import Game
 from .gateway import Gateway, Requestable
-from .guild import Guild
+from .guild import Guild, ChannelCategory
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
 from .types import SoftwareTypes, MessageTypes, SlowModeTypes
