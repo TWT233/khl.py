@@ -27,6 +27,8 @@ class Rule:
         return rule
 
     @staticmethod
-    def is_mention_all(msg: Message) -> bool:
+    def is_mention_all() -> TypeRule:
         """:return: a Rule that checks if the msg mentioned all members"""
-        return msg.extra.get('mention_all', None) is not None
+        def rule(msg: Message) -> bool:
+            return msg.extra.get('mention_all', None) is not None
+        return rule
