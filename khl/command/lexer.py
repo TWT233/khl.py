@@ -25,12 +25,14 @@ class Lexer(ABC):
         raise NotImplementedError
 
     class LexerException(Exception):
+        """exception raised in lex process"""
 
         def __init__(self, msg: Message):
+            super().__init__()
             self.msg = msg
 
     class NotMatched(LexerException):
-        ...
+        """the message content not matched, thus can not be lexed"""
 
 
 class DefaultLexer(Lexer):
@@ -61,18 +63,15 @@ class DefaultLexer(Lexer):
         for prefix in matched_prefixes:
             try:
                 arg_list = shlex.split(msg.content[len(prefix):])
-            except Exception:
-                raise DefaultLexer.MalformedContent(msg)
+            except Exception as e:
+                raise DefaultLexer.MalformedContent(msg) from e
             # check if trigger exists
             if (arg_list[0] if len(arg_list) > 0 else '') not in self.triggers:
                 raise Lexer.NotMatched(msg)
             return arg_list[1:]  # arg_list[0] is trigger
 
     class MalformedContent(Lexer.LexerException):
-        pass
-
-    class NoMatchedTrigger(Lexer.LexerException):
-        pass
+        """the content can not be shlex.split()"""
 
 
 class RELexer(Lexer):

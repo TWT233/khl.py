@@ -1,3 +1,4 @@
+"""authorization/encrypt/decrypt works in khl"""
 import base64
 import json
 from enum import Enum
@@ -58,6 +59,7 @@ class Cert:
         data = Padding.unpad(data, 16)
         return data.decode('utf-8')
 
-    def decode_raw(self, data: bytes) -> dict:
-        data = json.loads(str(data, encoding='utf-8'))
-        return json.loads(self.decrypt(data['encrypt'])) if ('encrypt' in data.keys()) else data
+    def decode_raw(self, raw: bytes) -> dict:
+        """decode raw package into plaintext data"""
+        raw = json.loads(str(raw, encoding='utf-8'))
+        return json.loads(self.decrypt(raw['encrypt'])) if ('encrypt' in raw.keys()) else raw

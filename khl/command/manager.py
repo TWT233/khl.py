@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Optional, List, Union, Pattern, Dict
 
-from khl import Message
+from khl import Message, Client
 from .command import Command
 from .lexer import Lexer, DefaultLexer
 from .parser import Parser
@@ -12,11 +12,15 @@ log = logging.getLogger(__name__)
 
 
 class CommandManager:
+    """aggregates commands as a system, and provide API as a whole"""
     _cmd_map: Dict[str, Command]
 
     def __init__(self):
         self._cmd_map = {}
 
+    # why disable duplicate-code:
+    # the duplicated code is the param list, used to provide auto complete/coding hints in IDE
+    # pylint: disable = duplicate-code
     def __call__(self,
                  name: str = '',
                  *,
@@ -75,9 +79,10 @@ class CommandManager:
             del self._cmd_map[name]
         return cmd
 
-    async def handle(self, loop, msg: Message, filter_args: dict):
-        for name, cmd in self._cmd_map.items():
-            asyncio.ensure_future(cmd.handle(msg, filter_args), loop=loop)
+    async def handle(self, loop, client: Client, msg: Message, filter_args: dict):
+        """pass msg into all commands in self, handle it concurrently"""
+        for cmd in self._cmd_map.values():
+            asyncio.ensure_future(cmd.handle(msg, client, filter_args), loop=loop)
 
     def update_prefixes(self, *prefixes: str) -> List[Command]:
         """update command prefixes in the Manager if command uses DefaultLexer
@@ -105,5 +110,6 @@ class CommandManager:
     def __iter__(self):
         return iter(self._cmd_map)
 
-    def items(self) -> [str, Command]:
+    def items(self):
+        """all commands in self, keyed by command name"""
         return self._cmd_map.items()

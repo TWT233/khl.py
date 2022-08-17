@@ -1,8 +1,12 @@
+"""khl raw API and related helpers"""
+# pylint: skip-file
+# this file contains hax to generate/interpolate stub code which make pylint pains
 import functools
 import inspect
 import logging
 import re
-from typing import Dict, Callable, Tuple
+from collections import namedtuple
+from typing import Callable, Tuple
 
 import aiohttp
 
@@ -10,16 +14,13 @@ log = logging.getLogger(__name__)
 
 _RE_ROUTE = re.compile(r'(?<!^)(?=[A-Z])')
 
-
-class _Req:
-
-    def __init__(self, method: str, route: str, params: Dict):
-        self.method = method
-        self.route = route
-        self.params = params
+_Req = namedtuple('_Req', ['method', 'route', 'params'])
 
 
 def req(method: str, **http_fields):
+    """meta-decorator
+
+    :returns a decorator to fill func with boilerplate"""
 
     def _method(func: Callable):
 
@@ -29,8 +30,8 @@ def req(method: str, **http_fields):
 
             # dump args into kwargs
             param_names = list(inspect.signature(func).parameters.keys())
-            for i in range(len(args)):
-                kwargs[param_names[i]] = args[i]
+            for i, arg in enumerate(args):
+                kwargs[param_names[i]] = arg
 
             params = _merge_params(method, http_fields, kwargs)
             return _Req(method, route, params)
@@ -49,7 +50,8 @@ def _merge_params(method: str, http_fields: dict, req_args: dict) -> dict:
         content_type = http_fields.get('headers', {}).get('Content-Type', None)
         if content_type == 'multipart/form-data':
             payload_key, payload = _build_form_payload(req_args)
-            http_fields = _remove_content_type(http_fields)  # headers of form-data req are delegated to aiohttp
+            # headers of form-data req are delegated to aiohttp
+            http_fields = _remove_content_type(http_fields)
         elif content_type is not None:
             raise ValueError(f'unrecognized Content-Type {content_type}')
 
@@ -72,12 +74,13 @@ def _remove_content_type(http_fields: dict) -> dict:
 
 def _build_form_payload(req_args: dict) -> Tuple[str, aiohttp.FormData]:
     data = aiohttp.FormData()
-    for k, v in req_args.items():
-        data.add_field(k, v)
+    for name, value in req_args.items():
+        data.add_field(name, value)
     return 'data', data
 
 
 class Guild:
+    """mapped to route: /guild/*"""
 
     @staticmethod
     @req('GET')
@@ -93,14 +96,14 @@ class Guild:
     @req('GET')
     def userList(
         guild_id,
-        channel_id,
-        search,
-        role_id,
-        mobile_verified,
-        active_time,
-        joined_at,
-        page,
-        page_size,
+        channel_id=None,
+        search=None,
+        role_id=None,
+        mobile_verified=None,
+        active_time=None,
+        joined_at=None,
+        page=None,
+        page_size=None,
     ):
         ...
 
@@ -150,6 +153,45 @@ class GuildMute:
         ...
 
 
+class Blacklist:
+
+    @staticmethod
+    @req('GET')
+    def list(
+            guild_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def create(
+            guild_id,
+            target_id,
+            remark,
+            del_msg_days
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+            guild_id,
+            target_id
+    ):
+        ...
+
+
+class Badge:
+
+    @staticmethod
+    @req('GET')
+    def guild(
+            guild_id,
+            style
+    ):
+        ...
+
+
 class Channel:
 
     @staticmethod
@@ -164,15 +206,7 @@ class Channel:
 
     @staticmethod
     @req('POST')
-    def create(
-        guild_id,
-        parent_id,
-        name,
-        type,
-        limit_amount,
-        voice_quality,
-        is_category
-    ):
+    def create(guild_id, parent_id, name, type, limit_amount, voice_quality, is_category):
         ...
 
     @staticmethod
@@ -232,12 +266,7 @@ class ChannelUser:
 
     @staticmethod
     @req('GET')
-    def getJoinedChannel(
-        page,
-        page_size,
-        guild_id,
-        user_id
-    ):
+    def getJoinedChannel(page, page_size, guild_id, user_id):
         ...
 
 
@@ -384,7 +413,7 @@ class DirectMessage:
 
     @staticmethod
     @req('POST')
-    def deleteReaction(msg_id, emoji):
+    def deleteReaction(msg_id, emoji, user_id):
         ...
 
 
@@ -407,7 +436,13 @@ class User:
     @req('GET')
     def view(
         user_id,
-        guild_id,
+        guild_id=None,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def offline(
     ):
         ...
 
@@ -530,6 +565,8 @@ class Invite:
     def list(
         guild_id,
         channel_id,
+        page,
+        page_size
     ):
         ...
 
@@ -538,15 +575,17 @@ class Invite:
     def create(
         guild_id,
         channel_id,
+        duration,
+        setting_times
     ):
         ...
 
     @staticmethod
     @req('POST')
     def delete(
-        guild_id,
-        channel_id,
         url_code,
+        guild_id,
+        channel_id
     ):
         ...
 
@@ -583,16 +622,24 @@ class Game:
 
     @staticmethod
     @req('POST')
-    def activity(
-        id,
-        data_type,
-        music_name,
-        singer,
-        software
-    ):
+    def activity(data_type, id=None, music_name=None, singer=None, software=None):
         ...
 
     @staticmethod
     @req('POST')
     def deleteActivity(data_type):
+        ...
+
+
+class Oauth2:
+
+    @staticmethod
+    @req("POST")
+    def token(
+        grant_type,
+        client_id,
+        client_secret,
+        code,
+        redirect_uri
+    ):
         ...

@@ -1,21 +1,28 @@
+"""guild related stuffs: Guild, ChannelCategory"""
 import logging
 from typing import List, Union, Dict, IO
 
 from . import api
-from .channel import Channel, public_channel_factory, PublicChannel
-from .gateway import Requestable
+from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel
+from .gateway import Requestable, Gateway
 from .interface import LazyLoadable, ChannelTypes, GuildMuteTypes, MessageTypes
 from .role import Role
+from .types import ChannelTypes, GuildMuteTypes
 from .user import User
+from .util import unpack_id
 
 log = logging.getLogger(__name__)
 
 
 class GuildUser(User):
+    """a user in guild
+
+    with some fields more than User"""
     guild_id: str
     joined_at: int
     active_time: int
     roles: List[int]
+    gate: Gateway
 
     def __init__(self, **kwargs):
         self.roles = kwargs.get('roles', [])
@@ -24,13 +31,15 @@ class GuildUser(User):
         self.active_time = kwargs.get('active_time', 0)
         super().__init__(**kwargs)
 
-    async def fetch_roles(self) -> List[Role]:
+    async def fetch_roles(self, **kwargs) -> List[Role]:
         """
         Get the user roles in this guild
 
+        paged req, support standard pagination args
+
         :return: A list for Role
         """
-        guild_roles = (await self.gate.exec_pagination_req(api.GuildRole.list(self.guild_id)))
+        guild_roles = (await self.gate.exec_paged_req(api.GuildRole.list(self.guild_id), **kwargs))
         rt: List[Role] = []
         for role in guild_roles:
             if role['role_id'] in self.roles:
@@ -48,9 +57,11 @@ class ChannelCategory(PublicChannel):
         self._channels = []
 
     def append(self, *channel: PublicChannel):
+        """append var-len channel(s) into this category"""
         self._channels.append(*channel)
 
     def pop(self, index: int = None) -> PublicChannel:
+        """pop a channel(default last) from this category"""
         return self._channels.pop(index)
 
     async def create_channel(self,
@@ -58,7 +69,9 @@ class ChannelCategory(PublicChannel):
                              type: ChannelTypes = None,
                              limit_amount: int = None,
                              voice_quality: int = None) -> PublicChannel:
-        """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        """create a channel in this channel category
+
+        docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id}
         if type is not None:
             params['type'] = type.value
@@ -70,10 +83,12 @@ class ChannelCategory(PublicChannel):
         self._channels.append(pc)
         return pc
 
-    async def delete_channel(self, channel: Channel):
-        if channel.id not in [i.id for i in self._channels]:
-            raise ValueError(f'channel {channel.id} is not belongs to this category')
-        return await self.gate.exec_req(api.Channel.delete(channel.id))
+    async def delete_channel(self, channel: Union[Channel, str]):
+        """delete a channel from this channel category"""
+        channel_id = channel.id if isinstance(channel, Channel) else channel
+        if channel_id not in [i.id for i in self._channels]:
+            raise ValueError(f'channel {channel_id} is not belongs to this category')
+        return await self.gate.exec_req(api.Channel.delete(channel_id))
 
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         raise TypeError('Cannot send message to channel category')
@@ -131,11 +146,12 @@ class Guild(LazyLoadable, Requestable):
     async def fetch_channel_category_list(self, force_update: bool = True) -> List[ChannelCategory]:
         """fetch all channel category as a list"""
         await self.fetch_channel_list(force_update)
-        return [v for v in self._channel_categories.values()]
+        return list(self._channel_categories.values())
 
     async def fetch_channel_list(self, force_update: bool = True, merge_channel: bool = True) -> List[PublicChannel]:
+        """fetch channel list from khl server"""
         if force_update or self._channels is None:
-            raw_list = await self.gate.exec_pagination_req(api.Channel.list(guild_id=self.id))
+            raw_list = await self.gate.exec_paged_req(api.Channel.list(guild_id=self.id))
             channels: List[PublicChannel] = []
             channel_categories: Dict[str, ChannelCategory] = {}
             for i in raw_list:
@@ -160,7 +176,7 @@ class Guild(LazyLoadable, Requestable):
     def _merge_channels(self) -> List[PublicChannel]:
         channels = []
         channels.extend(self._channels)
-        for k, v in self._channel_categories.items():
+        for v in self._channel_categories.values():
             channels.extend(v)
         return channels
 
@@ -179,13 +195,22 @@ class Guild(LazyLoadable, Requestable):
             return self._merge_channels()
         raise ValueError('not loaded, please call `await fetch_channel_list()` first')
 
-    async def list_user(self, channel: Channel) -> List[User]:
-        users = await self.gate.exec_pagination_req(api.Guild.userList(guild_id=self.id, channel_id=channel.id))
+    async def list_user(self, channel: Union[Channel, str] = None, **kwargs) -> List[User]:
+        """list users in the guild/a channel belongs to the guild
+
+        paged req, support standard pagination args"""
+        cid = channel.id if isinstance(channel, Channel) else channel
+        params = {'guild_id': self.id}
+        if cid is not None:
+            params['channel_id'] = cid
+        users = await self.gate.exec_paged_req(api.Guild.userList(**params), **kwargs)
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
-    async def fetch_joined_channel(self, user: User, page: int = 1, page_size: int = 50) -> List[PublicChannel]:
-        channels = await self.gate.exec_pagination_req(api.ChannelUser.getJoinedChannel(page=page, page_size=page_size, guild_id=self.id, user_id=user.id))
-        return [public_channel_factory(self.gate, **i) for i in channels]
+    async def fetch_joined_channel(self, user: User, page: int = 1, page_size: int = 50) -> List[PublicVoiceChannel]:
+        """fetch the channels which the user joined(public voice channel)"""
+        channels = await self.gate.exec_paged_req(
+            api.ChannelUser.getJoinedChannel(page=page, page_size=page_size, guild_id=self.id, user_id=user.id))
+        return [PublicVoiceChannel(_gate_=self.gate, _lazy_loaded_=True, **i) for i in channels]
 
     async def fetch_user(self, user_id: str) -> GuildUser:
         """get user object from user_id, can only fetch user in current guild
@@ -194,24 +219,31 @@ class Guild(LazyLoadable, Requestable):
         return GuildUser(guild_id=self.id, _gate_=self.gate, _lazy_loaded_=True, **user)
 
     async def set_user_nickname(self, user: User, new_nickname: str):
+        """set the user's nickname in this guild"""
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=user.id))
 
     async def fetch_roles(self, force_update: bool = True) -> List[Role]:
+        """fetch the role list in the guild"""
         if force_update or self._roles is None:
-            raw_list = await self.gate.exec_pagination_req(api.GuildRole.list(guild_id=self.id))
+            raw_list = await self.gate.exec_paged_req(api.GuildRole.list(guild_id=self.id))
             self._roles = [Role(**i) for i in raw_list]
         return self._roles
 
     async def create_role(self, role_name: str) -> Role:
+        """create a role in the guild"""
         return Role(**(await self.gate.exec_req(api.GuildRole.create(guild_id=self.id, name=role_name))))
 
     async def update_role(self, new_role: Role) -> Role:
+        """update a role in the guild
+
+        :param new_role an edited role object"""
         return Role(**(await self.gate.exec_req(api.GuildRole.update(guild_id=self.id, **vars(new_role)))))
 
-    async def delete_role(self, role_id: int):
-        return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=role_id))
+    async def delete_role(self, role: Union[int, Role]):
+        """delete a role from the guild"""
+        return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=unpack_id(role)))
 
-    async def grant_role(self, user: User, role: Union[Role, str]):
+    async def grant_role(self, user: User, role: Union[Role, int]):
         """
         docs:
         https://developer.kaiheila.cn/doc/http/guild-role#%E8%B5%8B%E4%BA%88%E7%94%A8%E6%88%B7%E8%A7%92%E8%89%B2
@@ -233,7 +265,9 @@ class Guild(LazyLoadable, Requestable):
                              category: Union[str, ChannelCategory] = None,
                              limit_amount: int = None,
                              voice_quality: int = None) -> PublicChannel:
-        """docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        """create a channel in the guild
+
+        docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'name': name, 'guild_id': self.id}
         if type is not None:
             if type == ChannelTypes.CATEGORY:
@@ -241,19 +275,20 @@ class Guild(LazyLoadable, Requestable):
             else:
                 params['type'] = type.value
         if category:
-            params['parent_id'] = category if isinstance(category, str) else category.id
+            params['parent_id'] = unpack_id(category)
         if limit_amount:
             params['limit_amount'] = limit_amount
         if voice_quality:
             params['voice_quality'] = voice_quality
         return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
 
-    async def delete_channel(self, channel: Channel):
-        return await self.gate.exec_req(api.Channel.delete(channel.id))
+    async def delete_channel(self, channel: Union[str, Channel]):
+        """delete the channel from the guild"""
+        return await self.gate.exec_req(api.Channel.delete(unpack_id(channel)))
 
     async def kickout(self, user: Union[User, str]):
-        target_id = user.id if isinstance(user, User) else user
-        return await self.gate.exec_req(api.Guild.kickout(guild_id=self.id, target_id=target_id))
+        """kick the user from the guild"""
+        return await self.gate.exec_req(api.Guild.kickout(guild_id=self.id, target_id=unpack_id(user)))
 
     async def leave(self):
         """leave from this guild"""
@@ -275,16 +310,18 @@ class Guild(LazyLoadable, Requestable):
 
     async def fetch_emoji_list(self) -> List[Dict]:
         """fetch guild emoji list
-        :returns a list of emoji dict, dict contains {'name', 'id', 'user_info': who uploaded the emoji}
-        """
-        return await self.gate.exec_pagination_req(api.GuildEmoji.list(guild_id=self.id))
 
-    async def create_emoji(self, emoji: Union[IO, str], *, name: str = None):
+        :returns: a list of emoji dict, dict contains {'name', 'id', 'user_info': who uploaded the emoji}
+        """
+        return await self.gate.exec_paged_req(api.GuildEmoji.list(guild_id=self.id))
+
+    async def create_emoji(self, emoji: Union[IO, str], *, name: str = None) -> Dict:
         """upload a custom emoji to the guild
 
-        :returns a emoji dict, refer to fetch_emoji_list() doc
+        :returns: an emoji dict. For emoji dict structure, please refer to fetch_emoji_list() doc
         """
-        emoji = open(emoji, 'rb') if isinstance(emoji, str) else emoji
+        if isinstance(emoji, str):
+            emoji = open(emoji, 'rb')
         params = {'guild_id': self.id, 'emoji': emoji}
         if name is not None:
             params['name'] = name
@@ -298,4 +335,5 @@ class Guild(LazyLoadable, Requestable):
         return await self.gate.exec_req(api.GuildEmoji.update(**params))
 
     async def delete_emoji(self, id: str):
+        """delete a custom emoji"""
         return await self.gate.exec_req(api.GuildEmoji.delete(id))

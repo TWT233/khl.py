@@ -1,3 +1,6 @@
+"""card
+
+card is a message type in khl, which provides kinds of expressive components to convey"""
 from .card import Card
 from .card_message import CardMessage
 from .color import Color

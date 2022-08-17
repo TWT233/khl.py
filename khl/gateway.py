@@ -1,3 +1,4 @@
+"""gateway related stuff"""
 import asyncio
 from abc import ABC
 from typing import Union, List
@@ -21,31 +22,19 @@ class Gateway:
         self.receiver = receiver
 
     async def request(self, method: str, route: str, **params) -> Union[dict, list]:
-        """
-        execute raw request, this is just a wrapper for convenience
-        """
+        """execute raw request, this is just a wrapper for convenience"""
         return await self.requester.request(method, route, **params)
 
     async def exec_req(self, r: _Req):
-        """
-        execute request, this is just a wrapper for convenience
-        """
+        """execute request, this is just a wrapper for convenience"""
         return await self.requester.exec_req(r)
 
-    async def exec_pagination_req(self,
-                                  r: _Req,
-                                  *,
-                                  begin_page: int = 1,
-                                  end_page: int = None,
-                                  page_size: int = 50,
-                                  sort: str = '') -> List:
-        return await self.requester.exec_pagination_req(r,
-                                                        begin_page=begin_page,
-                                                        end_page=end_page,
-                                                        page_size=page_size,
-                                                        sort=sort)
+    async def exec_paged_req(self, r: _Req, **kwargs) -> List:
+        """execute paged request, this is just a wrapper for convenience"""
+        return await self.requester.exec_paged_req(r, **kwargs)
 
     async def run(self, in_queue: asyncio.Queue):
+        """run the receiver"""
         self.receiver.pkg_queue = in_queue
         await self.receiver.start()
 
