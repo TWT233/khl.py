@@ -32,3 +32,10 @@ class Rule:
         def rule(msg: Message) -> bool:
             return msg.extra.get('mention_all', None) is not None
         return rule
+
+    @staticmethod
+    def is_not_bot() -> TypeRule:
+        """:return: a Rule that check if the msg belong non bot"""
+        def rule(msg: Message) -> bool:
+            return not msg.author.bot
+        return rule
