@@ -1,3 +1,4 @@
+"""card message component: Card"""
 from typing import List, Union, Tuple, Optional, Dict
 
 from .color import Color, make_color
@@ -6,6 +7,7 @@ from .module import _Module
 
 
 class Card(_Common):
+    """abstraction of card, which contains modules"""
     _type = 'card'
     _color: Optional[Color]
     _modules: List[_Module]
@@ -20,13 +22,16 @@ class Card(_Common):
         super().__init__(theme, size)
 
     def append(self, module: _Module):
+        """append a module into the card"""
         self._modules.append(module)
 
     def pop(self, index: int = None) -> _Module:
+        """pop the `index`th module from the card"""
         return self._modules.pop(index)
 
     @property
     def color(self) -> Optional[Color]:
+        """color of the card's frame"""
         return self._color
 
     @color.setter
@@ -35,6 +40,7 @@ class Card(_Common):
 
     @property
     def theme(self) -> Types.Theme:
+        """the card's theme, when color is not filled, the card's frame will be set according to theme"""
         return self._theme
 
     @theme.setter
@@ -43,6 +49,7 @@ class Card(_Common):
 
     @property
     def size(self) -> Types.Size:
+        """the size of the card"""
         return self._size
 
     @size.setter

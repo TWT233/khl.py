@@ -1,9 +1,10 @@
+"""component Command"""
 import asyncio
 import inspect
 import logging
 from typing import Callable, Coroutine, List, Union, Pattern, Type, Any
 
-from ..message import Message, Client
+from khl import Message, Client
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule
@@ -68,21 +69,24 @@ class Command:
         :param lexer: (Advanced) explicitly set the lexer
         :param parser: (Advanced) explicitly set the parser
         :param rules: command executed if all rules are checked
-        :return: wrapped Command
+        :return: a decorator to wrap Command
         """
         if not lexer and regex:
-            lexer = regex if isinstance(regex, Pattern) else RELexer(regex)
-        parser = parser or Parser()
+            lexer = RELexer(regex) if isinstance(regex, str) else regex
 
         def decorator(handler: TypeHandler):
             default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)))
-            return Command(name, handler, help, desc, lexer or default_lexer, parser, rules)
+            return Command(name, handler, help, desc, lexer or default_lexer, parser or Parser(), rules)
 
         return decorator
 
     async def handle(self, msg: Message, client: Client, predefined_args: dict):
+        """handle msg:
+
+        1. check if matched the command
+        2. if matched, execute the command handler"""
         try:
-            filtered, params = self._split_params([k for k in predefined_args])
+            filtered, params = self._split_params(list(predefined_args))
             args = [predefined_args[k] for k in filtered] + await self.parser.parse(client, self.lexer.lex(msg), params)
             await self.execute(msg, *args)
         except Lexer.NotMatched:
@@ -129,5 +133,4 @@ class Command:
     async def _wrap_rule(rule, msg: Message) -> bool:
         if asyncio.iscoroutinefunction(rule):
             return bool(await rule(msg))
-        else:
-            return bool(rule(msg))
+        return bool(rule(msg))
