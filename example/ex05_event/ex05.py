@@ -22,14 +22,14 @@ async def update_reminder(b: Bot, event: Event):
     :param event: the event object, refer to khl document for the details of event, document to ``UPDATED_MESSAGE``:
      https://developer.kaiheila.cn/doc/event/channel#%E9%A2%91%E9%81%93%E6%B6%88%E6%81%AF%E6%9B%B4%E6%96%B0
     """
-    channel = await b.fetch_public_channel(event.body['channel_id'])
+    channel = await b.client.fetch_public_channel(event.body['channel_id'])
     updated_at = datetime.fromtimestamp(event.body["updated_at"] / 1000)  # ms timestamp -> POSIX timestamp
-    await b.send(channel, f'msg {event.body["msg_id"]} was updated at {updated_at}')
+    await b.client.send(channel, f'msg {event.body["msg_id"]} was updated at {updated_at}')
 
 
 async def delete_catcher(b: Bot, event: Event):
-    channel = await b.fetch_public_channel(event.body['channel_id'])
-    await b.send(channel, f'msg {event.body["msg_id"]} was deleted...')
+    channel = await b.client.fetch_public_channel(event.body['channel_id'])
+    await b.client.send(channel, f'msg {event.body["msg_id"]} was deleted...')
 
 
 # besides decorator, you can also add event handler via this method

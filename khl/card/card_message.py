@@ -1,3 +1,4 @@
+"""card message: wrapper for easier card message sending"""
 from .card import Card
 from .interface import _get_repr
 
@@ -10,12 +11,6 @@ class CardMessage(list):
     def __init__(self, *cards: Card):
         super().__init__()
         self.extend(cards)
-
-    def append(self, card: Card):
-        super().append(card)
-
-    def pop(self, __index=...) -> Card:
-        return super().pop(__index)
 
     def __iter__(self):
         """hack for JSON serialization"""

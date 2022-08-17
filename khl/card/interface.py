@@ -1,14 +1,11 @@
-"""
-Enum Types,
-a helper function ``_repr()``,
-the base class of all card components ``_Comm``
-"""
+"""all Type Enums and related helpers in card message"""
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Union, Dict, List
 
 
-class Representable(ABC):
+class _Representable(ABC):
+    """internal interface, can be cast to JSON"""
 
     @property
     @abstractmethod
@@ -20,9 +17,10 @@ class Representable(ABC):
 class _TypeEnum(Enum):
     """base class of all types(involved in card components)
 
-    REMIND: TypeEnum implements _repr but not inherits from Representable, since
-    " TypeError: metaclass conflict:
-    the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases "
+    remind: TypeEnum implements _repr but not inherits from Representable,
+    since "TypeError: metaclass conflict:
+    the metaclass of a derived class must be a (non-strict) subclass of the
+    metaclasses of all its bases"
     """
 
     @property
@@ -31,8 +29,10 @@ class _TypeEnum(Enum):
 
 
 class Types:
+    """contains all types used in card messages"""
 
     class Theme(_TypeEnum):
+        """describes a component's theme, controls its color"""
         NA = ''
         PRIMARY = 'primary'
         SECONDARY = 'secondary'
@@ -43,6 +43,7 @@ class Types:
         NONE = 'none'
 
     class Size(_TypeEnum):
+        """describes a component's size"""
         NA = ''
         XS = 'xs'
         SM = 'sm'
@@ -50,23 +51,28 @@ class Types:
         LG = 'lg'
 
     class Text(_TypeEnum):
+        """which type of text"""
         PLAIN = 'plain-text'
         KMD = 'kmarkdown'
 
     class Click(_TypeEnum):
+        """used in button, determines the behavior of button when clicked"""
         LINK = 'link'
         RETURN_VAL = 'return-val'
 
     class SectionMode(_TypeEnum):
+        """used in section, arrangement of elements in"""
         LEFT = 'left'
         RIGHT = 'right'
 
     class File(_TypeEnum):
+        """which type of file"""
         FILE = 'file'
         AUDIO = 'audio'
         VIDEO = 'video'
 
     class CountdownMode(_TypeEnum):
+        """used in countdown module, determines its layout"""
         DAY = 'day'
         HOUR = 'hour'
         SECOND = 'second'
@@ -74,10 +80,12 @@ class Types:
 
 def _get_repr(item) -> Union[str, Dict, List]:
     """a helper function for serialization"""
-    return [_get_repr(i) for i in item] if isinstance(item, list) else getattr(item, '_repr', item)
+    if isinstance(item, list):
+        return [_get_repr(i) for i in item]
+    return getattr(item, '_repr', item)
 
 
-class _Common(Representable, ABC):
+class _Common(_Representable, ABC):
     _type: str
     _theme: Types.Theme
     _size: Types.Size
@@ -88,17 +96,13 @@ class _Common(Representable, ABC):
         self._size = Types.Size(size) if size else None
 
     def _gen_dict(self, field_list: List) -> Dict:
-        d = {}
+        result = {}
         for k in field_list:
             # get repr of k/_k(private field with exported key)
             obj = _get_repr(getattr(self, k, None)) or _get_repr(getattr(self, '_' + k, None))
             if obj is not None:
-                d[k] = obj
-        return d
-
-
-class _Element(_Common, ABC):
-    ...
+                result[k] = obj
+        return result
 
 
 class _Module(_Common, ABC):

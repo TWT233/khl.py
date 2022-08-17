@@ -12,6 +12,7 @@ log = logging.getLogger(__name__)
 
 
 class TaskManager(AsyncRunnable):
+    """manage tasks"""
     _scheduler: AsyncIOScheduler
 
     def __init__(self):
@@ -74,6 +75,6 @@ class TaskManager(AsyncRunnable):
 
     async def start(self):
         self._scheduler.configure({'event_loop': self.loop}, '')
-        self._scheduler.add_listener(lambda e: log.exception(f'error raised during task', exc_info=e.exception),
+        self._scheduler.add_listener(lambda e: log.exception('error raised during task', exc_info=e.exception),
                                      EVENT_JOB_ERROR)
         self._scheduler.start()  # reminder: this is not blocking

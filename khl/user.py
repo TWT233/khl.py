@@ -2,9 +2,9 @@ import json
 from typing import List, Union
 
 from . import api
-from .gateway import Requestable
-from .interface import LazyLoadable, MessageTypes
-from .role import Role
+from .gateway import Requestable, Gateway
+from .interface import LazyLoadable
+from .types import MessageTypes
 
 
 class User(LazyLoadable, Requestable):
@@ -25,6 +25,7 @@ class User(LazyLoadable, Requestable):
     mobile_verified: bool
 
     _loaded: bool
+    gate: Gateway
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id', '')
@@ -55,7 +56,7 @@ class User(LazyLoadable, Requestable):
             type = MessageTypes.CARD
             content = json.dumps(content)
         else:
-            type = type if type is not None else MessageTypes.KMD
+            type = type or MessageTypes.KMD
 
         # merge params
         kwargs['target_id'] = self.id
