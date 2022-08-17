@@ -106,7 +106,17 @@ class Message(RawMessage, Requestable, ABC):
 
     @abstractmethod
     async def update(self, content: Union[str, List], quote: str = None, **kwargs):
-        pass
+        """Update the message content, the type of content should be same the original type of the message
+
+        https://developer.kookapp.cn/doc/http/message#%E6%9B%B4%E6%96%B0%E9%A2%91%E9%81%93%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AF
+
+        https://developer.kookapp.cn/doc/http/direct-message#%E6%9B%B4%E6%96%B0%E7%A7%81%E4%BF%A1%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AF
+
+        :param content: updated content, its type should be same as the original type
+        :param quote: the id of the message that will be quoted
+        """
+
+        ...
 
     async def reply(self,
                     content: Union[str, List] = '',
