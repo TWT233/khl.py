@@ -1,6 +1,7 @@
 """abstraction of khl client: handle to communicate with khl"""
 import asyncio
 import inspect
+import json
 import logging
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
@@ -146,6 +147,10 @@ class Client(Requestable, AsyncRunnable):
             return self._me
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
+    async def fetch_public_message(self, msg_id: str) -> Message:
+        """fetch details of a public message from khl"""
+        return PublicMessage(**(await self.gate.exec_req(api.Message.view(msg_id=msg_id))), _gate_=self.gate)
+
     async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
         """fetch details of a public channel from khl"""
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
@@ -222,6 +227,14 @@ class Client(Requestable, AsyncRunnable):
         :param user: whose reaction, delete others added reaction requires channel msg admin permission
         """
         return await msg.delete_reaction(emoji, user)
+
+    async def update_message(self, msg: Union[str, Message], content: Union[str, List], quote: str = None, temp_target_id: str = None):
+        params = {'msg_id': msg if isinstance(msg, str) else msg.id, 'content': content if isinstance(content, str) else json.dumps(content)}
+        if quote is not None:
+            params['quote'] = quote
+        if temp_target_id is not None:
+            params['temp_target_id'] = temp_target_id
+        return await self.gate.exec_req(api.Message.update(**params))
 
     async def fetch_game_list(self, **kwargs) -> List[Game]:
         """list the games already registered at khl server
