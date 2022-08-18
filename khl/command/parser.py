@@ -5,7 +5,9 @@ import inspect
 import logging
 from typing import Dict, Any, Callable, List, Coroutine
 
-from khl import User, Channel, Client
+from khl import Role
+
+from .. import User, Channel, Client, Message
 
 log = logging.getLogger(__name__)
 
@@ -24,16 +26,26 @@ def _get_param_type(params: List[inspect.Parameter], index: int):
     return result
 
 
-async def _parse_user(client, token) -> User:
+async def _parse_user(msg, client, token) -> User:
     if not (token.startswith("(met)") and token.startswith("(met)")):
         raise Parser.ParseException(RuntimeError("Failed to parse user"))
     return await client.fetch_user(token[5:len(token) - 5])
 
 
-async def _parse_channel(client, token) -> Channel:
+async def _parse_channel(msg, client, token) -> Channel:
     if not (token.startswith("(chn)") and token.startswith("(chn)")):
         raise Parser.ParseException(RuntimeError("Failed to parse channel"))
     return await client.fetch_public_channel(token[5:len(token) - 5])
+
+
+async def _parse_role(msg: Message, client, token) -> Role:
+    if not (token.startswith("(rol)") and token.startswith("(rol)")):
+        raise Parser.ParseException(RuntimeError("Failed to parse role"))
+    role_id = int(token[5:len(token)-5])
+    roles = [role for role in (await msg.ctx.guild.fetch_roles()) if role.id == role_id]
+    if len(roles) == 0:
+        raise Parser.ParseException(RuntimeError("Cannot find the role"))
+    return roles[0]
 
 
 class Parser:
@@ -41,20 +53,22 @@ class Parser:
     deal with a list of tokens made from Lexer, convert their type to match the command.handler
     """
     _parse_funcs: Dict[Any, Callable] = {
-        str: lambda client, token: token,
-        int: lambda client, token: int(token),
-        float: lambda client, token: float(token),
+        str: lambda msg, client, token: token,
+        int: lambda msg, client, token: int(token),
+        float: lambda msg, client, token: float(token),
         User: _parse_user,
-        Channel: _parse_channel
+        Channel: _parse_channel,
+        Role: _parse_role
     }
 
     def __init__(self):
         self._parse_funcs = copy.copy(Parser._parse_funcs)
 
-    async def parse(self, client: Client, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
+    async def parse(self, msg: Message, client: Client, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
         """
         parse tokens into args that types corresponding to handler's requirement
 
+        :param msg: message object
         :param client: bot client
         :param tokens: output of Lexer.lex()
         :param params: command handlers parameters
@@ -69,7 +83,7 @@ class Parser:
                 raise Parser.ParseFuncNotExists(params[i])
 
             try:
-                call = self._parse_funcs[param_type](client, v)
+                call = self._parse_funcs[param_type](msg, client, v)
                 if isinstance(call, Coroutine):
                     call = await call
                 ret.append(call)
