@@ -87,7 +87,8 @@ class Command:
         2. if matched, execute the command handler"""
         try:
             filtered, params = self._split_params(list(predefined_args))
-            args = [predefined_args[k] for k in filtered] + await self.parser.parse(msg, client, self.lexer.lex(msg), params)
+            args = [predefined_args[k] for k in filtered] \
+                   + await self.parser.parse(msg, client, self.lexer.lex(msg), params)
             await self.execute(msg, *args)
         except Lexer.NotMatched:
             return

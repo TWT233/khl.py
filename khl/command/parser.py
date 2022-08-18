@@ -5,9 +5,7 @@ import inspect
 import logging
 from typing import Dict, Any, Callable, List, Coroutine
 
-from khl import Role
-
-from .. import User, Channel, Client, Message
+from .. import User, Channel, Client, Message, Role
 
 log = logging.getLogger(__name__)
 
@@ -26,22 +24,22 @@ def _get_param_type(params: List[inspect.Parameter], index: int):
     return result
 
 
-async def _parse_user(msg, client, token) -> User:
-    if not (token.startswith("(met)") and token.startswith("(met)")):
+async def _parse_user(_, client, token) -> User:
+    if not (token.startswith("(met)") and token.endswith("(met)")):
         raise Parser.ParseException(RuntimeError("Failed to parse user"))
     return await client.fetch_user(token[5:len(token) - 5])
 
 
-async def _parse_channel(msg, client, token) -> Channel:
-    if not (token.startswith("(chn)") and token.startswith("(chn)")):
+async def _parse_channel(_, client, token) -> Channel:
+    if not (token.startswith("(chn)") and token.endswith("(chn)")):
         raise Parser.ParseException(RuntimeError("Failed to parse channel"))
     return await client.fetch_public_channel(token[5:len(token) - 5])
 
 
-async def _parse_role(msg: Message, client, token) -> Role:
-    if not (token.startswith("(rol)") and token.startswith("(rol)")):
+async def _parse_role(msg, _, token) -> Role:
+    if not (token.startswith("(rol)") and token.endswith("(rol)")):
         raise Parser.ParseException(RuntimeError("Failed to parse role"))
-    role_id = int(token[5:len(token)-5])
+    role_id = int(token[5:len(token) - 5])
     roles = [role for role in (await msg.ctx.guild.fetch_roles()) if role.id == role_id]
     if len(roles) == 0:
         raise Parser.ParseException(RuntimeError("Cannot find the role"))
@@ -64,7 +62,13 @@ class Parser:
     def __init__(self):
         self._parse_funcs = copy.copy(Parser._parse_funcs)
 
-    async def parse(self, msg: Message, client: Client, tokens: List[str], params: List[inspect.Parameter]) -> List[Any]:
+    async def parse(
+            self,
+            msg: Message,
+            client: Client,
+            tokens: List[str],
+            params: List[inspect.Parameter]
+    ) -> List[Any]:
         """
         parse tokens into args that types corresponding to handler's requirement
 
