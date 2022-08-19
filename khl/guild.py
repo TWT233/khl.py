@@ -1,5 +1,6 @@
 """guild related stuffs: Guild, ChannelCategory"""
 import logging
+import warnings
 from typing import List, Union, Dict, IO
 
 from . import api
@@ -203,6 +204,18 @@ class Guild(LazyLoadable, Requestable):
     async def list_user(self, channel: Union[Channel, str] = None, **kwargs) -> List[User]:
         """list users in the guild/a channel belongs to the guild
 
+        paged req, support standard pagination args
+
+        .. deprecated-removed:: 0.3.2 0.4.0
+            use :func:`fetch_user_list()`"""
+        warnings.warn("deprecated, alternative: fetch_user_list(), everything else is in the same",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return await self.fetch_user_list(channel, **kwargs)
+
+    async def fetch_user_list(self, channel: Union[Channel, str] = None, **kwargs) -> List[User]:
+        """list users in the guild/a channel belongs to the guild
+
         paged req, support standard pagination args"""
         cid = channel.id if isinstance(channel, Channel) else channel
         params = {'guild_id': self.id}
@@ -300,6 +313,16 @@ class Guild(LazyLoadable, Requestable):
         return await self.gate.exec_req(api.Guild.leave(guild_id=self.id))
 
     async def get_mute_list(self, return_type: str = 'detail'):
+        """get mute list from this guild
+
+        .. deprecated-removed:: 0.3.2 0.4.0
+            use :func:`fetch_mute_list()`"""
+        warnings.warn("deprecated, alternative: fetch_mute_list(), everything else is in the same",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.fetch_mute_list(return_type)
+
+    async def fetch_mute_list(self, return_type: str = 'detail'):
         """get mute list from this guild"""
         return await self.gate.exec_req(api.GuildMute.list(guild_id=self.id, return_type=return_type))
 
