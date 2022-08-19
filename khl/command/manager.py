@@ -1,9 +1,10 @@
 import asyncio
 import logging
-from typing import Optional, List, Union, Pattern, Dict
+from typing import Optional, List, Union, Pattern, Dict, Any
 
 from khl import Message, Client
 from .command import Command
+from .exception import TypeEHandler
 from .lexer import Lexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule
@@ -21,17 +22,20 @@ class CommandManager:
     # why disable duplicate-code:
     # the duplicated code is the param list, used to provide auto complete/coding hints in IDE
     # pylint: disable = duplicate-code
-    def __call__(self,
-                 name: str = '',
-                 *,
-                 help: str = '',
-                 desc: str = '',
-                 aliases: List[str] = (),
-                 prefixes: List[str] = ('/', ),
-                 regex: Union[str, Pattern] = '',
-                 lexer: Lexer = None,
-                 parser: Parser = None,
-                 rules: List[TypeRule] = ()):
+    def __call__(
+            self,
+            name: str = '',
+            *,
+            help: str = '',
+            desc: str = '',
+            aliases: List[str] = (),
+            prefixes: List[str] = ('/', ),
+            regex: Union[str, Pattern] = '',
+            lexer: Lexer = None,
+            parser: Parser = None,
+            rules: List[TypeRule] = (),
+            exc_handlers: Dict[Any, TypeEHandler] = None,
+    ):
         """
         decorator, wrap a function in Command and register it on current Bot
 
@@ -54,7 +58,8 @@ class CommandManager:
             'regex': regex,
             'lexer': lexer,
             'parser': parser,
-            'rules': rules
+            'rules': rules,
+            'exc_handlers': exc_handlers
         }
 
         return lambda func: self.add(Command.command(name, **args)(func))
