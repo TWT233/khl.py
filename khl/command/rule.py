@@ -30,3 +30,8 @@ class Rule:
     def is_mention_all(msg: Message) -> bool:
         """:return: a Rule that checks if the msg mentioned all members"""
         return msg.extra.get('mention_all', None) is not None
+
+    @staticmethod
+    def is_not_bot(msg: Message) -> bool:
+        """:return: a Rule that check if the msg belong non bot"""
+        return not msg.author.bot
