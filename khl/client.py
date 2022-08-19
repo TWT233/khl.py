@@ -11,7 +11,7 @@ from .gateway import Gateway, Requestable
 from .guild import Guild
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
-from .types import SoftwareTypes, MessageTypes, SlowModeTypes
+from ._types import SoftwareTypes, MessageTypes, SlowModeTypes
 from .user import User
 from .util import unpack_id, unpack_value
 

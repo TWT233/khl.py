@@ -4,7 +4,7 @@ from typing import List, Union
 from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
-from .types import MessageTypes
+from ._types import MessageTypes
 
 
 class User(LazyLoadable, Requestable):

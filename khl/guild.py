@@ -7,7 +7,7 @@ from .channel import Channel, public_channel_factory, PublicChannel, PublicVoice
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .role import Role
-from .types import ChannelTypes, GuildMuteTypes
+from ._types import ChannelTypes, GuildMuteTypes
 from .user import User
 from .util import unpack_id
 
