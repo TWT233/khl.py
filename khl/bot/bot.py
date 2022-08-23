@@ -169,6 +169,7 @@ class Bot(AsyncRunnable):
         return dec
 
     def on_startup(self, func: StartupHandler):
+        """decorator, register a function to handle bot start"""
 
         self._startup_index.append(func)
 
