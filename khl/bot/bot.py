@@ -17,6 +17,8 @@ log = logging.getLogger(__name__)
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
 MessageHandler = Callable[[Message], Coroutine]
 
+StartupHandler = Callable[[], Coroutine]
+
 
 class Bot(AsyncRunnable):
     """
@@ -33,6 +35,8 @@ class Bot(AsyncRunnable):
     # internal containers
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
+
+    _startup_index: List[StartupHandler]
 
     def __init__(self,
                  token: str = '',
@@ -72,6 +76,8 @@ class Bot(AsyncRunnable):
 
         self._event_index = {}
         self._tasks = []
+
+        self._startup_index = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
         """
@@ -159,6 +165,12 @@ class Bot(AsyncRunnable):
 
         def dec(func: MessageHandler):
             self.add_message_handler(func, *set(except_type + (MessageTypes.SYS, )))
+
+        return dec
+
+    def on_startup(self):
+        def dec(func: StartupHandler):
+            self._startup_index.append(func)
 
         return dec
 
@@ -448,6 +460,8 @@ class Bot(AsyncRunnable):
         await self.client.update_channel(channel, name, topic, slow_mode)
 
     async def start(self):
+        for func in self._startup_index:
+            await func()
         if self._is_running:
             raise RuntimeError('this bot is already running')
         self.task.schedule()
