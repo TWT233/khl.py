@@ -83,7 +83,7 @@ class WebsocketReceiver(Receiver):
                     self._RAW_GATEWAY = res_json['data']['url']
 
                 async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
-                    # asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
+                    asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
                     log.info('[ init ] launched')
 
