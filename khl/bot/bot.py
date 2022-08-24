@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
 MessageHandler = Callable[[Message], Coroutine]
 
-StartupHandler = Callable[[], Coroutine]
+TypeStartupHandler = Callable[['Bot'], Coroutine]
 
 
 class Bot(AsyncRunnable):
@@ -36,7 +36,7 @@ class Bot(AsyncRunnable):
     _me: Optional[User]
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
 
-    _startup_index: List[StartupHandler]
+    _startup_index: List[TypeStartupHandler]
 
     def __init__(self,
                  token: str = '',
@@ -168,7 +168,7 @@ class Bot(AsyncRunnable):
 
         return dec
 
-    def on_startup(self, func: StartupHandler):
+    def on_startup(self, func: TypeStartupHandler):
         """decorator, register a function to handle bot start"""
 
         self._startup_index.append(func)
@@ -462,7 +462,7 @@ class Bot(AsyncRunnable):
 
     async def start(self):
         for func in self._startup_index:
-            await func()
+            await func(self)
         if self._is_running:
             raise RuntimeError('this bot is already running')
         self.task.schedule()
