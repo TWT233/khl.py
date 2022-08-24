@@ -15,8 +15,7 @@ from ..task import TaskManager
 log = logging.getLogger(__name__)
 
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
-MessageHandler = Callable[[Message], Coroutine]
-
+TypeMessageHandler = Callable[[Message], Coroutine]
 TypeStartupHandler = Callable[['Bot'], Coroutine]
 
 
@@ -63,20 +62,16 @@ class Bot(AsyncRunnable):
         """
         if not token and not cert:
             raise ValueError('require token or cert')
+
         self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
-        msg_handler = self._make_msg_handler()
-        self.client.register(MessageTypes.TEXT, msg_handler)
-        self.client.register(MessageTypes.KMD, msg_handler)
-        self.client.register(MessageTypes.SYS, self._make_event_handler())
+        self._register_client_handler()
 
         self.command = CommandManager()
+
         self.task = TaskManager()
 
         self._is_running = False
-
         self._event_index = {}
-        self._tasks = []
-
         self._startup_index = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
@@ -113,6 +108,15 @@ class Bot(AsyncRunnable):
 
         self.client = Client(Gateway(_out, _in))
 
+    def _register_client_handler(self):
+        # text and kmd -> msg
+        msg_handler = self._make_msg_handler()
+        self.client.register(MessageTypes.TEXT, msg_handler)
+        self.client.register(MessageTypes.KMD, msg_handler)
+
+        # sys -> event
+        self.client.register(MessageTypes.SYS, self._make_event_handler())
+
     def _make_msg_handler(self) -> Callable:
         """
         construct a function to receive msg from client, and interpret it with _cmd_index
@@ -143,7 +147,7 @@ class Bot(AsyncRunnable):
         log.debug(f'event_handler {handler.__qualname__} for {type} added')
         return handler
 
-    def add_message_handler(self, handler: MessageHandler, *except_type: MessageTypes):
+    def add_message_handler(self, handler: TypeMessageHandler, *except_type: MessageTypes):
         """`except_type` is an exclusion list"""
         for type in MessageTypes:
             if type not in except_type:
@@ -163,7 +167,7 @@ class Bot(AsyncRunnable):
         :param except_type: excepted types
         """
 
-        def dec(func: MessageHandler):
+        def dec(func: TypeMessageHandler):
             self.add_message_handler(func, *set(except_type + (MessageTypes.SYS, )))
 
         return dec
