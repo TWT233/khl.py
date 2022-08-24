@@ -14,10 +14,10 @@ class Element:
         content: str
         emoji: bool
 
-        def __init__(self, content: str, text_type: Union[Types.Text, str] = Types.Text.PLAIN, emoji: bool = True):
-            if isinstance(text_type, str):
-                text_type = Types.Text(text_type)  # check if type in Type.Text
-            self._type = text_type.value
+        def __init__(self, content: str, type: Union[Types.Text, str] = Types.Text.PLAIN, emoji: bool = True):
+            if isinstance(type, str):
+                type = Types.Text(type)  # check if type in Type.Text
+            self._type = type.value()
             self.content = content
             self.emoji = emoji
             super().__init__(Types.Theme.NA, Types.Size.NA)
