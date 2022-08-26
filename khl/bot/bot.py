@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import warnings
+from pathlib import Path
 from typing import Dict, Callable, List, Optional, Union, Coroutine, IO
 
 from .. import AsyncRunnable  # interfaces
@@ -277,7 +278,7 @@ class Bot(AsyncRunnable):
                       stacklevel=2)
         return await self.client.send(target, content, type=type, temp_target_id=temp_target_id, **kwargs)
 
-    async def upload_asset(self, file: Union[IO, str]) -> str:
+    async def upload_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file, alias for ``create_asset``
 
         if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
@@ -289,7 +290,7 @@ class Bot(AsyncRunnable):
                       stacklevel=2)
         return await self.create_asset(file)
 
-    async def create_asset(self, file: Union[IO, str]) -> str:
+    async def create_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file
 
         if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
