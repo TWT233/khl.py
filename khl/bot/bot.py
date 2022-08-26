@@ -281,7 +281,7 @@ class Bot(AsyncRunnable):
     async def upload_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file, alias for ``create_asset``
 
-        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        if ``file`` is a str or Path, ``open(file, 'rb')`` will be called to convert it into IO
 
         .. deprecated-removed:: 0.3.0 0.4.0
             use :func:`.client.create_asset()`"""
@@ -293,7 +293,7 @@ class Bot(AsyncRunnable):
     async def create_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file
 
-        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        if ``file`` is a str or Path, ``open(file, 'rb')`` will be called to convert it into IO
 
         .. deprecated-removed:: 0.3.0 0.4.0
             use :func:`.client.create_asset()`"""

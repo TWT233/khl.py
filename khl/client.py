@@ -117,7 +117,7 @@ class Client(Requestable, AsyncRunnable):
     async def create_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file
 
-        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        if ``file`` is a str or Path, ``open(file, 'rb')`` will be called to convert it into IO
         """
         if not isinstance(file, (str, Path)):
             return (await self.gate.exec_req(api.Asset.create(file=file)))['url']
