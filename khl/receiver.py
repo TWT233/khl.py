@@ -74,22 +74,25 @@ class WebsocketReceiver(Receiver):
             headers = {'Authorization': f'Bot {self._cert.token}', 'Content-type': 'application/json'}
             params = {'compress': 1 if self.compress else 0}
             while True:
-                async with cs.get(f"{API}/gateway/index", headers=headers, params=params) as res:
-                    res_json = await res.json()
-                    if res_json['code'] != 0:
-                        log.error(f'getting gateway: {res_json}')
-                        return
+                try:
+                    async with cs.get(f"{API}/gateway/index", headers=headers, params=params) as res:
+                        res_json = await res.json()
+                        if res_json['code'] != 0:
+                            log.error(f'getting gateway: {res_json}')
+                            return
 
-                    self._RAW_GATEWAY = res_json['data']['url']
+                        self._RAW_GATEWAY = res_json['data']['url']
 
-                async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
-                    asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
+                    async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
+                        asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
-                    log.info('[ init ] launched')
+                        log.info('[ init ] launched')
 
-                    async for raw in ws_conn:
-                        raw: WSMessage
-                        await self._handle_raw(raw)
+                        async for raw in ws_conn:
+                            raw: WSMessage
+                            await self._handle_raw(raw)
+                except Exception as e:
+                    log.exception('error raised during websocket receive', exc_info=e)
 
     async def _handle_raw(self, raw: WSMessage):
         try:
