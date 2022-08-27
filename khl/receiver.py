@@ -5,7 +5,7 @@ import zlib
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage
+from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage, client_exceptions
 
 from .cert import Cert
 from .interface import AsyncRunnable
@@ -91,8 +91,8 @@ class WebsocketReceiver(Receiver):
                         async for raw in ws_conn:
                             raw: WSMessage
                             await self._handle_raw(raw)
-                except Exception as e:
-                    log.exception('error raised during websocket receive', exc_info=e)
+                except client_exceptions.WSServerHandshakeError:
+                    log.exception('error raised during websocket receive, reconnect automatically')
 
     async def _handle_raw(self, raw: WSMessage):
         try:
