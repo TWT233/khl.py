@@ -2,6 +2,7 @@
 import asyncio
 import inspect
 import logging
+from pathlib import Path
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
@@ -113,12 +114,12 @@ class Client(Requestable, AsyncRunnable):
 
         return safe_handler
 
-    async def create_asset(self, file: Union[IO, str]) -> str:
+    async def create_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file
 
-        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        if ``file`` is a str or Path, ``open(file, 'rb')`` will be called to convert it into IO
         """
-        if not isinstance(file, str):
+        if not isinstance(file, (str, Path)):
             return (await self.gate.exec_req(api.Asset.create(file=file)))['url']
         with open(file, 'rb') as f:
             return (await self.gate.exec_req(api.Asset.create(file=f)))['url']
