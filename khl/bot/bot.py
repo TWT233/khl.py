@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
 TypeMessageHandler = Callable[[Message], Coroutine]
 TypeStartupHandler = Callable[['Bot'], Coroutine]
+TypeShutdownHandler = Callable[['Bot'], Coroutine]
 
 
 class Bot(AsyncRunnable):
@@ -37,6 +38,7 @@ class Bot(AsyncRunnable):
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
 
     _startup_index: List[TypeStartupHandler]
+    _shutdown_index: List[TypeShutdownHandler]
 
     def __init__(self,
                  token: str = '',
@@ -74,6 +76,7 @@ class Bot(AsyncRunnable):
         self._is_running = False
         self._event_index = {}
         self._startup_index = []
+        self._shutdown_index = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
         """
@@ -177,6 +180,13 @@ class Bot(AsyncRunnable):
         """decorator, register a function to handle bot start"""
 
         self._startup_index.append(func)
+
+        return func
+
+    def on_shutdown(self, func: TypeShutdownHandler):
+        """decorator, register a function to handle bot stop"""
+
+        self._shutdown_index.append(func)
 
         return func
 
@@ -480,4 +490,6 @@ class Bot(AsyncRunnable):
         try:
             self.loop.run_until_complete(self.start())
         except KeyboardInterrupt:
+            for func in self._shutdown_index:
+                self.loop.run_until_complete(func(self))
             log.info('see you next time')
