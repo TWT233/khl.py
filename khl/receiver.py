@@ -67,32 +67,46 @@ class WebsocketReceiver(Receiver):
             except ConnectionResetError:
                 return
             except Exception as e:
-                log.exception('error raised during websocket heartbeat', exc_info=e)
+                log.exception('error raised during websocket heartbeat',
+                              exc_info=e)
+
+    async def get_gateway(self):
+        headers = {
+            'Authorization': f'Bot {self._cert.token}',
+            'Content-type': 'application/json'
+        }
+        params = {'compress': 1 if self.compress else 0}
+        async with self._CLIENTSESSION.get(f"{API}/gateway/index",
+                                           headers=headers,
+                                           params=params) as res:
+            res_json = await res.json()
+            if res_json['code'] != 0:
+                log.error(f'getting gateway: {res_json}')
+                return
+
+            self._RAW_GATEWAY = res_json['data']['url']
+
+    async def connect_gateway_and_handle_msg(self):
+        async with self._CLIENTSESSION.ws_connect(
+                self._RAW_GATEWAY) as ws_conn:
+            asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
+
+            log.info('[ init ] launched')
+            try:
+                async for raw in ws_conn:
+                    raw: WSMessage
+                    await self._handle_raw(raw)
+            except Exception:
+                log.exception(
+                    'error raised during websocket receive, reconnect automatically'
+                )
 
     async def start(self):
         async with ClientSession(loop=self.loop) as cs:
-            headers = {'Authorization': f'Bot {self._cert.token}', 'Content-type': 'application/json'}
-            params = {'compress': 1 if self.compress else 0}
+            self._CLIENTSESSION = cs
             while True:
-                try:
-                    async with cs.get(f"{API}/gateway/index", headers=headers, params=params) as res:
-                        res_json = await res.json()
-                        if res_json['code'] != 0:
-                            log.error(f'getting gateway: {res_json}')
-                            return
-
-                        self._RAW_GATEWAY = res_json['data']['url']
-
-                    async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
-                        asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
-
-                        log.info('[ init ] launched')
-
-                        async for raw in ws_conn:
-                            raw: WSMessage
-                            await self._handle_raw(raw)
-                except client_exceptions.WSServerHandshakeError:
-                    log.exception('error raised during websocket receive, reconnect automatically')
+                await self.get_gateway()
+                await self.connect_gateway_and_handle_msg()
 
     async def _handle_raw(self, raw: WSMessage):
         try:
@@ -150,7 +164,8 @@ class WebhookReceiver(Receiver):
             if not pkg:  # empty pkg
                 return web.Response()
 
-            if pkg['d']['verify_token'] != self._cert.verify_token:  # check verify_token
+            if pkg['d'][
+                    'verify_token'] != self._cert.verify_token:  # check verify_token
                 return web.Response()
 
             if self._is_dup(pkg):  # dup pkg
@@ -158,7 +173,8 @@ class WebhookReceiver(Receiver):
 
             if pkg['s'] == 0:
                 pkg = pkg['d']
-                if pkg['type'] == 255 and pkg['channel_type'] == 'WEBHOOK_CHALLENGE':
+                if pkg['type'] == 255 and pkg[
+                        'channel_type'] == 'WEBHOOK_CHALLENGE':
                     return web.json_response({'challenge': pkg['challenge']})
                 await self.pkg_queue.put(pkg)
 
