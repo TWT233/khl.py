@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import warnings
+from pathlib import Path
 from typing import Dict, Callable, List, Optional, Union, Coroutine, IO
 
 from .. import AsyncRunnable  # interfaces
@@ -17,6 +18,7 @@ log = logging.getLogger(__name__)
 TypeEventHandler = Callable[['Bot', Event], Coroutine]
 TypeMessageHandler = Callable[[Message], Coroutine]
 TypeStartupHandler = Callable[['Bot'], Coroutine]
+TypeShutdownHandler = Callable[['Bot'], Coroutine]
 
 
 class Bot(AsyncRunnable):
@@ -36,6 +38,7 @@ class Bot(AsyncRunnable):
     _event_index: Dict[EventTypes, List[TypeEventHandler]]
 
     _startup_index: List[TypeStartupHandler]
+    _shutdown_index: List[TypeShutdownHandler]
 
     def __init__(self,
                  token: str = '',
@@ -73,6 +76,7 @@ class Bot(AsyncRunnable):
         self._is_running = False
         self._event_index = {}
         self._startup_index = []
+        self._shutdown_index = []
 
     def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
         """
@@ -179,6 +183,13 @@ class Bot(AsyncRunnable):
 
         return func
 
+    def on_shutdown(self, func: TypeShutdownHandler):
+        """decorator, register a function to handle bot stop"""
+
+        self._shutdown_index.append(func)
+
+        return func
+
     async def fetch_me(self, force_update: bool = False) -> User:
         """fetch detail of the bot it self as a ``User``
 
@@ -277,10 +288,10 @@ class Bot(AsyncRunnable):
                       stacklevel=2)
         return await self.client.send(target, content, type=type, temp_target_id=temp_target_id, **kwargs)
 
-    async def upload_asset(self, file: Union[IO, str]) -> str:
+    async def upload_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file, alias for ``create_asset``
 
-        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        if ``file`` is a str or Path, ``open(file, 'rb')`` will be called to convert it into IO
 
         .. deprecated-removed:: 0.3.0 0.4.0
             use :func:`.client.create_asset()`"""
@@ -289,10 +300,10 @@ class Bot(AsyncRunnable):
                       stacklevel=2)
         return await self.create_asset(file)
 
-    async def create_asset(self, file: Union[IO, str]) -> str:
+    async def create_asset(self, file: Union[IO, str, Path]) -> str:
         """upload ``file`` to khl, and return the url to the file
 
-        if ``file`` is a str, ``open(file, 'rb')`` will be called to convert it into IO
+        if ``file`` is a str or Path, ``open(file, 'rb')`` will be called to convert it into IO
 
         .. deprecated-removed:: 0.3.0 0.4.0
             use :func:`.client.create_asset()`"""
@@ -479,4 +490,6 @@ class Bot(AsyncRunnable):
         try:
             self.loop.run_until_complete(self.start())
         except KeyboardInterrupt:
+            for func in self._shutdown_index:
+                self.loop.run_until_complete(func(self))
             log.info('see you next time')
