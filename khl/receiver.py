@@ -70,7 +70,7 @@ class WebsocketReceiver(Receiver):
                 log.exception('error raised during websocket heartbeat',
                               exc_info=e)
 
-    async def get_gateway(self):
+    async def _get_gateway(self):
         headers = {
             'Authorization': f'Bot {self._cert.token}',
             'Content-type': 'application/json'
@@ -86,7 +86,7 @@ class WebsocketReceiver(Receiver):
 
             self._RAW_GATEWAY = res_json['data']['url']
 
-    async def connect_gateway_and_handle_msg(self):
+    async def _connect_gateway_and_handle_msg(self):
         async with self._CLIENTSESSION.ws_connect(
                 self._RAW_GATEWAY) as ws_conn:
             asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
@@ -105,8 +105,8 @@ class WebsocketReceiver(Receiver):
         async with ClientSession(loop=self.loop) as cs:
             self._CLIENTSESSION = cs
             while True:
-                await self.get_gateway()
-                await self.connect_gateway_and_handle_msg()
+                await self._get_gateway()
+                await self._connect_gateway_and_handle_msg()
 
     async def _handle_raw(self, raw: WSMessage):
         try:
