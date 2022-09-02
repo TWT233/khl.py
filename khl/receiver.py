@@ -3,9 +3,9 @@ import logging
 import time
 import zlib
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, Optional
 
-from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage, client_exceptions
+from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage
 
 from .cert import Cert
 from .interface import AsyncRunnable
@@ -70,15 +70,15 @@ class WebsocketReceiver(Receiver):
                 log.exception('error raised during websocket heartbeat',
                               exc_info=e)
 
-    async def _get_gateway(self):
+    async def _get_gateway(self, cs: ClientSession):
         headers = {
             'Authorization': f'Bot {self._cert.token}',
             'Content-type': 'application/json'
         }
         params = {'compress': 1 if self.compress else 0}
-        async with self._CLIENTSESSION.get(f"{API}/gateway/index",
-                                           headers=headers,
-                                           params=params) as res:
+        async with cs.get(f"{API}/gateway/index",
+                          headers=headers,
+                          params=params) as res:
             res_json = await res.json()
             if res_json['code'] != 0:
                 log.error(f'getting gateway: {res_json}')
@@ -86,9 +86,8 @@ class WebsocketReceiver(Receiver):
 
             self._RAW_GATEWAY = res_json['data']['url']
 
-    async def _connect_gateway_and_handle_msg(self):
-        async with self._CLIENTSESSION.ws_connect(
-                self._RAW_GATEWAY) as ws_conn:
+    async def _connect_gateway_and_handle_msg(self, cs: ClientSession):
+        async with cs.ws_connect(self._RAW_GATEWAY) as ws_conn:
             asyncio.ensure_future(self.heartbeat(ws_conn), loop=self.loop)
 
             log.info('[ init ] launched')
@@ -103,10 +102,9 @@ class WebsocketReceiver(Receiver):
 
     async def start(self):
         async with ClientSession(loop=self.loop) as cs:
-            self._CLIENTSESSION = cs
             while True:
-                await self._get_gateway()
-                await self._connect_gateway_and_handle_msg()
+                await self._get_gateway(cs)
+                await self._connect_gateway_and_handle_msg(cs)
 
     async def _handle_raw(self, raw: WSMessage):
         try:
