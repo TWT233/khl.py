@@ -3,7 +3,7 @@ import logging
 import time
 import zlib
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
+from typing import Dict
 
 from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage
 
