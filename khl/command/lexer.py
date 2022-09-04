@@ -54,7 +54,7 @@ class DefaultLexer(Lexer):
         for prefix in matched_prefixes:
             try:
                 arg_list = shlex.split(msg.content[len(prefix):])
-            except ValueError("No closing quotation"):
+            except ValueError( "No closing quotation" ):
                 pass
             except Exception as e:
                 raise DefaultLexer.MalformedContent(msg) from e
