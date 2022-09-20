@@ -9,7 +9,7 @@ from .cert import Cert
 
 log = logging.getLogger(__name__)
 
-API = 'https://www.kaiheila.cn/api/v3'
+API = 'https://www.kookapp.cn/api/v3'
 
 
 class HTTPRequester:
