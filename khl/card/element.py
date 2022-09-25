@@ -17,7 +17,7 @@ class Element:
         def __init__(self, content: str, type: Union[Types.Text, str] = Types.Text.PLAIN, emoji: bool = True):
             if isinstance(type, str):
                 type = Types.Text(type)  # check if type in Type.Text
-            self._type = type.value()
+            self._type = type.value
             self.content = content
             self.emoji = emoji
             super().__init__(Types.Theme.NA, Types.Size.NA)
