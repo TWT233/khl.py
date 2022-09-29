@@ -79,6 +79,10 @@ class EventTypes(Enum):
     PINNED_MESSAGE = 'pinned_message'
     UNPINNED_MESSAGE = 'unpinned_message'
 
+    ADDED_EMOJI = 'added_emoji'
+    DELETED_EMOJI = 'deleted_emoji'
+    UPDATED_EMOJI = 'updated_emoji'
+
 
 class GuildMuteTypes(IntEnum):
     """
