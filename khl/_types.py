@@ -44,6 +44,7 @@ class EventTypes(Enum):
     DELETED_REACTION = 'deleted_reaction'
     UPDATED_MESSAGE = 'updated_message'
     DELETED_MESSAGE = 'deleted_message'
+    MESSAGE_UPDATED = 'message_updated'
 
     PRIVATE_ADDED_REACTION = 'private_added_reaction'
     PRIVATE_DELETED_REACTION = 'private_deleted_reaction'
@@ -78,6 +79,10 @@ class EventTypes(Enum):
 
     PINNED_MESSAGE = 'pinned_message'
     UNPINNED_MESSAGE = 'unpinned_message'
+
+    ADDED_EMOJI = 'added_emoji'
+    DELETED_EMOJI = 'deleted_emoji'
+    UPDATED_EMOJI = 'updated_emoji'
 
 
 class GuildMuteTypes(IntEnum):
