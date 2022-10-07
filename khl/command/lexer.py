@@ -38,6 +38,7 @@ class DefaultLexer(Lexer):
     def __init__(self, prefixes: Set[str], triggers: Set[str], ignore_case: bool):
         self.prefixes = prefixes
         self.triggers = triggers
+        self.ignore_case = ignore_case
 
     def lex(self, msg: Message) -> List[str]:
         """
@@ -58,17 +59,10 @@ class DefaultLexer(Lexer):
                 arg_list = shlex.split(msg.content[len(prefix):])
             except Exception as e:
                 raise DefaultLexer.MalformedContent(msg) from e
-            if self.ignore_case:
-                trigger = (arg_list[0] if len(arg_list) > 0 else '').lower()
-                for trigr in self.triggers:
-                    if trigr.lower() == trigger:
-                        return arg_list[1:]  # arg_list[0] is trigger
-                raise Exceptions.Lexer.NotMatched()
-            else:
-                # check if trigger exists
-                if (arg_list[0] if len(arg_list) > 0 else '') not in self.triggers:
-                    raise Exceptions.Lexer.NotMatched()
-            return arg_list[1:]  # arg_list[0] is trigger
+            trigger = (arg_list[0] if len(arg_list) > 0 else '')
+            if self.ignore_case and trigger.lower() in [t.lower() for t in self.triggers] or trigger in self.triggers:
+                return arg_list[1:]  # arg_list[0] is trigger
+            raise Exceptions.Lexer.NotMatched()
 
     class MalformedContent(Exceptions.Lexer.LexFailed):
         """the content can not be shlex.split()"""
