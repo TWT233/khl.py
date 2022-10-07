@@ -35,6 +35,7 @@ class CommandManager:
             parser: Parser = None,
             rules: List[TypeRule] = (),
             exc_handlers: Dict[Any, TypeEHandler] = None,
+            ignore_case: bool = False
     ):
         """
         decorator, wrap a function in Command and register it on current Bot
@@ -59,7 +60,8 @@ class CommandManager:
             'lexer': lexer,
             'parser': parser,
             'rules': rules,
-            'exc_handlers': exc_handlers
+            'exc_handlers': exc_handlers,
+            'ignore_case': ignore_case
         }
 
         return lambda func: self.add(Command.command(name, **args)(func))
