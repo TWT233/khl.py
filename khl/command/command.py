@@ -106,7 +106,7 @@ class Command:
             lexer = RELexer(regex) if isinstance(regex, str) else regex
 
         def decorator(handler: TypeHandler):
-            default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)), ignore_case)
+            default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)), case_sensitive)
             return Command(name, handler, help, desc, lexer or default_lexer,
                            parser or Parser(), rules, exc_handlers, case_sensitive)
 

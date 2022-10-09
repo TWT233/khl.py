@@ -35,7 +35,7 @@ class CommandManager:
             parser: Parser = None,
             rules: List[TypeRule] = (),
             exc_handlers: Dict[Any, TypeEHandler] = None,
-            ignore_case: bool = False
+            case_sensitive: bool = False
     ):
         """
         decorator, wrap a function in Command and register it on current Bot
