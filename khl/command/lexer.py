@@ -60,8 +60,8 @@ class DefaultLexer(Lexer):
             except Exception as e:
                 raise DefaultLexer.MalformedContent(msg) from e
             trigger = (arg_list[0] if len(arg_list) > 0 else '')
-            if self.case_sensitive and trigger.lower() in [t.lower() for t in self.triggers] \
-                    or trigger in self.triggers:
+            if not self.case_sensitive and trigger in self.triggers or \
+                    trigger.lower() in [t.lower() for t in self.triggers]:
                 return arg_list[1:]  # arg_list[0] is trigger
             raise Exceptions.Lexer.NotMatched()
 

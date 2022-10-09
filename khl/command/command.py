@@ -85,7 +85,7 @@ class Command:
         parser: Parser = None,
         rules: List[TypeRule] = (),
         exc_handlers: Dict[Any, TypeEHandler] = None,
-        case_sensitive: bool = False
+        case_sensitive: bool = True
     ) -> Callable[[TypeHandler], 'Command']:
         """
         decorator, to wrap a func into a Command
