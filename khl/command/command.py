@@ -39,7 +39,7 @@ class Command:
     rules: List[TypeRule]
     exc_handlers: Dict[Any, TypeEHandler]
 
-    ignore_case: bool
+    case_sensitive: bool
 
     def __init__(
         self,
@@ -51,7 +51,7 @@ class Command:
         parser: Parser,
         rules: List[TypeRule],
         exc_handlers: Dict[Any, TypeEHandler],
-        ignore_case: bool = False
+        case_sensitive: bool = False
     ):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
@@ -70,7 +70,7 @@ class Command:
         self.rules = list(rules)
         self.exc_handlers = copy(default_exc_handler) if exc_handlers is None else dict(exc_handlers)
 
-        self.ignore_case = ignore_case
+        self.case_sensitive = case_sensitive
 
     @staticmethod
     def command(
@@ -85,7 +85,7 @@ class Command:
         parser: Parser = None,
         rules: List[TypeRule] = (),
         exc_handlers: Dict[Any, TypeEHandler] = None,
-        ignore_case: bool = False
+        case_sensitive: bool = False
     ) -> Callable[[TypeHandler], 'Command']:
         """
         decorator, to wrap a func into a Command
@@ -99,7 +99,7 @@ class Command:
         :param lexer: (Advanced) explicitly set the lexer
         :param parser: (Advanced) explicitly set the parser
         :param rules: command executed if all rules are checked
-        :param ignore_case: ignore case when detecting command
+        :param case_sensitive: ignore case when detecting command
         :return: a decorator to wrap Command
         """
         if not lexer and regex:
@@ -108,7 +108,7 @@ class Command:
         def decorator(handler: TypeHandler):
             default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)), ignore_case)
             return Command(name, handler, help, desc, lexer or default_lexer,
-                           parser or Parser(), rules, exc_handlers, ignore_case)
+                           parser or Parser(), rules, exc_handlers, case_sensitive)
 
         return decorator
 

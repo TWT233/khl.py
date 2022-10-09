@@ -33,12 +33,12 @@ class DefaultLexer(Lexer):
     prefixes: Set[str]
     triggers: Set[str]
 
-    ignore_case: bool
+    case_sensitive: bool
 
-    def __init__(self, prefixes: Set[str], triggers: Set[str], ignore_case: bool):
+    def __init__(self, prefixes: Set[str], triggers: Set[str], case_sensitive: bool):
         self.prefixes = prefixes
         self.triggers = triggers
-        self.ignore_case = ignore_case
+        self.case_sensitive = case_sensitive
 
     def lex(self, msg: Message) -> List[str]:
         """
@@ -60,7 +60,7 @@ class DefaultLexer(Lexer):
             except Exception as e:
                 raise DefaultLexer.MalformedContent(msg) from e
             trigger = (arg_list[0] if len(arg_list) > 0 else '')
-            if self.ignore_case and trigger.lower() in [t.lower() for t in self.triggers] or trigger in self.triggers:
+            if self.case_sensitive and trigger.lower() in [t.lower() for t in self.triggers] or trigger in self.triggers:
                 return arg_list[1:]  # arg_list[0] is trigger
             raise Exceptions.Lexer.NotMatched()
 

@@ -61,7 +61,7 @@ class CommandManager:
             'parser': parser,
             'rules': rules,
             'exc_handlers': exc_handlers,
-            'ignore_case': ignore_case
+            'case_sensitive': case_sensitive
         }
 
         return lambda func: self.add(Command.command(name, **args)(func))
