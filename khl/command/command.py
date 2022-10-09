@@ -39,8 +39,6 @@ class Command:
     rules: List[TypeRule]
     exc_handlers: Dict[Any, TypeEHandler]
 
-    case_sensitive: bool
-
     def __init__(
         self,
         name: str,
@@ -50,8 +48,7 @@ class Command:
         lexer: Lexer,
         parser: Parser,
         rules: List[TypeRule],
-        exc_handlers: Dict[Any, TypeEHandler],
-        case_sensitive: bool = True
+        exc_handlers: Dict[Any, TypeEHandler]
     ):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
@@ -69,8 +66,6 @@ class Command:
 
         self.rules = list(rules)
         self.exc_handlers = copy(default_exc_handler) if exc_handlers is None else dict(exc_handlers)
-
-        self.case_sensitive = case_sensitive
 
     @staticmethod
     def command(
@@ -107,8 +102,7 @@ class Command:
 
         def decorator(handler: TypeHandler):
             default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)), case_sensitive)
-            return Command(name, handler, help, desc, lexer or default_lexer,
-                           parser or Parser(), rules, exc_handlers, case_sensitive)
+            return Command(name, handler, help, desc, lexer or default_lexer, parser or Parser(), rules, exc_handlers)
 
         return decorator
 
