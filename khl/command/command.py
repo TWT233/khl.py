@@ -51,7 +51,7 @@ class Command:
         parser: Parser,
         rules: List[TypeRule],
         exc_handlers: Dict[Any, TypeEHandler],
-        case_sensitive: bool = False
+        case_sensitive: bool = True
     ):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
