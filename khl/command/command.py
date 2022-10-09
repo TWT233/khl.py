@@ -48,7 +48,7 @@ class Command:
         lexer: Lexer,
         parser: Parser,
         rules: List[TypeRule],
-        exc_handlers: Dict[Any, TypeEHandler],
+        exc_handlers: Dict[Any, TypeEHandler]
     ):
         if not asyncio.iscoroutinefunction(handler):
             raise TypeError('handler must be a coroutine.')
@@ -63,8 +63,8 @@ class Command:
 
         self.lexer = lexer
         self.parser = parser
-        self.rules = list(rules)
 
+        self.rules = list(rules)
         self.exc_handlers = copy(default_exc_handler) if exc_handlers is None else dict(exc_handlers)
 
     @staticmethod
@@ -80,6 +80,7 @@ class Command:
         parser: Parser = None,
         rules: List[TypeRule] = (),
         exc_handlers: Dict[Any, TypeEHandler] = None,
+        case_sensitive: bool = True
     ) -> Callable[[TypeHandler], 'Command']:
         """
         decorator, to wrap a func into a Command
@@ -93,13 +94,14 @@ class Command:
         :param lexer: (Advanced) explicitly set the lexer
         :param parser: (Advanced) explicitly set the parser
         :param rules: command executed if all rules are checked
+        :param case_sensitive: is the command trigger sensitive
         :return: a decorator to wrap Command
         """
         if not lexer and regex:
             lexer = RELexer(regex) if isinstance(regex, str) else regex
 
         def decorator(handler: TypeHandler):
-            default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)))
+            default_lexer = DefaultLexer(set(prefixes), set([name or handler.__name__] + list(aliases)), case_sensitive)
             return Command(name, handler, help, desc, lexer or default_lexer, parser or Parser(), rules, exc_handlers)
 
         return decorator
