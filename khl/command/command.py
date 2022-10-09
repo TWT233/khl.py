@@ -94,7 +94,7 @@ class Command:
         :param lexer: (Advanced) explicitly set the lexer
         :param parser: (Advanced) explicitly set the parser
         :param rules: command executed if all rules are checked
-        :param case_sensitive: ignore case when detecting command
+        :param case_sensitive: is the command trigger sensitive
         :return: a decorator to wrap Command
         """
         if not lexer and regex:
