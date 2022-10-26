@@ -14,7 +14,7 @@ class RolePermission:
     allow: int
     deny: int
 
-    def __init__(self, *, role_id: int, allow: int, deny: int):
+    def __init__(self, *, role_id: int, allow: int, deny: int, **_):
         self.role_id = role_id
         self.allow = allow
         self.deny = deny
@@ -26,7 +26,7 @@ class UserPermission:
     allow: int
     deny: int
 
-    def __init__(self, *, user: User, allow: int, deny: int):
+    def __init__(self, *, user: User, allow: int, deny: int, **_):
         self.user = user
         self.allow = allow
         self.deny = deny
