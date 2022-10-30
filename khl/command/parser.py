@@ -4,7 +4,7 @@ import inspect
 import logging
 from typing import Dict, Any, Callable, List, Coroutine
 
-from .. import User, Channel, Client
+from khl import User, Channel, Client
 
 log = logging.getLogger(__name__)
 
