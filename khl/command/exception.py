@@ -98,7 +98,7 @@ async def log_on_exc(cmd, e, _):
     """basically log the exception"""
     if isinstance(e, Exceptions.Lexer.NotMatched):  # ignore NotMatched since it is kinda noisy
         return
-    log.debug(f'exception raised when handling command: {cmd.name}', exc_info=e)
+    log.exception(f'exception raised when handling command: {cmd.name}', exc_info=e)
 
 
 async def ignore_exc(*_):
