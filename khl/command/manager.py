@@ -3,7 +3,7 @@ import copy
 import logging
 from typing import Optional, List, Union, Pattern, Dict
 
-from .. import Message, Client
+from khl import Message, Client
 from .command import Command
 from .lexer import Lexer, DefaultLexer
 from .parser import Parser

@@ -3,7 +3,7 @@ import inspect
 import logging
 from typing import Callable, Coroutine, List, Union, Pattern, Type, Any
 
-from ..message import Message, Client
+from khl import Message, Client
 from .lexer import Lexer, RELexer, DefaultLexer
 from .parser import Parser
 from .rule import TypeRule

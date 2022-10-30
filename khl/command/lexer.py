@@ -4,7 +4,7 @@ import shlex
 from abc import ABC, abstractmethod
 from typing import List, Set, Union, Pattern
 
-from khl.message import Message
+from khl import Message
 
 log = logging.getLogger(__name__)
 
