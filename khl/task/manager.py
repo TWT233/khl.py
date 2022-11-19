@@ -79,6 +79,7 @@ class TaskManager(AsyncRunnable):
                                      EVENT_JOB_ERROR)
         self._scheduler.start()  # reminder: this is not blocking
 
-    def get_scheduler(self):
+    @property
+    def scheduler(self):
         """getter, get the scheduler"""
         return self._scheduler
