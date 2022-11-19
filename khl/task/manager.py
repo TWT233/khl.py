@@ -80,4 +80,5 @@ class TaskManager(AsyncRunnable):
         self._scheduler.start()  # reminder: this is not blocking
 
     def get_scheduler(self):
+        """getter, get the scheduler"""
         return self._scheduler
