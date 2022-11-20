@@ -1,5 +1,6 @@
 """guild related stuffs: Guild, ChannelCategory"""
 import logging
+import time
 import warnings
 from typing import List, Union, Dict, IO
 
@@ -46,6 +47,21 @@ class GuildUser(User):
             if role['role_id'] in self.roles:
                 rt.append(Role(**role))
         return rt
+
+
+class GuildBoost:
+    user_id: str
+    guild_id: str
+    start_time: int
+    end_time: int
+    user: User
+
+    def __init__(self, **kwargs) -> None:
+        self.user_id = kwargs.get('user_id')
+        self.guild_id = kwargs.get('guild_id')
+        self.start_time = kwargs.get('start_time')
+        self.end_time = kwargs.get('end_time')
+        self.user = User(**kwargs.get('user'), _gate_=kwargs.get('_gate_', None))
 
 
 class ChannelCategory(Requestable):
@@ -366,17 +382,15 @@ class Guild(LazyLoadable, Requestable):
         """delete a custom emoji"""
         return await self.gate.exec_req(api.GuildEmoji.delete(id))
 
+    async def fetch_boost(self, start_time: int, end_time: int = int(time.time()), **kwargs) -> List[GuildBoost]:
+        """
+        list the boost in guild.
 
-class GuildBoost:
-    user_id: str
-    guild_id: str
-    start_time: int
-    end_time: int
-    user: User
-
-    def __init__(self, **kwargs) -> None:
-        self.user_id = kwargs.get('user_id')
-        self.guild_id = kwargs.get('guild_id')
-        self.start_time = kwargs.get('start_time')
-        self.end_time = kwargs.get('end_time')
-        self.user = User(**kwargs.get('user'), _gate_=kwargs.get('_gate_', None))
+        :param start_time: start_time time stamp (Sec).
+        :param end_time: end_time time stamp (Sec). Default to now time.
+        """
+        boost_list = await self.gate.exec_paged_req(
+            api.GuildBoost.history(guild_id=self.id, start_time=start_time, end_time=end_time),
+            **kwargs
+        )
+        return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
