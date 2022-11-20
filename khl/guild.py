@@ -50,6 +50,7 @@ class GuildUser(User):
 
 
 class GuildBoost:
+    """Guild boost"""
     user_id: str
     guild_id: str
     start_time: int
