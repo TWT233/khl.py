@@ -153,6 +153,18 @@ class GuildMute:
         ...
 
 
+class GuildBoost:
+
+    @staticmethod
+    @req('GET')
+    def history(
+            guild_id,
+            start_time,
+            end_time
+    ):
+        ...
+
+
 class Blacklist:
 
     @staticmethod
