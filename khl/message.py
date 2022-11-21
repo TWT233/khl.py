@@ -9,6 +9,7 @@ from .guild import Guild
 from ._types import MessageTypes, ChannelPrivacyTypes, EventTypes
 from .user import User
 
+import json
 
 class RawMessage(ABC):
     """
@@ -106,6 +107,16 @@ class Message(RawMessage, Requestable, ABC):
         :param user: whose reaction, delete others added reaction requires channel msg admin permission
         """
 
+    @abstractmethod
+    async def update(self, content: Union[str, List], quote: str = None, temp_target_id: str = None):
+        """Update the message content, the type of content should be same the original type of the message
+        https://developer.kookapp.cn/doc/http/message#%E6%9B%B4%E6%96%B0%E9%A2%91%E9%81%93%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AF
+        https://developer.kookapp.cn/doc/http/direct-message#%E6%9B%B4%E6%96%B0%E7%A7%81%E4%BF%A1%E8%81%8A%E5%A4%A9%E6%B6%88%E6%81%AF
+        :param content: updated content, its type should be same as the original type
+        :param quote: the id of the message that will be quoted
+        :param temp_target_id: only update the message for which user
+        """
+
     async def reply(self,
                     content: Union[str, List] = '',
                     use_quote: bool = True,
@@ -175,6 +186,16 @@ class PublicMessage(Message):
         req = api.Message.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
         return await self.gate.exec_req(req)
 
+    async def update(self, content: Union[str, List], quote: str = None, temp_target_id: str = None):
+        if isinstance(content, List):
+            content = json.dumps(content)
+        params = {'msg_id': self.id, 'content': content}
+        if quote is not None:
+            params['quote'] = quote
+        if temp_target_id is not None:
+            params['temp_target_id'] = temp_target_id
+        return await self.gate.exec_req(api.Message.update(**params))
+
     async def reply(self,
                     content: Union[str, List] = '',
                     use_quote: bool = True,
@@ -216,7 +237,15 @@ class PrivateMessage(Message):
         req = api.DirectMessage.deleteReaction(msg_id=self.id, emoji=emoji, user_id=user.id if user else '')
         return await self.gate.exec_req(req)
 
+    async def update(self, content: Union[str, List], quote: str = None, _: str = None):
+        if isinstance(content, List):
+            content = json.dumps(content)
+        params = {'msg_id': self.id, 'content': content}
+        if quote is not None:
+            params['quote'] = quote
+        return await self.gate.exec_req(api.DirectMessage.update(**params))
 
+        
 class Event(RawMessage):
     """sent by system, opposites to Message, carries various types of payload"""
 
