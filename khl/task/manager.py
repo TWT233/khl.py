@@ -78,3 +78,8 @@ class TaskManager(AsyncRunnable):
         self._scheduler.add_listener(lambda e: log.exception('error raised during task', exc_info=e.exception),
                                      EVENT_JOB_ERROR)
         self._scheduler.start()  # reminder: this is not blocking
+
+    @property
+    def scheduler(self):
+        """getter, get the scheduler"""
+        return self._scheduler
