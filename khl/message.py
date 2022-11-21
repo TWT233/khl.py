@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, List, Dict, Union
 
+import json
+
 from . import api
 from .channel import PublicTextChannel, PrivateChannel
 from .context import Context
@@ -8,8 +10,6 @@ from .gateway import Requestable
 from .guild import Guild
 from ._types import MessageTypes, ChannelPrivacyTypes, EventTypes
 from .user import User
-
-import json
 
 class RawMessage(ABC):
     """
@@ -245,7 +245,7 @@ class PrivateMessage(Message):
             params['quote'] = quote
         return await self.gate.exec_req(api.DirectMessage.update(**params))
 
-        
+
 class Event(RawMessage):
     """sent by system, opposites to Message, carries various types of payload"""
 
