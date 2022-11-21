@@ -300,7 +300,7 @@ class Client(Requestable, AsyncRunnable):
 
     async def fetch_guild_boost(self,
                                 guild: Union[str, Guild],
-                                start_time: int,
+                                start_time: int = 0,
                                 end_time: int = int(time.time()),
                                 **kwargs):
         """
@@ -310,11 +310,9 @@ class Client(Requestable, AsyncRunnable):
         :param start_time: start_time time stamp (Sec).
         :param end_time: end_time time stamp (Sec). Default to now time.
         """
-        guild_id = guild if isinstance(guild, str) else guild.id
         boost_list = await self.gate.exec_paged_req(
-            api.GuildBoost.history(guild_id=guild_id, start_time=start_time, end_time=end_time),
-            **kwargs
-        )
+            api.GuildBoost.history(guild_id=unpack_id(guild), start_time=start_time, end_time=end_time),
+            **kwargs)
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
 
     async def start(self):

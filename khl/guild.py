@@ -383,7 +383,7 @@ class Guild(LazyLoadable, Requestable):
         """delete a custom emoji"""
         return await self.gate.exec_req(api.GuildEmoji.delete(id))
 
-    async def fetch_boost(self, start_time: int, end_time: int = int(time.time()), **kwargs) -> List[GuildBoost]:
+    async def fetch_boost(self, start_time: int = 0, end_time: int = int(time.time()), **kwargs) -> List[GuildBoost]:
         """
         list the boost in guild.
 
