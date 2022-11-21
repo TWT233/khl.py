@@ -2,6 +2,7 @@
 import asyncio
 import inspect
 import logging
+import time
 from pathlib import Path
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
@@ -9,7 +10,7 @@ from . import api
 from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
 from .game import Game
 from .gateway import Gateway, Requestable
-from .guild import Guild
+from .guild import Guild, GuildBoost
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
 from ._types import SoftwareTypes, MessageTypes, SlowModeTypes
@@ -296,6 +297,23 @@ class Client(Requestable, AsyncRunnable):
         channel = channel if isinstance(channel, PublicChannel) else await self.fetch_public_channel(channel)
         channel_data = await channel.update(name, topic, slow_mode)
         return public_channel_factory(_gate_=self.gate, **channel_data)
+
+    async def fetch_guild_boost(self,
+                                guild: Union[str, Guild],
+                                start_time: int = 0,
+                                end_time: int = int(time.time()),
+                                **kwargs):
+        """
+        list the boost in guild.
+
+        :param guild: guild_id or Guild object.
+        :param start_time: start_time time stamp (Sec).
+        :param end_time: end_time time stamp (Sec). Default to now time.
+        """
+        boost_list = await self.gate.exec_paged_req(
+            api.GuildBoost.history(guild_id=unpack_id(guild), start_time=start_time, end_time=end_time),
+            **kwargs)
+        return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
 
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
