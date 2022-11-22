@@ -241,10 +241,13 @@ class Guild(LazyLoadable, Requestable):
         users = await self.gate.exec_paged_req(api.Guild.userList(**params), **kwargs)
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
-    async def fetch_joined_channel(self, user: User, page: int = 1, page_size: int = 50) -> List[PublicVoiceChannel]:
+    async def fetch_joined_channel(self,
+                                   user: Union[User, str],
+                                   page: int = 1,
+                                   page_size: int = 50) -> List[PublicVoiceChannel]:
         """fetch the channels which the user joined(public voice channel)"""
         channels = await self.gate.exec_paged_req(
-            api.ChannelUser.getJoinedChannel(page=page, page_size=page_size, guild_id=self.id, user_id=user.id))
+            api.ChannelUser.getJoinedChannel(page=page, page_size=page_size, guild_id=self.id, user_id=unpack_id(user)))
         return [PublicVoiceChannel(_gate_=self.gate, _lazy_loaded_=True, **i) for i in channels]
 
     async def fetch_user(self, user_id: str) -> GuildUser:
@@ -253,9 +256,9 @@ class Guild(LazyLoadable, Requestable):
         user = await self.gate.exec_req(api.User.view(user_id=user_id, guild_id=self.id))
         return GuildUser(guild_id=self.id, _gate_=self.gate, _lazy_loaded_=True, **user)
 
-    async def set_user_nickname(self, user: User, new_nickname: str):
+    async def set_user_nickname(self, user: Union[User, str], new_nickname: str):
         """set the user's nickname in this guild"""
-        await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=user.id))
+        await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=unpack_id(user)))
 
     async def fetch_roles(self, force_update: bool = True) -> List[Role]:
         """fetch the role list in the guild"""
@@ -278,21 +281,21 @@ class Guild(LazyLoadable, Requestable):
         """delete a role from the guild"""
         return await self.gate.exec_req(api.GuildRole.delete(guild_id=self.id, role_id=unpack_id(role)))
 
-    async def grant_role(self, user: User, role: Union[Role, int]):
+    async def grant_role(self, user: Union[User, str], role: Union[Role, int]):
         """
         docs:
         https://developer.kaiheila.cn/doc/http/guild-role#%E8%B5%8B%E4%BA%88%E7%94%A8%E6%88%B7%E8%A7%92%E8%89%B2
         """
-        role_id = role.id if isinstance(role, Role) else role
-        return await self.gate.exec_req(api.GuildRole.grant(guild_id=self.id, user_id=user.id, role_id=role_id))
+        return await self.gate.exec_req(
+            api.GuildRole.grant(guild_id=self.id, user_id=unpack_id(user), role_id=unpack_id(role)))
 
-    async def revoke_role(self, user: User, role: Union[Role, str]):
+    async def revoke_role(self, user: Union[User, str], role: Union[Role, int]):
         """
         docs:
         https://developer.kaiheila.cn/doc/http/guild-role#%E5%88%A0%E9%99%A4%E7%94%A8%E6%88%B7%E8%A7%92%E8%89%B2
         """
-        role_id = role.id if isinstance(role, Role) else role
-        return await self.gate.exec_req(api.GuildRole.revoke(guild_id=self.id, user_id=user.id, role_id=role_id))
+        return await self.gate.exec_req(
+            api.GuildRole.revoke(guild_id=self.id, user_id=unpack_id(user), role_id=unpack_id(role)))
 
     async def create_channel(self,
                              name: str,
@@ -317,7 +320,7 @@ class Guild(LazyLoadable, Requestable):
             params['voice_quality'] = voice_quality
         return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
 
-    async def delete_channel(self, channel: Union[str, Channel]):
+    async def delete_channel(self, channel: Union[Channel, str]):
         """delete the channel from the guild"""
         return await self.gate.exec_req(api.Channel.delete(unpack_id(channel)))
 
@@ -391,7 +394,5 @@ class Guild(LazyLoadable, Requestable):
         :param end_time: end_time time stamp (Sec). Default to now time.
         """
         boost_list = await self.gate.exec_paged_req(
-            api.GuildBoost.history(guild_id=self.id, start_time=start_time, end_time=end_time),
-            **kwargs
-        )
+            api.GuildBoost.history(guild_id=self.id, start_time=start_time, end_time=end_time), **kwargs)
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
