@@ -68,6 +68,7 @@ class GuildBoost:
 
 class ChannelCategory(PermissionHolder, Requestable):
     """represent a channel set"""
+
     id: str
     name: str
     master_id: str
@@ -79,6 +80,9 @@ class ChannelCategory(PermissionHolder, Requestable):
     def __init__(self, **kwargs):
         self.gate = kwargs.get('_gate_', None)
         self.id = kwargs.get('id')
+        self._update_fields(**kwargs)
+
+    def _update_fields(self, **kwargs):
         self.name = kwargs.get('name')
         self.master_id = kwargs.get('master_id')
         self.guild_id = kwargs.get('_guild_id_')
@@ -86,6 +90,10 @@ class ChannelCategory(PermissionHolder, Requestable):
         self.limit_amount = kwargs.get('limit_amount')
         self._channels = kwargs.get('channels', [])
         self.permission: ChannelPermission = ChannelPermission(**kwargs)
+
+    async def load(self):
+        self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
+        self._loaded = True
 
     def append(self, *channel: PublicChannel):
         """append var-len channel(s) into this category"""
