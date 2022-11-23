@@ -79,6 +79,7 @@ class ChannelPermission(LazyLoadable, Requestable):
 
 
 class PermissionHolder(ABC):
+    """holder of the permissions, can be a channel or a category"""
 
     permission: ChannelPermission
     gate: Gateway
