@@ -8,6 +8,7 @@ from . import api
 from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
+from .permission import PermissionHolder, ChannelPermission
 from .role import Role
 from ._types import ChannelTypes, GuildMuteTypes
 from .user import User
@@ -65,7 +66,7 @@ class GuildBoost:
         self.user = User(**kwargs.get('user'), _gate_=kwargs.get('_gate_', None))
 
 
-class ChannelCategory(Requestable):
+class ChannelCategory(PermissionHolder, Requestable):
     """represent a channel set"""
     id: str
     name: str
@@ -84,6 +85,7 @@ class ChannelCategory(Requestable):
         self.level = kwargs.get('level')
         self.limit_amount = kwargs.get('limit_amount')
         self._channels = kwargs.get('channels', [])
+        self.permission: ChannelPermission = ChannelPermission(**kwargs)
 
     def append(self, *channel: PublicChannel):
         """append var-len channel(s) into this category"""

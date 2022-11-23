@@ -1,6 +1,9 @@
-from typing import List
+from abc import ABC, abstractmethod
+from typing import List, Union
 
 from . import api
+from .gateway import Gateway
+from .role import Role
 from .user import User
 from .interface import LazyLoadable
 from .gateway import Requestable
@@ -73,3 +76,77 @@ class ChannelPermission(LazyLoadable, Requestable):
 
     async def load(self):
         self._load_fields(**await self.gate.exec_req(api.ChannelRole.index(channel_id=self.id)))
+
+
+class PermissionHolder(ABC):
+
+    permission: ChannelPermission
+    gate: Gateway
+
+    @property
+    @abstractmethod
+    def id(self) -> str:
+        """the channel's id
+
+        this field should be protected, thus only exported a read-only prop"""
+        raise NotImplementedError
+
+    async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
+        """fetch permission setting of the channel"""
+        if force_update or not self.permission.loaded:
+            await self.permission.load()
+        return self.permission
+
+    async def create_user_permission(self, target: Union[User, str]):
+        """create a customized permission setting entry
+
+        for permission setting entry, please refer to `ChannelPermission`"""
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
+        self.permission.loaded = False
+        return d
+
+    async def update_user_permission(self, target: Union[User, str], allow: int = 0, deny: int = 0) -> Role:
+        """update a customized permission setting entry
+
+        for permission setting entry, please refer to `ChannelPermission`"""
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
+
+    async def delete_user_permission(self, target: Union[User, str]):
+        """delete a customized permission setting entry
+
+        for permission setting entry, please refer to `ChannelPermission`"""
+        t = 'user_id'
+        v = target.id if isinstance(target, User) else target
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
+
+    async def create_role_permission(self, target: Union[Role, str]):
+        """create a customized permission setting entry
+
+        for permission setting entry, please refer to `ChannelPermission`"""
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
+        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
+        self.permission.loaded = False
+        return d
+
+    async def update_role_permission(self, target: Union[Role, str], allow: int = 0, deny: int = 0) -> Role:
+        """update a customized permission setting entry
+
+        for permission setting entry, please refer to `ChannelPermission`"""
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
+        return await self.gate.exec_req(
+            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
+
+    async def delete_role_permission(self, target: Union[Role, str]):
+        """delete a customized permission setting entry
+
+        for permission setting entry, please refer to `ChannelPermission`"""
+        t = 'role_id'
+        v = target.id if isinstance(target, Role) else target
+        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
