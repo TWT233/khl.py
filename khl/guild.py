@@ -310,6 +310,7 @@ class Guild(LazyLoadable, Requestable):
         if type is not None:
             if type == ChannelTypes.CATEGORY:
                 params['is_category'] = 1
+                return ChannelCategory(**(await self.gate.exec_req(api.Channel.create(**params))), _gate_=self.gate)
             else:
                 params['type'] = type.value
         if category:
