@@ -1,7 +1,7 @@
 """abstraction of khl concept channel: where messages flow in"""
 import json
 from abc import ABC, abstractmethod
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict
 
 from . import api
 from .gateway import Requestable, Gateway
@@ -197,7 +197,7 @@ class PublicVoiceChannel(PublicChannel):
         return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_ids))
 
 
-def public_channel_factory(_gate_: Gateway, **kwargs) -> Optional[PublicChannel]:
+def public_channel_factory(_gate_: Gateway, **kwargs) -> PublicChannel:
     """factory function to build a channel object"""
     kwargs['type'] = kwargs['type'] if isinstance(kwargs['type'], ChannelTypes) else ChannelTypes(kwargs['type'])
     if kwargs['type'] == ChannelTypes.TEXT:
