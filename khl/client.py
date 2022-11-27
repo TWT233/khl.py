@@ -10,10 +10,10 @@ from . import api
 from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
 from .game import Game
 from .gateway import Gateway, Requestable
-from .guild import Guild, GuildBoost
+from .guild import Guild, GuildBoost, ChannelCategory
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
-from ._types import SoftwareTypes, MessageTypes, SlowModeTypes
+from ._types import SoftwareTypes, MessageTypes, SlowModeTypes, ChannelTypes
 from .user import User
 from .util import unpack_id, unpack_value
 
@@ -148,11 +148,6 @@ class Client(Requestable, AsyncRunnable):
             return self._me
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
-    async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
-        """fetch details of a public channel from khl"""
-        channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
-        return public_channel_factory(_gate_=self.gate, **channel_data)
-
     async def fetch_user(self, user: Union[User, str]) -> User:
         """fetch detail of the specific user"""
         user_id = unpack_id(user)
@@ -180,6 +175,33 @@ class Client(Requestable, AsyncRunnable):
         """kick ``user`` out from ``guild``"""
         guild = Guild(_gate_=self.gate, id=guild) if isinstance(guild, str) else guild
         return await guild.kickout(user)
+
+    async def fetch_public_channel(self, channel_id: str) -> PublicChannel:
+        """fetch details of a public channel from khl"""
+        channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
+        return public_channel_factory(_gate_=self.gate, **channel_data)
+
+    async def create_channel(self,
+                             guild: Union[Guild, str],
+                             name: str,
+                             type: ChannelTypes = None,
+                             category: Union[str, ChannelCategory] = None,
+                             limit_amount: int = None,
+                             voice_quality: int = None) -> PublicChannel:
+        """create a channel in the guild"""
+        if isinstance(guild, str):
+            guild = Guild(_gate_=self.gate, id=guild)
+        return await guild.create_channel(name, type, category, limit_amount, voice_quality)
+
+    async def update_channel(self,
+                             channel: Union[str, PublicChannel],
+                             name: str = None,
+                             topic: str = None,
+                             slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
+        """update channel's settings"""
+        channel = channel if isinstance(channel, PublicChannel) else await self.fetch_public_channel(channel)
+        channel_data = await channel.update(name, topic, slow_mode)
+        return public_channel_factory(_gate_=self.gate, **channel_data)
 
     async def delete_channel(self, channel: Union[Channel, str]):
         """delete a channel, permission required"""
@@ -288,16 +310,6 @@ class Client(Requestable, AsyncRunnable):
         """clear current listening music status"""
         await self.gate.exec_req(api.Game.deleteActivity(data_type=2))
 
-    async def update_channel(self,
-                             channel: Union[str, PublicChannel],
-                             name: str = None,
-                             topic: str = None,
-                             slow_mode: Union[int, SlowModeTypes] = None) -> PublicChannel:
-        """update channel's settings"""
-        channel = channel if isinstance(channel, PublicChannel) else await self.fetch_public_channel(channel)
-        channel_data = await channel.update(name, topic, slow_mode)
-        return public_channel_factory(_gate_=self.gate, **channel_data)
-
     async def fetch_guild_boost(self,
                                 guild: Union[str, Guild],
                                 start_time: int = 0,
@@ -311,8 +323,7 @@ class Client(Requestable, AsyncRunnable):
         :param end_time: end_time time stamp (Sec). Default to now time.
         """
         boost_list = await self.gate.exec_paged_req(
-            api.GuildBoost.history(guild_id=unpack_id(guild), start_time=start_time, end_time=end_time),
-            **kwargs)
+            api.GuildBoost.history(guild_id=unpack_id(guild), start_time=start_time, end_time=end_time), **kwargs)
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
 
     async def start(self):
