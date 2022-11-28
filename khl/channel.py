@@ -6,8 +6,7 @@ from typing import Union, List, Dict
 from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
-from .permission import ChannelPermission
-from .role import Role
+from .permission import ChannelPermission, PermissionHolder
 from ._types import MessageTypes, ChannelTypes, SlowModeTypes
 from .user import User
 from .util import unpack_value
@@ -35,7 +34,7 @@ class Channel(LazyLoadable, Requestable, ABC):
         raise NotImplementedError
 
 
-class PublicChannel(Channel, ABC):
+class PublicChannel(Channel, PermissionHolder, ABC):
     """the channels in guild, in contrast to PrivateChannel(private chat)"""
     name: str
     user_id: str
@@ -44,7 +43,6 @@ class PublicChannel(Channel, ABC):
     is_category: int
     parent_id: str
     level: int
-    permission: ChannelPermission
 
     def __init__(self, **kwargs):
         self._id: str = kwargs.get('id')
@@ -85,66 +83,6 @@ class PublicChannel(Channel, ABC):
         rt = await self.gate.exec_req(api.Channel.update(**params))
         await self.load()
         return rt
-
-    async def fetch_permission(self, force_update: bool = True) -> ChannelPermission:
-        """fetch permission setting of the channel"""
-        if force_update or not self.permission.loaded:
-            await self.permission.load()
-        return self.permission
-
-    async def create_user_permission(self, target: Union[User, str]):
-        """create a customized permission setting entry
-
-        for permission setting entry, please refer to `ChannelPermission`"""
-        t = 'user_id'
-        v = target.id if isinstance(target, User) else target
-        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
-        self.permission.loaded = False
-        return d
-
-    async def update_user_permission(self, target: Union[User, str], allow: int = 0, deny: int = 0) -> Role:
-        """update a customized permission setting entry
-
-        for permission setting entry, please refer to `ChannelPermission`"""
-        t = 'user_id'
-        v = target.id if isinstance(target, User) else target
-        return await self.gate.exec_req(
-            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
-
-    async def delete_user_permission(self, target: Union[User, str]):
-        """delete a customized permission setting entry
-
-        for permission setting entry, please refer to `ChannelPermission`"""
-        t = 'user_id'
-        v = target.id if isinstance(target, User) else target
-        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
-
-    async def create_role_permission(self, target: Union[Role, str]):
-        """create a customized permission setting entry
-
-        for permission setting entry, please refer to `ChannelPermission`"""
-        t = 'role_id'
-        v = target.id if isinstance(target, Role) else target
-        d = await self.gate.exec_req(api.ChannelRole.create(channel_id=self.id, type=t, value=v))
-        self.permission.loaded = False
-        return d
-
-    async def update_role_permission(self, target: Union[Role, str], allow: int = 0, deny: int = 0) -> Role:
-        """update a customized permission setting entry
-
-        for permission setting entry, please refer to `ChannelPermission`"""
-        t = 'role_id'
-        v = target.id if isinstance(target, Role) else target
-        return await self.gate.exec_req(
-            api.ChannelRole.update(channel_id=self.id, type=t, value=v, allow=allow, deny=deny))
-
-    async def delete_role_permission(self, target: Union[Role, str]):
-        """delete a customized permission setting entry
-
-        for permission setting entry, please refer to `ChannelPermission`"""
-        t = 'role_id'
-        v = target.id if isinstance(target, Role) else target
-        return await self.gate.exec_req(api.ChannelRole.delete(channel_id=self.id, type=t, value=v))
 
 
 class PublicTextChannel(PublicChannel):
