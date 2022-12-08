@@ -5,7 +5,7 @@ import warnings
 from typing import List, Union, Dict, IO
 
 from . import api
-from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel
+from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel, PublicTextChannel
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .permission import PermissionHolder, ChannelPermission
@@ -103,17 +103,24 @@ class ChannelCategory(PermissionHolder, Requestable):
         """pop a channel(default last) from this category"""
         return self._channels.pop(index)
 
-    async def create_channel(self,
-                             name: str,
-                             type: ChannelTypes = None,
-                             limit_amount: int = None,
-                             voice_quality: int = None) -> PublicChannel:
+    async def create_text_channel(self,
+                                  name: str) -> PublicTextChannel:
+        """create a text channel in this channel category
+
+        docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id, 'type': ChannelTypes.TEXT.value}
+        pc = public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
+        self._channels.append(pc)
+        return pc
+
+    async def create_voice_channel(self,
+                                   name: str,
+                                   limit_amount: int = None,
+                                   voice_quality: int = None) -> PublicVoiceChannel:
         """create a channel in this channel category
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
-        params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id}
-        if type is not None:
-            params['type'] = type.value
+        params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id, 'type': ChannelTypes.VOICE.value}
         if limit_amount:
             params['limit_amount'] = limit_amount
         if voice_quality:
@@ -307,21 +314,25 @@ class Guild(LazyLoadable, Requestable):
         return await self.gate.exec_req(
             api.GuildRole.revoke(guild_id=self.id, user_id=unpack_id(user), role_id=unpack_id(role)))
 
-    async def create_channel(self,
-                             name: str,
-                             type: ChannelTypes = None,
-                             category: Union[str, ChannelCategory] = None,
-                             limit_amount: int = None,
-                             voice_quality: int = None):
-        """create a channel in the guild
+    async def create_text_channel(self,
+                                  name: str,
+                                  category: Union[str, ChannelCategory] = None) -> PublicTextChannel:
+        """create a text channel in the guild
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
-        params = {'name': name, 'guild_id': self.id}
-        if type is not None:
-            if type == ChannelTypes.CATEGORY:
-                params['is_category'] = 1
-            else:
-                params['type'] = type.value
+        params = {'name': name, 'guild_id': self.id, 'type': ChannelTypes.TEXT.value}
+        if category:
+            params['parent_id'] = unpack_id(category)
+        return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
+
+    async def create_voice_channel(self, name: str,
+                                   category: Union[str, ChannelCategory] = None,
+                                   limit_amount: int = None,
+                                   voice_quality: int = None) -> PublicVoiceChannel:
+        """create a voice channel in the guild
+
+        docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        params = {'name': name, 'guild_id': self.id, 'type': ChannelTypes.VOICE.value}
         if category:
             params['parent_id'] = unpack_id(category)
         if limit_amount:
@@ -329,6 +340,14 @@ class Guild(LazyLoadable, Requestable):
         if voice_quality:
             params['voice_quality'] = voice_quality
         return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
+
+    async def create_channel_category(self, name: str) -> ChannelCategory:
+        """create a channel category in the guild
+
+        docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        params = {'guild_id': self.id, 'name': name, 'is_category': 1}
+        return ChannelCategory(_gate_=self.gate, **(
+            await self.gate.exec_req(api.Channel.create(**params))))
 
     async def delete_channel(self, channel: Union[Channel, str]):
         """delete the channel from the guild"""

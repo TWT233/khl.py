@@ -7,13 +7,13 @@ from pathlib import Path
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
-from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
+from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel, PublicVoiceChannel
 from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild, GuildBoost, ChannelCategory
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
-from ._types import SoftwareTypes, MessageTypes, SlowModeTypes, ChannelTypes
+from ._types import SoftwareTypes, MessageTypes, SlowModeTypes
 from .user import User
 from .util import unpack_id, unpack_value
 
@@ -181,17 +181,32 @@ class Client(Requestable, AsyncRunnable):
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
-    async def create_channel(self,
-                             guild: Union[Guild, str],
-                             name: str,
-                             type: ChannelTypes = None,
-                             category: Union[str, ChannelCategory] = None,
-                             limit_amount: int = None,
-                             voice_quality: int = None) -> PublicChannel:
-        """create a channel in the guild"""
+    async def create_text_channel(self,
+                                  guild: Union[Guild, str],
+                                  name: str,
+                                  category: Union[str, ChannelCategory] = None) -> PublicTextChannel:
+        """create a text channel in the guild"""
         if isinstance(guild, str):
             guild = Guild(_gate_=self.gate, id=guild)
-        return await guild.create_channel(name, type, category, limit_amount, voice_quality)
+        return await guild.create_text_channel(name, category)
+
+    async def create_voice_channel(self, name: str,
+                                   guild: Union[Guild, str],
+                                   category: Union[str, ChannelCategory] = None,
+                                   limit_amount: int = None,
+                                   voice_quality: int = None) -> PublicVoiceChannel:
+        """create a voice channel in the guild"""
+        if isinstance(guild, str):
+            guild = Guild(_gate_=self.gate, id=guild)
+        return await guild.create_voice_channel(name, category, limit_amount, voice_quality)
+
+    async def create_channel_category(self,
+                                      guild: Union[Guild, str],
+                                      name: str) -> ChannelCategory:
+        """create a channel category in the guild"""
+        if isinstance(guild, str):
+            guild = Guild(_gate_=self.gate, id=guild)
+        return await guild.create_channel_category(name)
 
     async def update_channel(self,
                              channel: Union[str, PublicChannel],
