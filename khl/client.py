@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Callable, Coroutine, Union, IO
 
 from . import api
-from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel
+from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel, PublicVoiceChannel
 from .game import Game
 from .gateway import Gateway, Requestable
 from .guild import Guild, GuildBoost, ChannelCategory
@@ -194,7 +194,7 @@ class Client(Requestable, AsyncRunnable):
                                    guild: Union[Guild, str],
                                    category: Union[str, ChannelCategory] = None,
                                    limit_amount: int = None,
-                                   voice_quality: int = None):
+                                   voice_quality: int = None) -> PublicVoiceChannel:
         """create a voice channel in the guild"""
         if isinstance(guild, str):
             guild = Guild(_gate_=self.gate, id=guild)
