@@ -181,17 +181,32 @@ class Client(Requestable, AsyncRunnable):
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
-    async def create_channel(self,
-                             guild: Union[Guild, str],
-                             name: str,
-                             type: ChannelTypes = None,
-                             category: Union[str, ChannelCategory] = None,
-                             limit_amount: int = None,
-                             voice_quality: int = None) -> PublicChannel:
-        """create a channel in the guild"""
+    async def create_text_channel(self,
+                                  guild: Union[Guild, str],
+                                  name: str,
+                                  category: Union[str, ChannelCategory] = None) -> PublicTextChannel:
+        """create a text channel in the guild"""
         if isinstance(guild, str):
             guild = Guild(_gate_=self.gate, id=guild)
-        return await guild.create_channel(name, type, category, limit_amount, voice_quality)
+        return await guild.create_text_channel(name, category)
+
+    async def create_voice_channel(self, name: str,
+                                   guild: Union[Guild, str],
+                                   category: Union[str, ChannelCategory] = None,
+                                   limit_amount: int = None,
+                                   voice_quality: int = None):
+        """create a voice channel in the guild"""
+        if isinstance(guild, str):
+            guild = Guild(_gate_=self.gate, id=guild)
+        return await guild.create_voice_channel(name, category, limit_amount, voice_quality)
+
+    async def create_category(self,
+                              guild: Union[Guild, str],
+                              name: str) -> ChannelCategory:
+        """create a channel category in the guild"""
+        if isinstance(guild, str):
+            guild = Guild(_gate_=self.gate, id=guild)
+        return await guild.create_category(name)
 
     async def update_channel(self,
                              channel: Union[str, PublicChannel],
