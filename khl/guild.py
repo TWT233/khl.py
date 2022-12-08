@@ -103,17 +103,24 @@ class ChannelCategory(PermissionHolder, Requestable):
         """pop a channel(default last) from this category"""
         return self._channels.pop(index)
 
-    async def create_channel(self,
-                             name: str,
-                             type: ChannelTypes = None,
-                             limit_amount: int = None,
-                             voice_quality: int = None) -> PublicChannel:
+    async def create_text_channel(self,
+                                  name: str) -> PublicTextChannel:
+        """create a text channel in this channel category
+
+        docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        pc = public_channel_factory(self.gate, **(await self.gate.exec_req(
+            api.Channel.create(name=name, guild_id=self.guild_id, parent_id=self.id, type=ChannelTypes.TEXT.value))))
+        self._channels.append(pc)
+        return pc
+
+    async def create_voice_channel(self,
+                                   name: str,
+                                   limit_amount: int = None,
+                                   voice_quality: int = None) -> PublicVoiceChannel:
         """create a channel in this channel category
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
-        params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id}
-        if type is not None:
-            params['type'] = type.value
+        params = {'name': name, 'guild_id': self.guild_id, 'parent_id': self.id, 'type': ChannelTypes.VOICE.value}
         if limit_amount:
             params['limit_amount'] = limit_amount
         if voice_quality:
