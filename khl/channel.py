@@ -10,7 +10,7 @@ from .permission import ChannelPermission, PermissionHolder
 from .role import Role
 from ._types import MessageTypes, ChannelTypes, SlowModeTypes
 from .user import User
-from .util import unpack_value
+from .util import unpack_value, unpack_id
 
 
 class Channel(LazyLoadable, Requestable, ABC):
@@ -92,7 +92,7 @@ class PublicChannel(Channel, PermissionHolder, ABC):
         if search is not None:
             params['search'] = search
         if role is not None:
-            params['role_id'] = role.id if isinstance(role, Role) else role
+            params['role_id'] = unpack_id(role)
         if mobile_verified is not None:
             params['mobile'] = 1 if mobile_verified else 0
         if active_time is not None and active_time in [0, 1]:
