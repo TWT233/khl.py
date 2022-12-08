@@ -85,9 +85,9 @@ class PublicChannel(Channel, PermissionHolder, ABC):
         await self.load()
         return rt
 
-    async def list_user(self, search: str = None, role: Union[Role, str, int] = None, mobile_verified: bool = None,
-                        active_time: int = None, joined_at: int = None, page: int = 1, page_size: int = 50,
-                        filter_user_id: str = None) -> List[User]:
+    async def list_users(self, search: str = None, role: Union[Role, str, int] = None, mobile_verified: bool = None,
+                         active_time: int = None, joined_at: int = None, page: int = 1, page_size: int = 50,
+                         filter_user_id: str = None) -> List[User]:
         """list the users who can see this channel"""
         params = {'guild_id': self.guild_id, 'channel_id': self.id, 'page': page, 'page_size': page_size}
         if search is not None:
