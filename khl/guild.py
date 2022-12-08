@@ -345,8 +345,9 @@ class Guild(LazyLoadable, Requestable):
         """create a channel category in the guild
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
+        params = {'guild_id': self.id, 'name': name, 'is_category': 1}
         return ChannelCategory(_gate_=self.gate, **(
-            await self.gate.exec_req(api.Channel.create(name=name, guild_id=self.id, is_category=1))))
+            await self.gate.exec_req(api.Channel.create(**params))))
 
     async def delete_channel(self, channel: Union[Channel, str]):
         """delete the channel from the guild"""
