@@ -201,12 +201,12 @@ class Client(Requestable, AsyncRunnable):
         return await guild.create_voice_channel(name, category, limit_amount, voice_quality)
 
     async def create_channel_category(self,
-                              guild: Union[Guild, str],
-                              name: str) -> ChannelCategory:
+                                      guild: Union[Guild, str],
+                                      name: str) -> ChannelCategory:
         """create a channel category in the guild"""
         if isinstance(guild, str):
             guild = Guild(_gate_=self.gate, id=guild)
-        return await guild.create_category(name)
+        return await guild.create_channel_category(name)
 
     async def update_channel(self,
                              channel: Union[str, PublicChannel],
