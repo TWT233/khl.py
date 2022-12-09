@@ -181,7 +181,7 @@ class Client(Requestable, AsyncRunnable):
         channel_data = await self.gate.exec_req(api.Channel.view(channel_id))
         return public_channel_factory(_gate_=self.gate, **channel_data)
 
-    async def fetch_category(self, category_id: str) -> ChannelCategory:
+    async def fetch_channel_category(self, category_id: str) -> ChannelCategory:
         """fetch details of a channel category from khl"""
         category_data = await self.gate.exec_req(api.Channel.view(category_id))
         return ChannelCategory(_gate_=self.gate, **category_data)
