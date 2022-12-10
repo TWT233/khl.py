@@ -10,9 +10,9 @@ from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .permission import PermissionHolder, ChannelPermission
 from .role import Role
-from ._types import ChannelTypes, GuildMuteTypes
+from ._types import ChannelTypes, GuildMuteTypes, BadgeTypes
 from .user import User
-from .util import unpack_id
+from .util import unpack_id, unpack_value
 
 log = logging.getLogger(__name__)
 
@@ -425,3 +425,6 @@ class Guild(LazyLoadable, Requestable):
         boost_list = await self.gate.exec_paged_req(
             api.GuildBoost.history(guild_id=self.id, start_time=start_time, end_time=end_time), **kwargs)
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
+
+    async def fetch_badge(self, style: Union[int, BadgeTypes]) -> bytes:
+        return await self.gate.exec_req(api.Badge.guild(guild_id=self.id, style=unpack_value(style)))

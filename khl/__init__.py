@@ -3,7 +3,7 @@
 # infra
 from .interface import AsyncRunnable, LazyLoadable
 from ._types import (MessageTypes, ChannelTypes, ChannelPrivacyTypes, EventTypes, GuildMuteTypes, SlowModeTypes,
-                     RoleTypes, SoftwareTypes)
+                     RoleTypes, SoftwareTypes, BadgeTypes)
 from .cert import Cert
 from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
 from .requester import HTTPRequester
