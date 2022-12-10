@@ -135,6 +135,7 @@ class PublicVoiceChannel(PublicChannel):
         return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_ids))
 
     async def fetch_user_list(self) -> List[User]:
+        """get users chatting in the voice channel"""
         users = await self.gate.exec_paged_req(api.Channel.userList(channel_id=self.id))
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
