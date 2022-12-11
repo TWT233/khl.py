@@ -67,9 +67,11 @@ class User(LazyLoadable, Requestable):
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
 
     async def fetch_intimacy(self) -> IntimacyInfo:
+        """get the user's intimacy info"""
         return IntimacyInfo(**(await self.gate.exec_req(api.Intimacy.index(user_id=self.id))))
 
     async def update_intimacy(self, score: int = 0, social_info: str = None, img_id: str = None):
+        """update the user's intimacy"""
         params = {'user_id': self.id}
         if score is not None:
             params['score'] = score
