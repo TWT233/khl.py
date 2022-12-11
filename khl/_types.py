@@ -132,3 +132,10 @@ class SoftwareTypes(Enum):
     CLOUD_MUSIC = "cloudmusic"
     QQ_MUSIC = "qqmusic"
     KUGOU_MUSIC = "kugou"
+
+
+class BadgeTypes(IntEnum):
+    """types of guild badges"""
+    NAME = 0
+    ONLINE = 1
+    ONLINE_MAX = 2
