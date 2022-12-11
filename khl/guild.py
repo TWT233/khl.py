@@ -426,6 +426,6 @@ class Guild(LazyLoadable, Requestable):
             api.GuildBoost.history(guild_id=self.id, start_time=start_time, end_time=end_time), **kwargs)
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
 
-    async def fetch_badge(self, style: Union[int, BadgeTypes]) -> bytes:
+    async def fetch_badge(self, style: Union[int, BadgeTypes] = BadgeTypes.NAME) -> bytes:
         """get the badge of the guild"""
         return await self.gate.exec_req(api.Badge.guild(guild_id=self.id, style=unpack_value(style)))
