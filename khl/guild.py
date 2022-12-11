@@ -6,48 +6,15 @@ from typing import List, Union, Dict, IO
 
 from . import api
 from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel, PublicTextChannel
-from .gateway import Requestable, Gateway
+from .gateway import Requestable
 from .interface import LazyLoadable
 from .permission import PermissionHolder, ChannelPermission
 from .role import Role
 from ._types import ChannelTypes, GuildMuteTypes
-from .user import User
+from .user import User, GuildUser
 from .util import unpack_id
 
 log = logging.getLogger(__name__)
-
-
-class GuildUser(User):
-    """a user in guild
-
-    with some fields more than User"""
-    guild_id: str
-    joined_at: int
-    active_time: int
-    roles: List[int]
-    gate: Gateway
-
-    def __init__(self, **kwargs):
-        self.roles = kwargs.get('roles', [])
-        self.guild_id = kwargs.get('guild_id', '')
-        self.joined_at = kwargs.get('joined_at', 0)
-        self.active_time = kwargs.get('active_time', 0)
-        super().__init__(**kwargs)
-
-    async def fetch_roles(self, **kwargs) -> List[Role]:
-        """
-        Get the user roles in this guild
-
-        paged req, support standard pagination args
-
-        :return: A list for Role
-        """
-        guild_roles = (await self.gate.exec_paged_req(api.GuildRole.list(self.guild_id), **kwargs))
-        rt: List[Role] = []
-        for role in guild_roles:
-            if role['role_id'] in self.roles:
-                rt.append(Role(**role))
-        return rt
 
 
 class GuildBoost:

@@ -8,7 +8,7 @@ from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .permission import ChannelPermission, PermissionHolder
 from ._types import MessageTypes, ChannelTypes, SlowModeTypes
-from .user import User
+from .user import User, GuildUser
 from .util import unpack_value
 
 
@@ -134,10 +134,10 @@ class PublicVoiceChannel(PublicChannel):
         user_ids = [u.id if isinstance(u, User) else u for u in users]
         return await self.gate.exec_req(api.Channel.moveUser(target_id=self.id, user_ids=user_ids))
 
-    async def fetch_user_list(self) -> List[User]:
+    async def fetch_user_list(self) -> List[GuildUser]:
         """get users chatting in the voice channel"""
         users = await self.gate.exec_paged_req(api.Channel.userList(channel_id=self.id))
-        return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
+        return [GuildUser(_gate_=self.gate, guild_id=self.guild_id, _lazy_loaded_=True, **i) for i in users]
 
 
 def public_channel_factory(_gate_: Gateway, **kwargs) -> Union[PublicTextChannel, PublicVoiceChannel]:
