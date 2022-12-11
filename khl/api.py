@@ -227,6 +227,11 @@ class Channel:
         ...
 
     @staticmethod
+    @req('GET')
+    def userList(channel_id):
+        ...
+
+    @staticmethod
     @req('POST')
     def moveUser(target_id, user_ids):
         ...
