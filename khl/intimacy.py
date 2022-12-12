@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 
-class IntimacyInfo:
+class Intimacy:
     """the user's intimacy info"""
     user_id: str
     img_url: str

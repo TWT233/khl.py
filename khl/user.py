@@ -1,9 +1,10 @@
 import json
 from typing import List, Union
 
-from . import api, IntimacyInfo
+from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
+from .intimacy import Intimacy
 from .role import Role
 from ._types import MessageTypes
 
@@ -66,9 +67,9 @@ class User(LazyLoadable, Requestable):
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
 
-    async def fetch_intimacy(self) -> IntimacyInfo:
+    async def fetch_intimacy(self) -> Intimacy:
         """get the user's intimacy info"""
-        return IntimacyInfo(user_id=self.id, **(await self.gate.exec_req(api.Intimacy.index(user_id=self.id))))
+        return Intimacy(user_id=self.id, **(await self.gate.exec_req(api.Intimacy.index(user_id=self.id))))
 
     async def update_intimacy(self, score: int = 0, social_info: str = None, img_id: str = None):
         """update the user's intimacy"""
