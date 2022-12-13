@@ -4,6 +4,7 @@ from typing import List, Union
 from . import api
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
+from .intimacy import Intimacy
 from .role import Role
 from ._types import MessageTypes
 
@@ -65,6 +66,21 @@ class User(LazyLoadable, Requestable):
         kwargs['type'] = type.value
 
         return await self.gate.exec_req(api.DirectMessage.create(**kwargs))
+
+    async def fetch_intimacy(self) -> Intimacy:
+        """get the user's intimacy info"""
+        return Intimacy(user_id=self.id, **(await self.gate.exec_req(api.Intimacy.index(user_id=self.id))))
+
+    async def update_intimacy(self, score: int = 0, social_info: str = None, img_id: str = None):
+        """update the user's intimacy"""
+        params = {'user_id': self.id}
+        if score is not None:
+            params['score'] = score
+        if social_info is not None:
+            params['social_info'] = social_info
+        if img_id is not None:
+            params['img_id'] = img_id
+        return await self.gate.exec_req(api.Intimacy.update(**params))
 
 
 class GuildUser(User):
