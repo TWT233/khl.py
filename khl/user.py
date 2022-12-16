@@ -31,6 +31,11 @@ class User(LazyLoadable, Requestable):
 
     def __init__(self, **kwargs):
         self.id = kwargs.get('id', '')
+        self._loaded = kwargs.get('_lazy_loaded_', False)
+        self.gate = kwargs.get('_gate_', None)
+        self._update_fields(**kwargs)
+
+    def _update_fields(self, **kwargs):
         self.username = kwargs.get('username', '')
         self.nickname = kwargs.get('nickname', '')
         self.identify_num = kwargs.get('identify_num', '')
@@ -41,11 +46,9 @@ class User(LazyLoadable, Requestable):
         self.vip_avatar = kwargs.get('vip_avatar', '')
         self.mobile_verified = kwargs.get('mobile_verified', False)
 
-        self._loaded = kwargs.get('_lazy_loaded_', False)
-        self.gate = kwargs.get('_gate_', None)
-
     async def load(self):
-        pass
+        self._update_fields(**(await self.gate.exec_req(api.User.view(self.id))))
+        self._loaded = True
 
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         """
@@ -93,12 +96,16 @@ class GuildUser(User):
     roles: List[int]
     gate: Gateway
 
-    def __init__(self, **kwargs):
+    def _update_fields(self, **kwargs):
+        super()._update_fields(**kwargs)
         self.roles = kwargs.get('roles', [])
         self.guild_id = kwargs.get('guild_id', '')
         self.joined_at = kwargs.get('joined_at', 0)
         self.active_time = kwargs.get('active_time', 0)
-        super().__init__(**kwargs)
+
+    async def load(self):
+        self._update_fields(**(await self.gate.exec_req(api.User.view(self.id, self.guild_id))))
+        self._loaded = True
 
     async def fetch_roles(self, **kwargs) -> List[Role]:
         """
