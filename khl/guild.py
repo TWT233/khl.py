@@ -6,7 +6,6 @@ from typing import List, Union, Dict, IO
 
 from . import api
 from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel, PublicTextChannel
-from .emoji import GuildEmoji
 from .gateway import Requestable
 from .interface import LazyLoadable
 from .permission import PermissionHolder, ChannelPermission
