@@ -127,4 +127,3 @@ class GuildUser(User):
         Set user's nickname
         """
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.guild_id, nickname=new_nickname, user_id=self.id))
-
