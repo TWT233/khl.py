@@ -6,6 +6,7 @@ from typing import List, Union, Dict, IO
 
 from . import api
 from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel, PublicTextChannel
+from .emoji import GuildEmoji
 from .gateway import Requestable
 from .interface import LazyLoadable
 from .permission import PermissionHolder, ChannelPermission
@@ -352,14 +353,15 @@ class Guild(LazyLoadable, Requestable):
         user_id = user.id if isinstance(user, User) else user
         return await self.gate.exec_req(api.GuildMute.delete(guild_id=self.id, user_id=user_id, type=type.value))
 
-    async def fetch_emoji_list(self) -> List[Dict]:
+    async def fetch_emoji_list(self) -> List[GuildEmoji]:
         """fetch guild emoji list
 
         :returns: a list of emoji dict, dict contains {'name', 'id', 'user_info': who uploaded the emoji}
         """
-        return await self.gate.exec_paged_req(api.GuildEmoji.list(guild_id=self.id))
+        emojis = await self.gate.exec_paged_req(api.GuildEmoji.list(guild_id=self.id))
+        return [GuildEmoji(_gate_=self.gate, guild_id=self.id, **i) for i in emojis]
 
-    async def create_emoji(self, emoji: Union[IO, str], *, name: str = None) -> Dict:
+    async def create_emoji(self, emoji: Union[IO, str], *, name: str = None) -> GuildEmoji:
         """upload a custom emoji to the guild
 
         :returns: an emoji dict. For emoji dict structure, please refer to fetch_emoji_list() doc
@@ -369,18 +371,19 @@ class Guild(LazyLoadable, Requestable):
         params = {'guild_id': self.id, 'emoji': emoji}
         if name is not None:
             params['name'] = name
-        return await self.gate.exec_req(api.GuildEmoji.create(**params))
+        emoji_info = await self.gate.exec_req(api.GuildEmoji.create(**params))
+        return GuildEmoji(_gate_=self.gate, guild_id=self.id, **emoji_info)
 
-    async def update_emoji(self, id: str, *, name: str = None):
+    async def update_emoji(self, emoji: Union[GuildEmoji, str], *, name: str = None):
         """update a custom emoji's name"""
-        params = {'id': id}
+        params = {'id': unpack_id(emoji)}
         if name is not None:
             params['name'] = name
         return await self.gate.exec_req(api.GuildEmoji.update(**params))
 
-    async def delete_emoji(self, id: str):
+    async def delete_emoji(self, emoji: Union[GuildEmoji, str]):
         """delete a custom emoji"""
-        return await self.gate.exec_req(api.GuildEmoji.delete(id))
+        return await self.gate.exec_req(api.GuildEmoji.delete(unpack_id(emoji)))
 
     async def fetch_boost(self, start_time: int = 0, end_time: int = int(time.time()), **kwargs) -> List[GuildBoost]:
         """
