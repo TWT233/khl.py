@@ -240,9 +240,9 @@ class Guild(LazyLoadable, Requestable):
         user = await self.gate.exec_req(api.User.view(user_id=user_id, guild_id=self.id))
         return GuildUser(guild_id=self.id, _gate_=self.gate, _lazy_loaded_=True, **user)
 
-    async def set_user_nickname(self, user: Union[User, str], new_nickname: str):
+    async def set_user_nickname(self, user: Union[User, str], nickname: str):
         """set the user's nickname in this guild"""
-        await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=new_nickname, user_id=unpack_id(user)))
+        await self.gate.exec_req(api.Guild.nickname(guild_id=self.id, nickname=nickname, user_id=unpack_id(user)))
 
     async def fetch_roles(self, force_update: bool = True) -> List[Role]:
         """fetch the role list in the guild"""
