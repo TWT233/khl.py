@@ -123,5 +123,8 @@ class GuildUser(User):
         return rt
 
     async def set_nickname(self, new_nickname: str):
+        """
+        Set user's nickname
+        """
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.guild_id, nickname=new_nickname, user_id=self.id))
 
