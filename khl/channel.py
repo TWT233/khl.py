@@ -168,6 +168,8 @@ def public_channel_factory(_gate_: Gateway, **kwargs) -> Union[PublicTextChannel
         return PublicTextChannel(**kwargs, _gate_=_gate_)
     if kwargs['type'] == ChannelTypes.VOICE:
         return PublicVoiceChannel(**kwargs, _gate_=_gate_)
+    if kwargs['type'] == ChannelTypes.CATEGORY:
+        return PublicChannel(**kwargs, _gate_=_gate_)
     raise ValueError(f'unsupported channel type: {kwargs["type"]}: {kwargs}')
 
 
