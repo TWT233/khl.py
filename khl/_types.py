@@ -141,7 +141,7 @@ class BadgeTypes(IntEnum):
     ONLINE_MAX = 2
 
 
-class MessageFlagMode(Enum):
+class MessageFlagModes(Enum):
     """types of message flag mode"""
     BEFORE = 'before'
     AFTER = 'after'
