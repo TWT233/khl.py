@@ -17,10 +17,11 @@ class HTTPRequester:
 
     def __init__(self, cert: Cert):
         self._cert = cert
-        self._cs: ClientSession = ClientSession()
+        self._cs: Union[ClientSession, None] = None
 
     def __del__(self):
-        asyncio.get_event_loop().run_until_complete(self._cs.close())
+        if self._cs is not None:
+            asyncio.get_event_loop().run_until_complete(self._cs.close())
 
     async def request(self, method: str, route: str, **params) -> Union[dict, list, bytes]:
         """wrap raw request, fill authorization, handle & extract response"""
@@ -29,6 +30,8 @@ class HTTPRequester:
 
         log.debug(f'{method} {route}: req: {params}')  # token is excluded
         headers['Authorization'] = f'Bot {self._cert.token}'
+        if self._cs is None:  # lazy init
+            self._cs = ClientSession()
         async with self._cs.request(method, f'{API}/{route}', **params) as res:
             if res.content_type == 'application/json':
                 rsp = await res.json()
