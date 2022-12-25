@@ -16,7 +16,7 @@ from .user import User, GuildUser
 from .intimacy import Intimacy
 from .channel import Channel, PublicTextChannel, PublicVoiceChannel, PrivateChannel, PublicChannel
 from .game import Game
-from .guild import ChannelCategory, Guild, GuildBoost
+from .guild import ChannelCategory, Guild, GuildBoost, GuildEmoji
 from .context import Context
 from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
 
