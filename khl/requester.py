@@ -30,7 +30,7 @@ class HTTPRequester:
 
         log.debug(f'{method} {route}: req: {params}')  # token is excluded
         headers['Authorization'] = f'Bot {self._cert.token}'
-        if self._cs is None:
+        if self._cs is None:  # lazy init
             self._cs = ClientSession()
         async with self._cs.request(method, f'{API}/{route}', **params) as res:
             if res.content_type == 'application/json':
