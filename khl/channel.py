@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Union, List, Dict
 
 from . import api
-from ._types import MessageTypes, ChannelTypes, SlowModeTypes, MessageFlagMode
+from ._types import MessageTypes, ChannelTypes, SlowModeTypes, MessageFlagModes
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .permission import ChannelPermission, PermissionHolder
@@ -85,8 +85,14 @@ class PublicChannel(Channel, PermissionHolder, ABC):
         await self.load()
         return rt
 
-    async def list_users(self, search: str = None, role: Union[Role, str, int] = None, mobile_verified: bool = None,
-                         active_time: int = None, joined_at: int = None, page: int = 1, page_size: int = 50,
+    async def list_users(self,
+                         search: str = None,
+                         role: Union[Role, str, int] = None,
+                         mobile_verified: bool = None,
+                         active_time: int = None,
+                         joined_at: int = None,
+                         page: int = 1,
+                         page_size: int = 50,
                          filter_user_id: str = None) -> List[User]:
         """list the users who can see this channel"""
         params = {'guild_id': self.guild_id, 'channel_id': self.id, 'page': page, 'page_size': page_size}
@@ -105,7 +111,10 @@ class PublicChannel(Channel, PermissionHolder, ABC):
         users = await self.gate.exec_paged_req(api.Guild.userList(**params))
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
-    async def list_messages(self, page_size: int = None, pin: int = None, flag: MessageFlagMode = None,
+    async def list_messages(self,
+                            page_size: int = None,
+                            pin: int = None,
+                            flag: MessageFlagModes = None,
                             msg_id: str = None) -> Dict:
         """list the messages in this channel (only for public channel now)"""
         params = {'target_id': self.id}
