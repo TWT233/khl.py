@@ -301,6 +301,7 @@ class Message:
         msg_id,
         pin,
         flag,
+        page_size
     ):
         ...
 

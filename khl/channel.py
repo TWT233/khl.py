@@ -4,11 +4,11 @@ from abc import ABC, abstractmethod
 from typing import Union, List, Dict
 
 from . import api
+from ._types import MessageTypes, ChannelTypes, SlowModeTypes, MessageFlagMode
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .permission import ChannelPermission, PermissionHolder
 from .role import Role
-from ._types import MessageTypes, ChannelTypes, SlowModeTypes
 from .user import User, GuildUser
 from .util import unpack_value, unpack_id
 
@@ -104,6 +104,20 @@ class PublicChannel(Channel, PermissionHolder, ABC):
             params['filter_user_id'] = filter_user_id
         users = await self.gate.exec_paged_req(api.Guild.userList(**params))
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
+
+    async def list_messages(self, page_size: int = None, pin: int = None, flag: MessageFlagMode = None,
+                            msg_id: str = None) -> Dict:
+        """list the messages in this channel (only for public channel now)"""
+        params = {'target_id': self.id}
+        if page_size is not None:
+            params['page_size'] = page_size
+        if pin is not None:
+            params['pin'] = pin
+        if flag is not None:
+            params['flag'] = flag
+        if msg_id is not None:
+            params['msg_id'] = msg_id
+        return await self.gate.exec_req(api.Message.list(**params))
 
 
 class PublicTextChannel(PublicChannel):
