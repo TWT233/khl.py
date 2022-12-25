@@ -20,7 +20,8 @@ class HTTPRequester:
         self._cs: Union[ClientSession, None] = None
 
     def __del__(self):
-        asyncio.get_event_loop().run_until_complete(self._cs.close())
+        if self._cs is not None:
+            asyncio.get_event_loop().run_until_complete(self._cs.close())
 
     async def request(self, method: str, route: str, **params) -> Union[dict, list, bytes]:
         """wrap raw request, fill authorization, handle & extract response"""
