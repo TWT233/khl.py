@@ -9,7 +9,7 @@ from .context import Context
 from .gateway import Requestable
 from .guild import Guild
 from ._types import MessageTypes, ChannelPrivacyTypes, EventTypes
-from .user import User
+from .user import User, GuildUser
 
 class RawMessage(ABC):
     """
@@ -68,11 +68,11 @@ class Message(RawMessage, Requestable, ABC):
         2. PrivateMessage: sent in a private chat
     """
     _ctx: Context
+    _author: User
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.gate = kwargs.get('_gate_', None)
-        self._author = User(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
 
     @property
     def author(self) -> User:
@@ -146,6 +146,12 @@ class PublicMessage(Message):
         channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'], _gate_=self.gate)
         guild = Guild(id=self.extra['guild_id'], _gate_=self.gate)
         self._ctx = Context(channel=channel, guild=guild, _gate_=self.gate)
+        self._author = GuildUser(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
+
+    @property
+    def author(self) -> GuildUser:
+        """message author"""
+        return self._author
 
     @property
     def guild(self) -> Guild:
@@ -219,6 +225,7 @@ class PrivateMessage(Message):
         super().__init__(**kwargs)
         self._channel = PrivateChannel(code=self.extra['code'], target_info=self.extra['author'], _gate_=self.gate)
         self._ctx = Context(channel=self._channel, _gate_=self.gate)
+        self._author = User(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
 
     @property
     def chat_code(self) -> str:
