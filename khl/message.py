@@ -146,7 +146,7 @@ class PublicMessage(Message):
         channel = PublicTextChannel(id=self.target_id, name=self.extra['channel_name'], _gate_=self.gate)
         guild = Guild(id=self.extra['guild_id'], _gate_=self.gate)
         self._ctx = Context(channel=channel, guild=guild, _gate_=self.gate)
-        self._author = GuildUser(**self.extra['author'], guild_id=self.extra['guild_id'], _gate_=self.gate, _lazy_loaded_=True)
+        self._author = GuildUser(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
 
     @property
     def guild(self) -> Guild:
