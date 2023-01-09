@@ -149,6 +149,11 @@ class PublicMessage(Message):
         self._author = GuildUser(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
 
     @property
+    def author(self) -> GuildUser:
+        """message author"""
+        return self._author
+
+    @property
     def guild(self) -> Guild:
         """the guild where the message in"""
         return self.ctx.guild
