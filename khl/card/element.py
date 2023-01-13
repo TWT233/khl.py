@@ -14,7 +14,7 @@ class Element:
         content: str
         emoji: bool
 
-        def __init__(self, content: str, type: Union[Types.Text, str] = Types.Text.PLAIN, emoji: bool = True):
+        def __init__(self, content: str, type: Union[Types.Text, str] = Types.Text.KMD, emoji: bool = True):
             if isinstance(type, str):
                 type = Types.Text(type)  # check if type in Type.Text
             self._type = type.value
@@ -65,6 +65,8 @@ class Element:
                      value: str = '',
                      click: Union[Types.Click, str] = Types.Click.RETURN_VAL,
                      theme: Union[Types.Theme, str, None] = None):
+            if isinstance(text, str):
+                text = 'Element.Text'(text)
             self.text = text
             self._click = click if isinstance(click, Types.Click) else Types.Click(click)
             self.value = value
