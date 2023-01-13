@@ -66,7 +66,7 @@ class Element:
                      click: Union[Types.Click, str] = Types.Click.RETURN_VAL,
                      theme: Union[Types.Theme, str, None] = None):
             if isinstance(text, str):
-                text = 'Element.Text'(text)
+                text = Element.Text(text)
             self.text = text
             self._click = click if isinstance(click, Types.Click) else Types.Click(click)
             self.value = value
