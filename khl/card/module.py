@@ -19,6 +19,8 @@ class Module:
         _text: Element.Text
 
         def __init__(self, text: Union[Element.Text, str] = ''):
+            if isinstance(text, str):
+                text = Element.Text(text)
             self._text = text
             super().__init__(Types.Theme.NA, Types.Size.NA)
 
@@ -46,6 +48,8 @@ class Module:
                      text: Union[Element.Text, str, Struct.Paragraph] = '',
                      accessory: Union[Element.Image, Element.Button, None] = None,
                      mode: Union[Types.SectionMode, str] = Types.SectionMode.LEFT):
+            if isinstance(text, str):
+                text = Element.Text(text)
             self.text = text
             self.mode = mode
             self.accessory = accessory
