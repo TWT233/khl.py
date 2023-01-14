@@ -19,7 +19,7 @@ class Module:
         _text: Element.Text
 
         def __init__(self, text: Union[Element.Text, str] = ''):
-            if isinstance(text):
+            if isinstance(text, str):
                 text = Element.Text(text)
             self._text = text
             super().__init__(Types.Theme.NA, Types.Size.NA)
