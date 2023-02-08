@@ -14,7 +14,7 @@ bot = Bot(token=config['token'])
 # register command
 # invoke this via saying `!hello` in channel
 @bot.command(name='hello')
-async def roll(msg: Message):
+async def world(msg: Message):
     # quote reply
     await msg.reply('world for you!')
     # msg from reply_temp & send_temp will be cleaned when you restart client or refresh browser
