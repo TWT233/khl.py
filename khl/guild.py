@@ -5,12 +5,12 @@ import warnings
 from typing import List, Union, Dict, IO
 
 from . import api
+from ._types import ChannelTypes, GuildMuteTypes, BadgeTypes
 from .channel import Channel, public_channel_factory, PublicChannel, PublicVoiceChannel, PublicTextChannel
 from .gateway import Requestable
 from .interface import LazyLoadable
 from .permission import PermissionHolder, ChannelPermission
 from .role import Role
-from ._types import ChannelTypes, GuildMuteTypes, BadgeTypes
 from .user import User, GuildUser
 from .util import unpack_id, unpack_value
 
@@ -61,7 +61,7 @@ class GuildEmoji(Requestable):
 class ChannelCategory(PermissionHolder, Requestable):
     """represent a channel set"""
 
-    id: str
+    _id: str
     name: str
     master_id: str
     guild_id: str
@@ -83,6 +83,14 @@ class ChannelCategory(PermissionHolder, Requestable):
         self._channels = kwargs.get('channels', [])
         self.permission: ChannelPermission = ChannelPermission(**kwargs)
 
+    @property
+    def id(self) -> str:
+        return self._id
+
+    @id.setter
+    def id(self, value: str):
+        self._id = value
+
     async def load(self):
         self._update_fields(**(await self.gate.exec_req(api.Channel.view(self.id))))
         self._loaded = True
@@ -95,8 +103,7 @@ class ChannelCategory(PermissionHolder, Requestable):
         """pop a channel(default last) from this category"""
         return self._channels.pop(index)
 
-    async def create_text_channel(self,
-                                  name: str) -> PublicTextChannel:
+    async def create_text_channel(self, name: str) -> PublicTextChannel:
         """create a text channel in this channel category
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
@@ -306,9 +313,7 @@ class Guild(LazyLoadable, Requestable):
         return await self.gate.exec_req(
             api.GuildRole.revoke(guild_id=self.id, user_id=unpack_id(user), role_id=unpack_id(role)))
 
-    async def create_text_channel(self,
-                                  name: str,
-                                  category: Union[str, ChannelCategory] = None) -> PublicTextChannel:
+    async def create_text_channel(self, name: str, category: Union[str, ChannelCategory] = None) -> PublicTextChannel:
         """create a text channel in the guild
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
@@ -317,7 +322,8 @@ class Guild(LazyLoadable, Requestable):
             params['parent_id'] = unpack_id(category)
         return public_channel_factory(self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
 
-    async def create_voice_channel(self, name: str,
+    async def create_voice_channel(self,
+                                   name: str,
                                    category: Union[str, ChannelCategory] = None,
                                    limit_amount: int = None,
                                    voice_quality: int = None) -> PublicVoiceChannel:
@@ -338,8 +344,7 @@ class Guild(LazyLoadable, Requestable):
 
         docs: https://developer.kaiheila.cn/doc/http/channel#%E5%88%9B%E5%BB%BA%E9%A2%91%E9%81%93"""
         params = {'guild_id': self.id, 'name': name, 'is_category': 1}
-        return ChannelCategory(_gate_=self.gate, **(
-            await self.gate.exec_req(api.Channel.create(**params))))
+        return ChannelCategory(_gate_=self.gate, **(await self.gate.exec_req(api.Channel.create(**params))))
 
     async def delete_channel(self, channel: Union[Channel, str]):
         """delete the channel from the guild"""
