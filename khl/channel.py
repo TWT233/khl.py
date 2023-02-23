@@ -180,7 +180,7 @@ class PublicVoiceChannel(PublicChannel):
 
     async def fetch_user_list(self) -> List[GuildUser]:
         """get users chatting in the voice channel"""
-        users = await self.gate.exec_paged_req(api.Channel.userList(channel_id=self.id))
+        users = await self.gate.exec_req(api.Channel.userList(channel_id=self.id))
         return [GuildUser(_gate_=self.gate, guild_id=self.guild_id, _lazy_loaded_=True, **i) for i in users]
 
 
