@@ -21,7 +21,8 @@ class Module:
         def __init__(self, text: Union[Element.Text, str] = ''):
             if isinstance(text, str):
                 text = Element.Text(text)
-            self._text = text
+            # Force header to use plain because KOOK right now only supports using plain in header
+            self._text = Element.Text(text.content, Types.Text.PLAIN, text.emoji)
             super().__init__(Types.Theme.NA, Types.Size.NA)
 
         @property
