@@ -20,3 +20,7 @@ class Game:
         self.options = kwargs.get('options', [])
         self.product_name = kwargs.get('product_name', [])
         self.icon = kwargs.get('icon', '')
+
+    def __repr__(self):
+        return f'Game(id={self.id}, name="{self.name}", type={self.type}, options={self.options},' \
+               f' product_name={self.product_name}, icon="{self.icon}")'
