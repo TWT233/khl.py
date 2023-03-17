@@ -13,6 +13,7 @@ from ._types import (
     SoftwareTypes,
     BadgeTypes,
     MessageFlagModes,
+    GameTypes,
 )
 from .cert import Cert
 from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
