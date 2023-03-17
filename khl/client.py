@@ -4,7 +4,7 @@ import inspect
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List, Callable, Coroutine, Union, IO
+from typing import Dict, List, Callable, Coroutine, Union, IO, Optional
 
 from . import api
 from .channel import public_channel_factory, PublicChannel, Channel, PublicTextChannel, PublicVoiceChannel
@@ -274,7 +274,7 @@ class Client(Requestable, AsyncRunnable):
         games = await self.gate.exec_paged_req(api.game(), **kwargs)
         return [Game(**game_data) for game_data in games]
 
-    async def register_game(self, name, process_name: str, icon: str) -> Game:
+    async def register_game(self, name, process_name: Optional[str] = None, icon: Optional[str] = None) -> Game:
         """register a new game at khl server, can be used in profile status"""
         data = {
             'name': name,
