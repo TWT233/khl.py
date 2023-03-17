@@ -149,6 +149,7 @@ class MessageFlagModes(Enum):
 
 
 class GameTypes(Enum):
+    """types of games"""
     ALL = '0'
     USER_CREATED = '1'
     SYSTEM_CREATED = '2'
