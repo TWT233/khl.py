@@ -146,3 +146,9 @@ class MessageFlagModes(Enum):
     BEFORE = 'before'
     AFTER = 'after'
     AROUND = 'around'
+
+
+class GameTypes(Enum):
+    ALL = '0'
+    USER_CREATED = '1'
+    SYSTEM_CREATED = '2'
