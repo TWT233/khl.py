@@ -26,7 +26,7 @@ def req(method: str, **http_fields):
 
         @functools.wraps(func)
         def req_maker(*args, **kwargs) -> _Req:
-            route = _RE_ROUTE.sub('-', func.__qualname__).lower().replace('.', '/')
+            route = _RE_ROUTE.sub('-', func.__qualname__).lower().replace('.', '/').lstrip('_')
 
             # dump args into kwargs
             param_names = list(inspect.signature(func).parameters.keys())
@@ -659,5 +659,37 @@ class Oauth2:
         client_secret,
         code,
         redirect_uri
+    ):
+        ...
+
+
+@req('GET')
+def friend(type):
+    ...
+
+
+class Friend:
+
+    @staticmethod
+    @req('POST')
+    def request(
+        user_code,
+        _from,
+        guild_id,
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def handleRequest(
+        id,
+        accept
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def delete(
+        user_id
     ):
         ...
