@@ -267,11 +267,12 @@ class Client(Requestable, AsyncRunnable):
         """
         return await msg.delete_reaction(emoji, user)
 
-    async def fetch_game_list(self, type: Union[GameTypes, str] = GameTypes.ALL, **kwargs) -> List[Game]:
+    async def fetch_game_list(self, type: Union[GameTypes, str] = None, **kwargs) -> List[Game]:
         """list the games already registered at khl server
 
         paged req, support standard pagination args"""
-        games = await self.gate.exec_paged_req(api.game(type=unpack_value(type)), **kwargs)
+        type = type if isinstance(type, str) else type.value
+        games = await self.gate.exec_paged_req(api.game(type=type), **kwargs)
         return [Game(**game_data) for game_data in games]
 
     async def register_game(self, name, process_name: Optional[str] = None, icon: Optional[str] = None) -> Game:
