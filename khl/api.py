@@ -609,7 +609,7 @@ class Invite:
 
 
 @req('GET')
-def game():
+def game(type):
     ...
 
 
