@@ -271,7 +271,10 @@ class Client(Requestable, AsyncRunnable):
         """list the games already registered at khl server
 
         paged req, support standard pagination args"""
-        type = type if isinstance(type, str) else type.value
+        if type is None:
+            type = ''
+        else:
+            type = unpack_value(type)
         games = await self.gate.exec_paged_req(api.game(type=type), **kwargs)
         return [Game(**game_data) for game_data in games]
 
