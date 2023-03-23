@@ -26,12 +26,12 @@ def req(method: str, **http_fields):
 
         @functools.wraps(func)
         def req_maker(*args, **kwargs) -> _Req:
-            route = _RE_ROUTE.sub('-', func.__qualname__).lower().replace('.', '/').lstrip('_')
+            route = _RE_ROUTE.sub('-', func.__qualname__).lower().replace('.', '/')
 
             # dump args into kwargs
             param_names = list(inspect.signature(func).parameters.keys())
             for i, arg in enumerate(args):
-                kwargs[param_names[i]] = arg
+                kwargs[param_names[i].lstrip('_')] = arg
 
             params = _merge_params(method, http_fields, kwargs)
             return _Req(method, route, params)
