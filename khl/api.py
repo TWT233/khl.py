@@ -693,3 +693,17 @@ class Friend:
         user_id
     ):
         ...
+
+    @staticmethod
+    @req('POST')
+    def block(
+        user_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def unblock(
+        user_id
+    ):
+        ...

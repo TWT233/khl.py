@@ -14,6 +14,7 @@ from ._types import (
     BadgeTypes,
     MessageFlagModes,
     GameTypes,
+    FriendTypes
 )
 from .cert import Cert
 from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
@@ -23,7 +24,7 @@ from .client import Client
 
 # concepts
 from .role import Role
-from .user import User, GuildUser
+from .user import User, GuildUser, RawFriend, Friend, FriendRequest, BlockedFriend
 from .intimacy import Intimacy
 from .channel import Channel, PublicTextChannel, PublicVoiceChannel, PrivateChannel, PublicChannel
 from .game import Game
