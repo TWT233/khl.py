@@ -169,16 +169,12 @@ class RawFriend(ABC):
     @abstractmethod
     def type(self) -> FriendTypes:
         """the type of the friend"""
-        pass
 
 
 class Friend(RawFriend):
     """
     Friend who has benn added to friend list
     """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     async def delete(self):
         """delete the friend"""
@@ -197,9 +193,6 @@ class FriendRequest(Friend):
     """
     Friend request with specific id and user info
     """
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     async def accept(self):
         """accept the friend request"""
@@ -220,10 +213,8 @@ class BlockedFriend(RawFriend):
     Friend who is blocked
     """
 
-    def __init__(self, _gate_: Gateway, **kwargs):
-        super().__init__(_gate_, **kwargs)
-
     async def unblock(self):
+        """unblock the blocked user"""
         await self.gate.exec_req(api.Friend.unblock(user_id=self.user_id))
 
     @property

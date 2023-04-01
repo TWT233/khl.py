@@ -675,7 +675,7 @@ class Friend:
     def request(
         user_code,
         _from,
-        guild_id,
+        guild_id=None,
     ):
         ...
 
