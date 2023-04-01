@@ -347,14 +347,17 @@ class Client(Requestable, AsyncRunnable):
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
 
     async def fetch_friends(self) -> List[Friend]:
+        """list friends who have been added to friend list"""
         friends = (await self.gate.exec_req(api.friend(type='friend')))['friend']
         return [Friend(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
 
     async def fetch_friend_requests(self) -> List[FriendRequest]:
+        """list friends requests received"""
         friends = (await self.gate.exec_req(api.friend(type='request')))['request']
         return [FriendRequest(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
 
     async def fetch_blocked_friends(self) -> List[BlockedFriend]:
+        """list friends who are blocked"""
         friends = (await self.gate.exec_req(api.friend(type='blocked')))['blocked']
         return [BlockedFriend(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
 

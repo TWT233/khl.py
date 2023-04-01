@@ -1,13 +1,13 @@
 import json
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import List, Union
 
 from . import api
+from ._types import MessageTypes, FriendTypes
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .intimacy import Intimacy
 from .role import Role
-from ._types import MessageTypes, FriendTypes
 
 
 class User(LazyLoadable, Requestable):
@@ -138,7 +138,8 @@ class GuildUser(User):
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.guild_id, nickname=nickname, user_id=self.id))
 
     async def add_friend(self):
-        await self.gate.exec_req(api.Friend.request(user_code=f'{self.username}#{self.identify_num}', _from=2, guild_id=self.guild_id))
+        await self.gate.exec_req(
+            api.Friend.request(user_code=f'{self.username}#{self.identify_num}', _from=2, guild_id=self.guild_id))
 
 
 class RawFriend(ABC):
@@ -164,6 +165,12 @@ class RawFriend(ABC):
             self._user = User(_gate_=self.gate, **(await self.gate.exec_req(api.User.view(user_id=self.user_id))))
         return self._user
 
+    @property
+    @abstractmethod
+    def type(self) -> FriendTypes:
+        """the type of the friend"""
+        pass
+
 
 class Friend(RawFriend):
     """
@@ -180,6 +187,10 @@ class Friend(RawFriend):
     async def block(self):
         """block the user"""
         await self.gate.exec_req(api.Friend.block(user_id=self.user_id))
+
+    @property
+    def type(self) -> FriendTypes:
+        return FriendTypes.FRIEND
 
 
 class FriendRequest(Friend):
@@ -199,6 +210,10 @@ class FriendRequest(Friend):
         """deny the friend request"""
         await self.gate.exec_req(api.Friend.handleRequest(id=self.id, accept=0))
 
+    @property
+    def type(self) -> FriendTypes:
+        return FriendTypes.REQUEST
+
 
 class BlockedFriend(RawFriend):
     """
@@ -210,3 +225,7 @@ class BlockedFriend(RawFriend):
 
     async def unblock(self):
         await self.gate.exec_req(api.Friend.unblock(user_id=self.user_id))
+
+    @property
+    def type(self) -> FriendTypes:
+        return FriendTypes.BLOCKED
