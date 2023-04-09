@@ -24,7 +24,7 @@ from .client import Client
 
 # concepts
 from .role import Role
-from .user import User, GuildUser, RawFriend, Friend, FriendRequest, BlockedFriend
+from .user import User, GuildUser, Friend, FriendRequest
 from .intimacy import Intimacy
 from .channel import Channel, PublicTextChannel, PublicVoiceChannel, PrivateChannel, PublicChannel
 from .game import Game
