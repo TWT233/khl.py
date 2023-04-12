@@ -2,11 +2,11 @@ import json
 from typing import List, Union
 
 from . import api
+from ._types import MessageTypes, FriendTypes
 from .gateway import Requestable, Gateway
 from .interface import LazyLoadable
 from .intimacy import Intimacy
 from .role import Role
-from ._types import MessageTypes
 
 
 class User(LazyLoadable, Requestable):
@@ -85,6 +85,14 @@ class User(LazyLoadable, Requestable):
             params['img_id'] = img_id
         return await self.gate.exec_req(api.Intimacy.update(**params))
 
+    async def add_friend(self):
+        """send friend request to the user"""
+        await self.gate.exec_req(api.Friend.request(user_code=f'{self.username}#{self.identify_num}', _from=0))
+
+    async def block(self):
+        """block the user"""
+        await self.gate.exec_req(api.Friend.block(user_id=self.id))
+
 
 class GuildUser(User):
     """a user in guild
@@ -127,3 +135,69 @@ class GuildUser(User):
         Set user's nickname
         """
         await self.gate.exec_req(api.Guild.nickname(guild_id=self.guild_id, nickname=nickname, user_id=self.id))
+
+    async def add_friend(self):
+        await self.gate.exec_req(
+            api.Friend.request(user_code=f'{self.username}#{self.identify_num}', _from=2, guild_id=self.guild_id))
+
+
+class Friend:
+    """
+    Friend with specific friend id and friend info
+    """
+
+    gate: Gateway
+
+    id: int
+    user_id: str
+
+    _user: User
+    _type: FriendTypes
+
+    def __init__(self, _gate_: Gateway, **kwargs):
+        self.gate = _gate_
+        self.id = kwargs.get('id')
+        self.user_id = kwargs.get('user_id')
+        self._type = kwargs.get('type')
+
+    async def fetch_user(self) -> User:
+        """get user"""
+        if self._user is None:
+            self._user = User(_gate_=self.gate, **(await self.gate.exec_req(api.User.view(user_id=self.user_id))))
+        return self._user
+
+    async def delete(self):
+        """delete the friend"""
+        await self.gate.exec_req(api.Friend.delete(user_id=self.user_id))
+
+    async def block(self):
+        """block the user"""
+        await self.gate.exec_req(api.Friend.block(user_id=self.user_id))
+
+    async def unblock(self):
+        """unblock the blocked user"""
+        await self.gate.exec_req(api.Friend.unblock(user_id=self.user_id))
+
+    @property
+    def type(self) -> FriendTypes:
+        """the type of the friend"""
+        return self._type
+
+
+class FriendRequest(Friend):
+    """
+    Friend request with specific id and user info
+    """
+
+    async def accept(self):
+        """accept the friend request"""
+        await self.gate.exec_req(api.Friend.handleRequest(id=self.id, accept=1))
+        return Friend(_gate_=self.gate, user_id=self.user_id)
+
+    async def deny(self):
+        """deny the friend request"""
+        await self.gate.exec_req(api.Friend.handleRequest(id=self.id, accept=0))
+
+    @property
+    def type(self) -> FriendTypes:
+        return FriendTypes.REQUEST

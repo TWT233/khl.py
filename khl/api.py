@@ -675,7 +675,7 @@ class Friend:
     def request(
         user_code,
         _from,
-        guild_id,
+        guild_id=None,
     ):
         ...
 
@@ -690,6 +690,20 @@ class Friend:
     @staticmethod
     @req('POST')
     def delete(
+        user_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def block(
+        user_id
+    ):
+        ...
+
+    @staticmethod
+    @req('POST')
+    def unblock(
         user_id
     ):
         ...

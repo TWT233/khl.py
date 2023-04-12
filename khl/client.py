@@ -14,7 +14,7 @@ from .guild import Guild, GuildBoost, ChannelCategory
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
 from ._types import SoftwareTypes, MessageTypes, SlowModeTypes, GameTypes
-from .user import User
+from .user import User, Friend, FriendRequest
 from .util import unpack_id, unpack_value
 
 log = logging.getLogger(__name__)
@@ -345,6 +345,21 @@ class Client(Requestable, AsyncRunnable):
         boost_list = await self.gate.exec_paged_req(
             api.GuildBoost.history(guild_id=unpack_id(guild), start_time=start_time, end_time=end_time), **kwargs)
         return [GuildBoost(**item, _gate_=self.gate) for item in boost_list]
+
+    async def fetch_friends(self) -> List[Friend]:
+        """list friends who have been added to friend list"""
+        friends = (await self.gate.exec_req(api.friend(type='friend')))['friend']
+        return [Friend(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
+
+    async def fetch_friend_requests(self) -> List[FriendRequest]:
+        """list friends requests received"""
+        friends = (await self.gate.exec_req(api.friend(type='request')))['request']
+        return [FriendRequest(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
+
+    async def fetch_blocked_friends(self) -> List[Friend]:
+        """list friends who are blocked"""
+        friends = (await self.gate.exec_req(api.friend(type='blocked')))['blocked']
+        return [Friend(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
 
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))

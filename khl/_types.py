@@ -153,3 +153,10 @@ class GameTypes(Enum):
     ALL = '0'
     USER_CREATED = '1'
     SYSTEM_CREATED = '2'
+
+
+class FriendTypes(Enum):
+    """types of friends"""
+    REQUEST = "request"
+    FRIEND = "friend"
+    BLOCKED = "blocked"
