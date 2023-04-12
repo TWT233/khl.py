@@ -1,5 +1,4 @@
 import json
-from abc import ABC
 from typing import List, Union
 
 from . import api
@@ -142,7 +141,7 @@ class GuildUser(User):
             api.Friend.request(user_code=f'{self.username}#{self.identify_num}', _from=2, guild_id=self.guild_id))
 
 
-class Friend(ABC):
+class Friend:
     """
     Friend with specific friend id and friend info
     """
