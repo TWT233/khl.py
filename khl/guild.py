@@ -246,14 +246,22 @@ class Guild(LazyLoadable, Requestable):
                       stacklevel=2)
         return await self.fetch_user_list(channel, **kwargs)
 
-    async def fetch_user_list(self, channel: Union[Channel, str] = None, **kwargs) -> List[User]:
-        """list users in the guild/a channel belongs to the guild
+    async def fetch_user_list(
+            self,
+            channel: Union[Channel, str] = None,
+            role: Union[Role, int] = None,
+            **kwargs
+    ) -> List[User]:
+        """list users in the guild, paged req, supports standard pagination args
 
-        paged req, support standard pagination args"""
-        cid = channel.id if isinstance(channel, Channel) else channel
+        :param channel: filter users in this channel
+        :param role: filter users by role"""
         params = {'guild_id': self.id}
-        if cid is not None:
-            params['channel_id'] = cid
+        if channel is not None:
+            params['channel_id'] = unpack_id(channel)
+        if role is not None:
+            params['role_id'] = unpack_id(role)
+
         users = await self.gate.exec_paged_req(api.Guild.userList(**params), **kwargs)
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
