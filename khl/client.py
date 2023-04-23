@@ -158,11 +158,12 @@ class Client(Requestable, AsyncRunnable):
         guild = Guild(_gate_=self.gate, id=guild_id)
         await guild.load()
         return guild
-    
+
     async def fetch_guild_user(self, user: Union[User, str], guild_id: str) -> User:
         """fetch detail of the guild user"""
         user_id = unpack_id(user)
-        return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(user_id, guild_id))))
+        return User(_gate_=self.gate, _lazy_loaded_=True,
+                    **(await self.gate.exec_req(api.User.view(user_id, guild_id))))
 
     async def fetch_guild_list(self, **kwargs) -> List[Guild]:
         """list guilds which the client joined
@@ -368,3 +369,29 @@ class Client(Requestable, AsyncRunnable):
 
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
+
+    async def message_view(self, msg_id: str = '') -> Dict:
+        """get message detail by message id"""
+        if len(msg_id) > 0:
+            return await self.gate.exec_req(api.Message.view(msg_id))
+
+    async def list_messages(self,
+                            target_id: str = None,
+                            page_size: int = None,
+                            pin: int = None,
+                            flag: int = None,
+                            msg_id: str = None) -> Dict:
+        """list the messages by guild id"""
+        params = {}
+        if target_id is not None:
+            params['target_id'] = target_id
+        if page_size is not None:
+            params['page_size'] = page_size
+        if pin is not None:
+            params['pin'] = pin
+        if flag is not None:
+            params['flag'] = flag
+        if msg_id is not None:
+            params['msg_id'] = msg_id
+        params['page'] = 0
+        return await self.gate.exec_req(api.Message.list(**params))
