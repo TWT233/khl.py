@@ -158,6 +158,11 @@ class Client(Requestable, AsyncRunnable):
         guild = Guild(_gate_=self.gate, id=guild_id)
         await guild.load()
         return guild
+    
+    async def fetch_guild_user(self, user: Union[User, str], guild_id: str) -> User:
+        """fetch detail of the guild user"""
+        user_id = unpack_id(user)
+        return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(user_id, guild_id))))
 
     async def fetch_guild_list(self, **kwargs) -> List[Guild]:
         """list guilds which the client joined
