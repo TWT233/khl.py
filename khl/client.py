@@ -148,12 +148,12 @@ class Client(Requestable, AsyncRunnable):
             return self._me
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
-    async def fetch_user(self, user: Union[User, str], guild_id: str = None) -> User:
+    async def fetch_user(self, user: Union[User, str], channel: Union[Channel, str] = None) -> User:
         """fetch detail of the specific user"""
         user_id = unpack_id(user)
         params = {}
-        if guild_id is not None:
-            params['guild_id'] = guild_id
+        if channel is not None:
+            params['guild_id'] = unpack_id(channel)
         params['user_id'] = user_id
         return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(**params))))
 
