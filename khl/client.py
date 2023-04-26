@@ -13,7 +13,7 @@ from .gateway import Gateway, Requestable
 from .guild import Guild, GuildBoost, ChannelCategory
 from .interface import AsyncRunnable
 from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
-from ._types import SoftwareTypes, MessageTypes, SlowModeTypes, GameTypes
+from ._types import SoftwareTypes, MessageTypes, SlowModeTypes, GameTypes, MessageFlagModes
 from .user import User, Friend, FriendRequest
 from .util import unpack_id, unpack_value
 
@@ -148,22 +148,20 @@ class Client(Requestable, AsyncRunnable):
             return self._me
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
-    async def fetch_user(self, user: Union[User, str]) -> User:
+    async def fetch_user(self, user: Union[User, str], guild_id: str = None) -> User:
         """fetch detail of the specific user"""
         user_id = unpack_id(user)
-        return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(user_id))))
+        params = {}
+        if guild_id is not None:
+            params['guild_id'] = guild_id
+        params['user_id'] = user_id
+        return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(**params))))
 
     async def fetch_guild(self, guild_id: str) -> Guild:
         """fetch details of a guild from khl"""
         guild = Guild(_gate_=self.gate, id=guild_id)
         await guild.load()
         return guild
-
-    async def fetch_guild_user(self, user: Union[User, str], guild_id: str) -> User:
-        """fetch detail of the guild user"""
-        user_id = unpack_id(user)
-        return User(_gate_=self.gate, _lazy_loaded_=True,
-                    **(await self.gate.exec_req(api.User.view(user_id, guild_id))))
 
     async def fetch_guild_list(self, **kwargs) -> List[Guild]:
         """list guilds which the client joined
@@ -370,27 +368,26 @@ class Client(Requestable, AsyncRunnable):
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
 
-    async def message_view(self, msg_id: str = '') -> Dict:
+    async def message_view(self, msg_id: str) -> Dict:
         """get message detail by message id"""
         if len(msg_id) > 0:
             return await self.gate.exec_req(api.Message.view(msg_id))
 
     async def list_messages(self,
-                            target_id: str = None,
+                            channel: Union[Channel, str],
                             page_size: int = None,
                             pin: int = None,
-                            flag: int = None,
+                            flag: MessageFlagModes = None,
                             msg_id: str = None) -> Dict:
         """list the messages by guild id"""
-        params = {}
-        if target_id is not None:
-            params['target_id'] = target_id
+        target_id = unpack_id(channel)
+        params = {'target_id': target_id}
         if page_size is not None:
             params['page_size'] = page_size
         if pin is not None:
             params['pin'] = pin
         if flag is not None:
-            params['flag'] = flag
+            params['flag'] = unpack_value(flag)
         if msg_id is not None:
             params['msg_id'] = msg_id
         params['page'] = 0
