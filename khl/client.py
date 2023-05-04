@@ -148,12 +148,12 @@ class Client(Requestable, AsyncRunnable):
             return self._me
         raise ValueError('not loaded, please call `await fetch_me()` first')
 
-    async def fetch_user(self, user: Union[User, str], channel: Union[Channel, str] = None) -> User:
+    async def fetch_user(self, user: Union[User, str], guild: Union[Guild, str] = None) -> User:
         """fetch detail of the specific user"""
         user_id = unpack_id(user)
         params = {}
-        if channel is not None:
-            params['guild_id'] = unpack_id(channel)
+        if guild is not None:
+            params['guild_id'] = unpack_id(guild)
         params['user_id'] = user_id
         return User(_gate_=self.gate, _lazy_loaded_=True, **(await self.gate.exec_req(api.User.view(**params))))
 
@@ -368,10 +368,9 @@ class Client(Requestable, AsyncRunnable):
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
 
-    async def message_view(self, msg_id: str) -> Dict:
+    async def view_message(self, msg_id: str) -> Dict:
         """get message detail by message id"""
-        if len(msg_id) > 0:
-            return await self.gate.exec_req(api.Message.view(msg_id))
+        return await self.gate.exec_req(api.Message.view(msg_id))
 
     async def list_messages(self,
                             channel: Union[Channel, str],
