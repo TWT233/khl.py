@@ -29,8 +29,12 @@ class Cert:
         """
         webhook cert
         """
-
-    def __init__(self, *, type: Types = Types.NOTSET, token: str, verify_token: str = '', encrypt_key: str = ''):
+        RABBITMQ = "rabbitmq"
+        """
+        rabbitmq cert
+        """
+    def __init__(self, *, type: Types = Types.NOTSET, token: str, verify_token: str = '', encrypt_key: str = '',
+                 is_rabbitmq_receiver: bool = False):
         """
         all fields from bot config panel
         """
@@ -39,6 +43,8 @@ class Cert:
         else:
             if verify_token:
                 self.type = self.Types.WEBHOOK
+            elif is_rabbitmq_receiver:
+                self.type = self.Types.RABBITMQ
             else:
                 self.type = self.Types.WEBSOCKET
         self.token = token

@@ -9,6 +9,7 @@ from .. import AsyncRunnable  # interfaces
 from .. import Cert, HTTPRequester, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
 from .. import MessageTypes, EventTypes, SlowModeTypes, SoftwareTypes  # types
 from .. import User, Channel, PublicChannel, Guild, Event, Message  # concepts
+from .. import RabbitMQ, RabbitMQProducer, RabbitMQReceiver  # rabbitmq
 from ..command import CommandManager
 from ..game import Game
 from ..task import TaskManager
@@ -49,7 +50,8 @@ class Bot(AsyncRunnable):
                  out: HTTPRequester = None,
                  compress: bool = True,
                  port=5000,
-                 route='/khl-wh'):
+                 route='/khl-wh',
+                 rabbitmq: RabbitMQ = None):
         """
         The most common usage: ``Bot(token='xxxxxx')``
 
@@ -62,11 +64,14 @@ class Bot(AsyncRunnable):
         :param compress: used to tune the receiver
         :param port: used to tune the WebhookReceiver
         :param route: used to tune the WebhookReceiver
+        :param rabbitmq: used to tune the RabbitMQ Receiver or Producer
         """
         if not token and not cert:
             raise ValueError('require token or cert')
 
-        self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route)
+        is_rabbitmq_receiver = rabbitmq is not None and not rabbitmq.is_producer
+        self._init_client(cert or Cert(token=token, is_rabbitmq_receiver=is_rabbitmq_receiver), client, gate, out,
+                          compress, port, route, rabbitmq)
         self._register_client_handler()
 
         self.command = CommandManager()
@@ -78,7 +83,8 @@ class Bot(AsyncRunnable):
         self._startup_index = []
         self._shutdown_index = []
 
-    def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route):
+    def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route,
+                     rabbitmq: RabbitMQ):
         """
         construct self.client from args.
 
@@ -92,6 +98,7 @@ class Bot(AsyncRunnable):
         :param compress: used to tune the receiver
         :param port: used to tune the WebhookReceiver
         :param route: used to tune the WebhookReceiver
+        :param rabbitmq: used to tune the RabbitMQ Receiver or Producer
         :return:
         """
         if client:
@@ -107,10 +114,16 @@ class Bot(AsyncRunnable):
             _in = WebsocketReceiver(cert, compress)
         elif cert.type == Cert.Types.WEBHOOK:
             _in = WebhookReceiver(cert, port=port, route=route, compress=compress)
+        elif cert.type == Cert.Types.RABBITMQ:
+            _in = RabbitMQReceiver(rabbitmq, compress)
         else:
             raise ValueError(f'cert type: {cert.type} not supported')
 
-        self.client = Client(Gateway(_out, _in))
+        rabbitmq_producer = None
+        if rabbitmq is not None and rabbitmq.is_producer:
+            rabbitmq_producer = RabbitMQProducer(rabbitmq, compress)
+
+        self.client = Client(Gateway(_out, _in), rabbitmq_producer)
 
     def _register_client_handler(self):
         # text and kmd -> msg

@@ -7,6 +7,7 @@ from typing import Dict
 
 from aiohttp import ClientWebSocketResponse, ClientSession, web, WSMessage
 
+from .rabbitmq import RabbitMQ
 from .cert import Cert
 from .interface import AsyncRunnable
 
@@ -118,6 +119,40 @@ class WebsocketReceiver(Receiver):
             await self.pkg_queue.put(pkg['d'])
         except Exception as e:
             log.exception(e)
+
+
+class RabbitMQReceiver(Receiver):
+    """receive data in RabbitMQ mode"""
+
+    def __init__(self, rabbitmq: RabbitMQ, compress: bool):
+        super().__init__()
+        self._rabbitmq = rabbitmq
+        self.compress = compress
+
+    @property
+    def type(self) -> str:
+        return 'rabbitmq'
+
+    async def start(self):
+        queue = await self._rabbitmq.get_queue()
+
+        log.info('[ init ] launched')
+
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                async with message.process():
+                    try:
+                        pkg: Dict = self._rabbitmq.decode(message.body, self.compress)
+                    except Exception as e:
+                        log.exception(e)
+                        continue
+
+                    if not pkg:  # empty pkg
+                        continue
+
+                    while self.pkg_queue.qsize() >= self._rabbitmq.qos:
+                        await asyncio.sleep(0.001)
+                    await self.pkg_queue.put(pkg)
 
 
 class WebhookReceiver(Receiver):
