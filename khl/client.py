@@ -16,6 +16,7 @@ from .message import RawMessage, Message, Event, PublicMessage, PrivateMessage
 from ._types import SoftwareTypes, MessageTypes, SlowModeTypes, GameTypes
 from .user import User, Friend, FriendRequest
 from .util import unpack_id, unpack_value
+from .rabbitmq import RabbitMQProducer
 
 log = logging.getLogger(__name__)
 
@@ -33,13 +34,14 @@ class Client(Requestable, AsyncRunnable):
     """
     _handler_map: Dict[MessageTypes, List[TypeHandler]]
 
-    def __init__(self, gate: Gateway):
+    def __init__(self, gate: Gateway, rabbitmq_producer: RabbitMQProducer = None):
         self.gate = gate
         self.ignore_self_msg = True
         self._me = None
 
         self._handler_map = {}
         self._pkg_queue = asyncio.Queue()
+        self._rabbitmq_producer: RabbitMQProducer = rabbitmq_producer
 
     def register(self, type: MessageTypes, handler: TypeHandler):
         """register handler to handle messages of type"""
@@ -61,7 +63,10 @@ class Client(Requestable, AsyncRunnable):
             log.debug(f'upcoming pkg: {pkg}')
 
             try:
-                await self._consume_pkg(pkg)
+                if self._rabbitmq_producer is not None:
+                    await self._rabbitmq_producer.publish(pkg)
+                else:
+                    await self._consume_pkg(pkg)
             except Exception as e:
                 log.exception(e)
 
@@ -362,4 +367,7 @@ class Client(Requestable, AsyncRunnable):
         return [Friend(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
 
     async def start(self):
-        await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
+        if self._rabbitmq_producer is not None:
+            await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue), self._rabbitmq_producer.start())
+        else:
+            await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))

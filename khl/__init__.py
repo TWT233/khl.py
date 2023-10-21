@@ -17,7 +17,8 @@ from ._types import (
     FriendTypes
 )
 from .cert import Cert
-from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
+from .rabbitmq import RabbitMQ, RabbitMQProducer
+from .receiver import Receiver, WebhookReceiver, WebsocketReceiver, RabbitMQReceiver
 from .requester import HTTPRequester
 from .gateway import Gateway, Requestable
 from .client import Client
