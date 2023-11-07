@@ -19,6 +19,7 @@ from ._types import (
 from .cert import Cert
 from .receiver import Receiver, WebhookReceiver, WebsocketReceiver
 from .requester import HTTPRequester
+from .ratelimiter import RateLimiter
 from .gateway import Gateway, Requestable
 from .client import Client
 

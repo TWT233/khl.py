@@ -1,9 +1,10 @@
 import asyncio
 import logging
-from typing import Union, List
+from typing import Union, List, Optional
 
 from aiohttp import ClientSession
 
+from .ratelimiter import RateLimiter
 from .api import _Req
 from .cert import Cert
 
@@ -15,9 +16,10 @@ API = 'https://www.kookapp.cn/api/v3'
 class HTTPRequester:
     """wrap raw requests, handle boilerplate param filling works"""
 
-    def __init__(self, cert: Cert):
+    def __init__(self, cert: Cert, ratelimiter: Optional[RateLimiter]):
         self._cert = cert
         self._cs: Union[ClientSession, None] = None
+        self._ratelimiter = ratelimiter
 
     def __del__(self):
         if self._cs is not None:
@@ -29,6 +31,10 @@ class HTTPRequester:
         params['headers'] = headers
 
         log.debug(f'{method} {route}: req: {params}')  # token is excluded
+
+        if self._ratelimiter is not None:
+            await self._ratelimiter.wait_for_rate(route)
+
         headers['Authorization'] = f'Bot {self._cert.token}'
         if self._cs is None:  # lazy init
             self._cs = ClientSession()
@@ -40,6 +46,10 @@ class HTTPRequester:
                 rsp = rsp['data']
             else:
                 rsp = await res.read()
+
+            if self._ratelimiter is not None:
+                await self._ratelimiter.update(route, res.headers)
+
             log.debug(f'{method} {route}: rsp: {rsp}')
             return rsp
 
