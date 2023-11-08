@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Dict, Union
+from typing import Any, List, Dict, Union, Optional
 
 import json
 
@@ -10,6 +10,58 @@ from .gateway import Requestable
 from .guild import Guild
 from ._types import MessageTypes, ChannelPrivacyTypes, EventTypes
 from .user import User, GuildUser
+
+
+class QuoteMessage(Requestable, ABC):
+    """Basic quote message"""
+    _msg_id: str
+    _type: int
+    content: str
+    create_at: int
+
+    def __init__(self, **kwargs):
+        self._msg_id = kwargs.get('rong_id')
+        self._type = kwargs.get('type')
+        self.content = kwargs.get('content')
+        self.create_at = kwargs.get('create_at')
+        self.gate = kwargs.get('_gate_', None)
+
+    @property
+    def id(self):
+        """message's id"""
+        return self._msg_id
+
+    @property
+    def type(self):
+        """message's type, refer to MessageTypes for enum detail"""
+        return MessageTypes(self._type)
+
+
+class PublicQuoteMessage(QuoteMessage):
+    _author: GuildUser
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._author = GuildUser(**kwargs.get('author'), _gate_=self.gate, _lazy_loaded_=True)
+
+    @property
+    def author(self):
+        """quote message author"""
+        return self._author
+
+
+class PrivateQuoteMessage(QuoteMessage):
+    _author: User
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._author = User(**kwargs.get('author'), _gate_=self.gate, _lazy_loaded_=True)
+
+    @property
+    def author(self):
+        """quote message author"""
+        return self._author
+
 
 class RawMessage(ABC):
     """
@@ -69,6 +121,7 @@ class Message(RawMessage, Requestable, ABC):
     """
     _ctx: Context
     _author: User
+    _quote: Optional[QuoteMessage]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -83,6 +136,15 @@ class Message(RawMessage, Requestable, ABC):
     def ctx(self) -> Context:
         """message context: channel, guild etc."""
         return self._ctx
+
+    @property
+    def quote(self):
+        """
+        get quote of the message
+
+        If the quote does not exist, it will return None
+        """
+        return self._quote
 
     @abstractmethod
     async def add_reaction(self, emoji: str):
@@ -147,6 +209,10 @@ class PublicMessage(Message):
         guild = Guild(id=self.extra['guild_id'], _gate_=self.gate)
         self._ctx = Context(channel=channel, guild=guild, _gate_=self.gate)
         self._author = GuildUser(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
+        if 'quote' in self.extra:
+            self._quote = PublicQuoteMessage(**self.extra['quote'], _gate_=self.gate, _lazy_loaded_=True)
+        else:
+            self._quote = None
 
     @property
     def author(self) -> GuildUser:
@@ -184,6 +250,15 @@ class PublicMessage(Message):
     def mention_here(self) -> bool:
         """if the message mentioned(also call as at/tagged) all online users in the channel"""
         return self.extra['mention_here']
+
+    @property
+    def quote(self) -> PublicQuoteMessage:
+        """
+        get quote of the message
+
+        If the quote does not exist, it will return None
+        """
+        return self._quote
 
     async def add_reaction(self, emoji: str):
         return await self.gate.exec_req(api.Message.addReaction(msg_id=self.id, emoji=emoji))
@@ -226,6 +301,10 @@ class PrivateMessage(Message):
         self._channel = PrivateChannel(code=self.extra['code'], target_info=self.extra['author'], _gate_=self.gate)
         self._ctx = Context(channel=self._channel, _gate_=self.gate)
         self._author = User(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
+        if 'quote' in self.extra:
+            self._quote = PublicQuoteMessage(**self.extra['quote'], _gate_=self.gate, _lazy_loaded_=True)
+        else:
+            self._quote = None
 
     @property
     def chat_code(self) -> str:
@@ -236,6 +315,15 @@ class PrivateMessage(Message):
     def channel(self) -> PrivateChannel:
         """the message's channel"""
         return self._channel
+
+    @property
+    def quote(self) -> PrivateQuoteMessage:
+        """
+        get quote of the message
+
+        If the quote does not exist, it will return None
+        """
+        return self._quote
 
     async def add_reaction(self, emoji: str):
         return await self.gate.exec_req(api.DirectMessage.addReaction(msg_id=self.id, emoji=emoji))
