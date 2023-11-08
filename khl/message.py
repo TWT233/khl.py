@@ -44,6 +44,7 @@ class QuoteMessage(Requestable, ABC):
 
 
 class PublicQuoteMessage(QuoteMessage):
+    """quote messages sent in a `PublicTextChannel`"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -56,6 +57,7 @@ class PublicQuoteMessage(QuoteMessage):
 
 
 class PrivateQuoteMessage(QuoteMessage):
+    """quote messages sent in a `PrivateChannel`"""
     _author: User
 
     def __init__(self, **kwargs):
