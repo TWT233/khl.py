@@ -16,6 +16,7 @@ class QuoteMessage(Requestable, ABC):
     """Basic quote message"""
     _msg_id: str
     _type: int
+    _author: User
     content: str
     create_at: int
 
@@ -28,24 +29,28 @@ class QuoteMessage(Requestable, ABC):
 
     @property
     def id(self):
-        """message's id"""
+        """quote message's id"""
         return self._msg_id
 
     @property
     def type(self):
-        """message's type, refer to MessageTypes for enum detail"""
+        """quote message's type, refer to MessageTypes for enum detail"""
         return MessageTypes(self._type)
+
+    @property
+    def author(self):
+        """quote message author"""
+        return self._author
 
 
 class PublicQuoteMessage(QuoteMessage):
-    _author: GuildUser
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._author = GuildUser(**kwargs.get('author'), _gate_=self.gate, _lazy_loaded_=True)
 
     @property
-    def author(self):
+    def author(self) -> GuildUser:
         """quote message author"""
         return self._author
 
@@ -58,7 +63,7 @@ class PrivateQuoteMessage(QuoteMessage):
         self._author = User(**kwargs.get('author'), _gate_=self.gate, _lazy_loaded_=True)
 
     @property
-    def author(self):
+    def author(self) -> User:
         """quote message author"""
         return self._author
 
