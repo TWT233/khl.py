@@ -12,7 +12,7 @@ from ._types import MessageTypes, ChannelPrivacyTypes, EventTypes
 from .user import User, GuildUser
 
 
-class QuoteMessage(Requestable, ABC):
+class QuotedMessage(Requestable, ABC):
     """Basic quote message"""
     _msg_id: str
     _type: int
@@ -43,7 +43,7 @@ class QuoteMessage(Requestable, ABC):
         return self._author
 
 
-class PublicQuoteMessage(QuoteMessage):
+class PublicQuotedMessage(QuotedMessage):
     """quote messages sent in a `PublicTextChannel`"""
 
     def __init__(self, **kwargs):
@@ -56,7 +56,7 @@ class PublicQuoteMessage(QuoteMessage):
         return self._author
 
 
-class PrivateQuoteMessage(QuoteMessage):
+class PrivateQuotedMessage(QuotedMessage):
     """quote messages sent in a `PrivateChannel`"""
     _author: User
 
@@ -128,7 +128,7 @@ class Message(RawMessage, Requestable, ABC):
     """
     _ctx: Context
     _author: User
-    _quote: Optional[QuoteMessage]
+    _quote: Optional[QuotedMessage]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -217,7 +217,7 @@ class PublicMessage(Message):
         self._ctx = Context(channel=channel, guild=guild, _gate_=self.gate)
         self._author = GuildUser(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
         if 'quote' in self.extra:
-            self._quote = PublicQuoteMessage(**self.extra['quote'], _gate_=self.gate, _lazy_loaded_=True)
+            self._quote = PublicQuotedMessage(**self.extra['quote'], _gate_=self.gate, _lazy_loaded_=True)
         else:
             self._quote = None
 
@@ -259,7 +259,7 @@ class PublicMessage(Message):
         return self.extra['mention_here']
 
     @property
-    def quote(self) -> PublicQuoteMessage:
+    def quote(self) -> PublicQuotedMessage:
         """
         get quote of the message
 
@@ -324,7 +324,7 @@ class PrivateMessage(Message):
         return self._channel
 
     @property
-    def quote(self) -> PrivateQuoteMessage:
+    def quote(self) -> PrivateQuotedMessage:
         """
         get quote of the message
 
