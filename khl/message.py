@@ -309,7 +309,7 @@ class PrivateMessage(Message):
         self._ctx = Context(channel=self._channel, _gate_=self.gate)
         self._author = User(**self.extra['author'], _gate_=self.gate, _lazy_loaded_=True)
         if 'quote' in self.extra:
-            self._quote = PublicQuoteMessage(**self.extra['quote'], _gate_=self.gate, _lazy_loaded_=True)
+            self._quote = PrivateQuotedMessage(**self.extra['quote'], _gate_=self.gate, _lazy_loaded_=True)
         else:
             self._quote = None
 
