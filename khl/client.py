@@ -361,5 +361,9 @@ class Client(Requestable, AsyncRunnable):
         friends = (await self.gate.exec_req(api.friend(type='blocked')))['blocked']
         return [Friend(_gate_=self.gate, user_id=i['friend_info']['id'], **i) for i in friends]
 
+    async def offline(self):
+        """offline bot"""
+        await self.gate.exec_req(api.User.offline())
+
     async def start(self):
         await asyncio.gather(self.handle_pkg(), self.gate.run(self._pkg_queue))
