@@ -35,3 +35,40 @@ from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
 
 # extensions
 from .bot import Bot
+
+# events
+from .event import (
+    AddedReactionEvent,
+    DeletedReactionEvent,
+    UpdatedMessageEvent,
+    DeletedMessageEvent,
+    AddedChannelEvent,
+    DeletedChannelEvent,
+    PinnedMessageEvent,
+    UnpinnedMessageEvent,
+    UpdatePrivateMessageEvent,
+    DeletedPrivateMessageEvent,
+    PrivateAddedReactionEvent,
+    PrivateDeletedReactionEvent,
+    JoinedGuildEvent,
+    ExitedGuildEvent,
+    UpdatedGuildMemberEvent,
+    GuildMemberOnlineEvent,
+    GuildMemberOfflineEvent,
+    AddedRoleEvent,
+    DeleteRoleEvent,
+    UpdateRoleEvent,
+    UpdateGuildEvent,
+    DeleteGuildEvent,
+    AddedBlockListEvent,
+    DeleteBlockListEvent,
+    AddedEmojiEvent,
+    DeletedEmojiEvent,
+    UpdateEmojiEvent,
+    JoinedChannelEvent,
+    ExitedChannelEvent,
+    UserUpdatedEvent,
+    SelfJoinedGuildEvent,
+    SelfExitedGuildEvent,
+    MessageButtonClickEvent
+)
