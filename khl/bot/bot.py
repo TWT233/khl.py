@@ -150,7 +150,7 @@ class Bot(AsyncRunnable):
 
     def _post_event_handler(self) -> Callable:
         async def handler(event: Event):
-            await self.event.post(EventManager.make_event(event))
+            await self.event.post(event)
 
         return handler
 

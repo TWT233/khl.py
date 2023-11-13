@@ -1,7 +1,7 @@
 import asyncio
 import inspect
 import logging
-from typing import Callable, Coroutine, Any, Dict, Type, List, Optional
+from typing import Callable, Coroutine, Any, Dict, Type, List, Optional, Union
 
 from .events.event import AbstractEvent
 from .events.channel_events import AddedReactionEvent, DeletedReactionEvent, UpdatedMessageEvent, DeletedMessageEvent, \
@@ -69,8 +69,10 @@ class EventManager:
     def __init__(self):
         self._event_handles: Dict[Type[AbstractEvent], List[EVENT_HANDLE_TYPE]] = {}
 
-    async def post(self, event: AbstractEvent):
+    async def post(self, event: Union[AbstractEvent, Event]):
         """post event to registered handles"""
+        if isinstance(event, Event):
+            event = self._make_event(event)
         for handle in self._event_handles.get(event.__class__, []):
             try:
                 await handle(event)
@@ -104,7 +106,7 @@ class EventManager:
         log.debug('Event handle %s registered.', name)
 
     @staticmethod
-    def make_event(event: Event) -> Optional[AbstractEvent]:
+    def _make_event(event: Event) -> Optional[AbstractEvent]:
         """make event to typed event"""
         event_type = event.event_type
 
