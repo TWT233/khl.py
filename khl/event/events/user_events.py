@@ -53,4 +53,3 @@ class MessageButtonClickEvent(AbstractEvent):
         self.user_id: str = raw.get('user_id')
         self.value: str = raw.get('value')
         self.target_id: str = raw.get('target_id')
-
