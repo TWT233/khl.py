@@ -1,3 +1,4 @@
+# pylint: skip-file
 from .event import AbstractEvent
 
 

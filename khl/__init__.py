@@ -37,7 +37,7 @@ from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
 from .bot import Bot
 
 # events
-from .event import (
+from .event.events.channel_events import (
     AddedReactionEvent,
     DeletedReactionEvent,
     UpdatedMessageEvent,
@@ -45,26 +45,36 @@ from .event import (
     AddedChannelEvent,
     DeletedChannelEvent,
     PinnedMessageEvent,
-    UnpinnedMessageEvent,
+    UnpinnedMessageEvent
+)
+from .event.events.private_message_events import (
     UpdatePrivateMessageEvent,
     DeletedPrivateMessageEvent,
     PrivateAddedReactionEvent,
-    PrivateDeletedReactionEvent,
+    PrivateDeletedReactionEvent
+)
+from .event.events.guild_user_events import (
     JoinedGuildEvent,
     ExitedGuildEvent,
     UpdatedGuildMemberEvent,
     GuildMemberOnlineEvent,
-    GuildMemberOfflineEvent,
+    GuildMemberOfflineEvent
+)
+from .event.events.guild_role_events import (
     AddedRoleEvent,
     DeleteRoleEvent,
-    UpdateRoleEvent,
+    UpdateRoleEvent
+)
+from .event.events.guild_events import (
     UpdateGuildEvent,
     DeleteGuildEvent,
     AddedBlockListEvent,
     DeleteBlockListEvent,
     AddedEmojiEvent,
     DeletedEmojiEvent,
-    UpdateEmojiEvent,
+    UpdateEmojiEvent
+)
+from .event.events.user_events import (
     JoinedChannelEvent,
     ExitedChannelEvent,
     UserUpdatedEvent,

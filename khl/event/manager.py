@@ -4,13 +4,18 @@ import logging
 from typing import Callable, Coroutine, Any, Dict, Type, List, Optional
 
 from .events.event import AbstractEvent
-from .events import AddedReactionEvent, DeletedReactionEvent, UpdatedMessageEvent, DeletedMessageEvent, \
-    AddedChannelEvent, DeletedChannelEvent, PinnedMessageEvent, UnpinnedMessageEvent, UpdatePrivateMessageEvent, \
-    DeletedPrivateMessageEvent, PrivateAddedReactionEvent, PrivateDeletedReactionEvent, JoinedGuildEvent, \
-    ExitedGuildEvent, UpdatedGuildMemberEvent, GuildMemberOnlineEvent, GuildMemberOfflineEvent, AddedRoleEvent, \
-    DeleteRoleEvent, UpdateRoleEvent, UpdateGuildEvent, DeleteGuildEvent, AddedBlockListEvent, DeleteBlockListEvent, \
-    AddedEmojiEvent, DeletedEmojiEvent, UpdateEmojiEvent, JoinedChannelEvent, ExitedChannelEvent, UserUpdatedEvent, \
-    SelfJoinedGuildEvent, SelfExitedGuildEvent, MessageButtonClickEvent
+from .events.channel_events import AddedReactionEvent, DeletedReactionEvent, UpdatedMessageEvent, DeletedMessageEvent, \
+    AddedChannelEvent, DeletedChannelEvent, PinnedMessageEvent, UnpinnedMessageEvent
+from .events.guild_events import UpdateGuildEvent, DeleteGuildEvent, AddedBlockListEvent, DeleteBlockListEvent, \
+    AddedEmojiEvent, DeletedEmojiEvent, UpdateEmojiEvent
+from .events.guild_role_events import AddedRoleEvent, DeleteRoleEvent, UpdateRoleEvent
+from .events.guild_user_events import JoinedGuildEvent, ExitedGuildEvent, UpdatedGuildMemberEvent, \
+    GuildMemberOnlineEvent, GuildMemberOfflineEvent
+from .events.private_message_events import UpdatePrivateMessageEvent, DeletedPrivateMessageEvent, \
+    PrivateAddedReactionEvent, PrivateDeletedReactionEvent
+from .events.user_events import JoinedChannelEvent, ExitedChannelEvent, UserUpdatedEvent, SelfJoinedGuildEvent, \
+    SelfExitedGuildEvent, MessageButtonClickEvent
+
 from .. import Event, EventTypes
 
 log = logging.getLogger(__name__)
@@ -107,3 +112,4 @@ class EventManager:
 
         if cls:
             return cls(event.body)
+        return None
