@@ -10,6 +10,7 @@ from .. import Cert, HTTPRequester, RateLimiter, WebhookReceiver, WebsocketRecei
 from .. import MessageTypes, EventTypes, SlowModeTypes, SoftwareTypes  # types
 from .. import User, Channel, PublicChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
+from ..event import EventManager
 from ..game import Game
 from ..task import TaskManager
 
@@ -71,6 +72,7 @@ class Bot(AsyncRunnable):
         self._register_client_handler()
 
         self.command = CommandManager()
+        self.event = EventManager()
 
         self.task = TaskManager()
 
@@ -122,6 +124,7 @@ class Bot(AsyncRunnable):
 
         # sys -> event
         self.client.register(MessageTypes.SYS, self._make_event_handler())
+        self.client.register(MessageTypes.SYS, self._post_event_handler())
 
     def _make_msg_handler(self) -> Callable:
         """
@@ -142,6 +145,12 @@ class Bot(AsyncRunnable):
                 return
             for event_handler in self._event_index[event.event_type]:
                 await event_handler(self, event)
+
+        return handler
+
+    def _post_event_handler(self) -> Callable:
+        async def handler(event: Event):
+            await self.event.post(EventManager.make_event(event))
 
         return handler
 
