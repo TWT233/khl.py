@@ -3,19 +3,8 @@ import inspect
 import logging
 from typing import Callable, Coroutine, Any, Dict, Type, List, Optional, Union
 
-from .events.event import AbstractEvent
-from .events.channel_events import AddedReactionEvent, DeletedReactionEvent, UpdatedMessageEvent, DeletedMessageEvent, \
-    AddedChannelEvent, DeletedChannelEvent, PinnedMessageEvent, UnpinnedMessageEvent
-from .events.guild_events import UpdateGuildEvent, DeleteGuildEvent, AddedBlockListEvent, DeleteBlockListEvent, \
-    AddedEmojiEvent, DeletedEmojiEvent, UpdateEmojiEvent
-from .events.guild_role_events import AddedRoleEvent, DeleteRoleEvent, UpdateRoleEvent
-from .events.guild_user_events import JoinedGuildEvent, ExitedGuildEvent, UpdatedGuildMemberEvent, \
-    GuildMemberOnlineEvent, GuildMemberOfflineEvent
-from .events.private_message_events import UpdatePrivateMessageEvent, DeletedPrivateMessageEvent, \
-    PrivateAddedReactionEvent, PrivateDeletedReactionEvent
-from .events.user_events import JoinedChannelEvent, ExitedChannelEvent, UserUpdatedEvent, SelfJoinedGuildEvent, \
-    SelfExitedGuildEvent, MessageButtonClickEvent
-
+from .event import TypedEvent
+from .interface import AbstractEvent
 from .. import Event, EventTypes
 
 log = logging.getLogger(__name__)
@@ -23,40 +12,40 @@ log = logging.getLogger(__name__)
 EVENT_HANDLE_TYPE = Callable[[AbstractEvent], Coroutine[Any, Any, None]]
 
 _EVENT_MAP = {
-    EventTypes.ADDED_REACTION: AddedReactionEvent,
-    EventTypes.DELETED_REACTION: DeletedReactionEvent,
-    EventTypes.UPDATED_MESSAGE: UpdatedMessageEvent,
-    EventTypes.MESSAGE_UPDATED: UpdatedMessageEvent,
-    EventTypes.DELETED_MESSAGE: DeletedMessageEvent,
-    EventTypes.ADDED_CHANNEL: AddedChannelEvent,
-    EventTypes.DELETED_CHANNEL: DeletedChannelEvent,
-    EventTypes.PINNED_MESSAGE: PinnedMessageEvent,
-    EventTypes.UNPINNED_MESSAGE: UnpinnedMessageEvent,
-    EventTypes.UPDATED_PRIVATE_MESSAGE: UpdatePrivateMessageEvent,
-    EventTypes.DELETED_PRIVATE_MESSAGE: DeletedPrivateMessageEvent,
-    EventTypes.PRIVATE_ADDED_REACTION: PrivateAddedReactionEvent,
-    EventTypes.PRIVATE_DELETED_REACTION: PrivateDeletedReactionEvent,
-    EventTypes.JOINED_GUILD: JoinedGuildEvent,
-    EventTypes.EXITED_GUILD: ExitedGuildEvent,
-    EventTypes.UPDATED_GUILD_MEMBER: UpdatedGuildMemberEvent,
-    EventTypes.GUILD_MEMBER_ONLINE: GuildMemberOnlineEvent,
-    EventTypes.GUILD_MEMBER_OFFLINE: GuildMemberOfflineEvent,
-    EventTypes.ADDED_ROLE: AddedRoleEvent,
-    EventTypes.DELETED_ROLE: DeleteRoleEvent,
-    EventTypes.UPDATED_ROLE: UpdateRoleEvent,
-    EventTypes.UPDATED_GUILD: UpdateGuildEvent,
-    EventTypes.DELETED_GUILD: DeleteGuildEvent,
-    EventTypes.ADDED_BLOCK_LIST: AddedBlockListEvent,
-    EventTypes.DELETED_BLOCK_LIST: DeleteBlockListEvent,
-    EventTypes.ADDED_EMOJI: AddedEmojiEvent,
-    EventTypes.DELETED_EMOJI: DeletedEmojiEvent,
-    EventTypes.UPDATED_EMOJI: UpdateEmojiEvent,
-    EventTypes.JOINED_CHANNEL: JoinedChannelEvent,
-    EventTypes.EXITED_CHANNEL: ExitedChannelEvent,
-    EventTypes.USER_UPDATED: UserUpdatedEvent,
-    EventTypes.SELF_JOINED_GUILD: SelfJoinedGuildEvent,
-    EventTypes.SELF_EXITED_GUILD: SelfExitedGuildEvent,
-    EventTypes.MESSAGE_BTN_CLICK: MessageButtonClickEvent
+    EventTypes.ADDED_REACTION: TypedEvent.ChannelEvent.AddedReactionEvent,
+    EventTypes.DELETED_REACTION: TypedEvent.ChannelEvent.DeletedReactionEvent,
+    EventTypes.UPDATED_MESSAGE: TypedEvent.ChannelEvent.UpdatedMessageEvent,
+    EventTypes.MESSAGE_UPDATED: TypedEvent.ChannelEvent.UpdatedMessageEvent,
+    EventTypes.DELETED_MESSAGE: TypedEvent.ChannelEvent.DeletedMessageEvent,
+    EventTypes.ADDED_CHANNEL: TypedEvent.ChannelEvent.AddedChannelEvent,
+    EventTypes.DELETED_CHANNEL: TypedEvent.ChannelEvent.DeletedChannelEvent,
+    EventTypes.PINNED_MESSAGE: TypedEvent.ChannelEvent.PinnedMessageEvent,
+    EventTypes.UNPINNED_MESSAGE: TypedEvent.ChannelEvent.UnpinnedMessageEvent,
+    EventTypes.UPDATED_PRIVATE_MESSAGE: TypedEvent.PrivateMessageEvent.UpdatePrivateMessageEvent,
+    EventTypes.DELETED_PRIVATE_MESSAGE: TypedEvent.PrivateMessageEvent.DeletedPrivateMessageEvent,
+    EventTypes.PRIVATE_ADDED_REACTION: TypedEvent.PrivateMessageEvent.PrivateAddedReactionEvent,
+    EventTypes.PRIVATE_DELETED_REACTION: TypedEvent.PrivateMessageEvent.PrivateDeletedReactionEvent,
+    EventTypes.JOINED_GUILD: TypedEvent.GuildUserEvent.JoinedGuildEvent,
+    EventTypes.EXITED_GUILD: TypedEvent.GuildUserEvent.ExitedGuildEvent,
+    EventTypes.UPDATED_GUILD_MEMBER: TypedEvent.GuildUserEvent.UpdatedGuildMemberEvent,
+    EventTypes.GUILD_MEMBER_ONLINE: TypedEvent.GuildUserEvent.GuildMemberOnlineEvent,
+    EventTypes.GUILD_MEMBER_OFFLINE: TypedEvent.GuildUserEvent.GuildMemberOfflineEvent,
+    EventTypes.ADDED_ROLE: TypedEvent.GuildRoleEvent.AddedRoleEvent,
+    EventTypes.DELETED_ROLE: TypedEvent.GuildRoleEvent.DeleteRoleEvent,
+    EventTypes.UPDATED_ROLE: TypedEvent.GuildRoleEvent.UpdateRoleEvent,
+    EventTypes.UPDATED_GUILD: TypedEvent.GuildEvent.UpdateGuildEvent,
+    EventTypes.DELETED_GUILD: TypedEvent.GuildEvent.DeleteGuildEvent,
+    EventTypes.ADDED_BLOCK_LIST: TypedEvent.GuildEvent.AddedBlockListEvent,
+    EventTypes.DELETED_BLOCK_LIST: TypedEvent.GuildEvent.DeleteBlockListEvent,
+    EventTypes.ADDED_EMOJI: TypedEvent.GuildEvent.AddedEmojiEvent,
+    EventTypes.DELETED_EMOJI: TypedEvent.GuildEvent.DeletedEmojiEvent,
+    EventTypes.UPDATED_EMOJI: TypedEvent.GuildEvent.UpdateEmojiEvent,
+    EventTypes.JOINED_CHANNEL: TypedEvent.UserEvent.JoinedChannelEvent,
+    EventTypes.EXITED_CHANNEL: TypedEvent.UserEvent.ExitedChannelEvent,
+    EventTypes.USER_UPDATED: TypedEvent.UserEvent.UserUpdatedEvent,
+    EventTypes.SELF_JOINED_GUILD: TypedEvent.UserEvent.SelfJoinedGuildEvent,
+    EventTypes.SELF_EXITED_GUILD: TypedEvent.UserEvent.SelfExitedGuildEvent,
+    EventTypes.MESSAGE_BTN_CLICK: TypedEvent.UserEvent.MessageButtonClickEvent
 }
 
 
