@@ -9,7 +9,7 @@ from .. import Event, EventTypes
 
 log = logging.getLogger(__name__)
 
-EVENT_HANDLE_TYPE = Callable[[BaseEvent], Coroutine[Any, Any, None]]
+TypeTypedEventHandle = Callable[[BaseEvent], Coroutine[Any, Any, None]]
 
 _EVENT_MAP = {
     EventTypes.ADDED_REACTION: TypedEvent.Channel.AddedReaction,
@@ -52,11 +52,11 @@ _EVENT_MAP = {
 class EventManager:
     """Register and post events"""
 
-    def __call__(self, handle: EVENT_HANDLE_TYPE):
+    def __call__(self, handle: TypeTypedEventHandle):
         self.subscribe(handle)
 
     def __init__(self):
-        self._event_handles: Dict[Type[BaseEvent], List[EVENT_HANDLE_TYPE]] = {}
+        self._event_handles: Dict[Type[BaseEvent], List[TypeTypedEventHandle]] = {}
 
     async def post(self, event: Union[BaseEvent, Event]):
         """post event to registered handles"""
@@ -71,7 +71,7 @@ class EventManager:
                     exc_info=e
                 )
 
-    def subscribe(self, handle: EVENT_HANDLE_TYPE):
+    def subscribe(self, handle: TypeTypedEventHandle):
         """subscribe an event"""
         name = handle.__name__
         if not asyncio.iscoroutinefunction(handle):
