@@ -35,6 +35,3 @@ from .message import RawMessage, Message, PublicMessage, PrivateMessage, Event
 
 # extensions
 from .bot import Bot
-
-# event
-from .event.event import TypedEvent
