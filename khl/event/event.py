@@ -7,7 +7,7 @@ from .. import Role
 
 
 class TypedEvent:
-    class ChannelEvent:
+    class Channel:
         class _AbstractReactionEvent(AbstractEvent, ABC):
             def __init__(self, raw: dict):
                 super().__init__(raw)
@@ -16,13 +16,13 @@ class TypedEvent:
                 self.channel_id: str = raw.get('channel_id')
                 self.emoji: dict = raw.get('emoji')
 
-        class AddedReactionEvent(_AbstractReactionEvent):
+        class AddedReaction(_AbstractReactionEvent):
             pass
 
-        class DeletedReactionEvent(_AbstractReactionEvent):
+        class DeletedReaction(_AbstractReactionEvent):
             pass
 
-        class UpdatedMessageEvent(AbstractEvent):
+        class UpdatedMessage(AbstractEvent):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.msg_id: str = raw.get('msg_id')
@@ -34,20 +34,20 @@ class TypedEvent:
                 self.mention_roles: List[int] = raw.get('mention_roles')
                 self.updated_at: int = raw.get('updated_at')
 
-        class DeletedMessageEvent(AbstractEvent):
+        class DeletedMessage(AbstractEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.msg_id: str = raw.get('msg_id')
                 self.channel_id: str = raw.get('channel_id')
 
-        class AddedChannelEvent(AbstractEvent):
+        class AddedChannel(AbstractEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.channel: dict = raw
 
-        class DeletedChannelEvent(AbstractEvent):
+        class DeletedChannel(AbstractEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
@@ -62,13 +62,13 @@ class TypedEvent:
                 self.operator_id: str = raw.get('operator_id')
                 self.msg_id: str = raw.get('msg_id')
 
-        class PinnedMessageEvent(_AbstractPinEvent):
+        class PinnedMessage(_AbstractPinEvent):
             pass
 
-        class UnpinnedMessageEvent(_AbstractPinEvent):
+        class UnpinnedMessage(_AbstractPinEvent):
             pass
 
-    class GuildEvent:
+    class Guild:
         class _AbstractGuildEvent(AbstractEvent, ABC):
             def __init__(self, raw: dict):
                 super().__init__(raw)
@@ -83,10 +83,10 @@ class TypedEvent:
                 self.default_channel_id: str = raw.get('default_channel_id')
                 self.welcome_channel_id: str = raw.get('welcome_channel_id')
 
-        class UpdateGuildEvent(_AbstractGuildEvent):
+        class UpdateGuild(_AbstractGuildEvent):
             pass
 
-        class DeleteGuildEvent(_AbstractGuildEvent):
+        class DeleteGuild(_AbstractGuildEvent):
             pass
 
         class _AbstractBlockListEvent(AbstractEvent, ABC):
@@ -96,12 +96,12 @@ class TypedEvent:
                 self.operator_id: str = raw.get('operator_id')
                 self.user_id: List[str] = raw.get('user_id')
 
-        class AddedBlockListEvent(_AbstractBlockListEvent):
+        class AddedBlockList(_AbstractBlockListEvent):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.remark: str = raw.get('remark')
 
-        class DeleteBlockListEvent(_AbstractBlockListEvent):
+        class DeleteBlockList(_AbstractBlockListEvent):
             pass
 
         class _AbstractEmojiEvent(AbstractEvent, ABC):
@@ -111,44 +111,44 @@ class TypedEvent:
                 self.id: str = raw.get('id')
                 self.name: str = raw.get('name')
 
-        class AddedEmojiEvent(_AbstractEmojiEvent):
+        class AddedEmoji(_AbstractEmojiEvent):
             pass
 
-        class DeletedEmojiEvent(_AbstractEmojiEvent):
+        class DeletedEmoji(_AbstractEmojiEvent):
             pass
 
-        class UpdateEmojiEvent(_AbstractEmojiEvent):
+        class UpdateEmoji(_AbstractEmojiEvent):
             pass
 
-    class GuildRoleEvent:
+    class GuildRole:
         class _AbstractRoleEvent(AbstractEvent, ABC):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.role = Role(**raw)
 
-        class AddedRoleEvent(_AbstractRoleEvent):
+        class AddedRole(_AbstractRoleEvent):
             pass
 
-        class DeleteRoleEvent(_AbstractRoleEvent):
+        class DeleteRole(_AbstractRoleEvent):
             pass
 
-        class UpdateRoleEvent(_AbstractRoleEvent):
+        class UpdateRole(_AbstractRoleEvent):
             pass
 
-    class GuildUserEvent:
-        class JoinedGuildEvent(AbstractEvent):
+    class GuildUser:
+        class JoinedGuild(AbstractEvent):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.user_id: str = raw.get('user_id')
                 self.joined_at: int = raw.get('joined_at')
 
-        class ExitedGuildEvent(AbstractEvent):
+        class ExitedGuild(AbstractEvent):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.user_id: str = raw.get('user_id')
                 self.exited_at: int = raw.get('exited_at')
 
-        class UpdatedGuildMemberEvent(AbstractEvent):
+        class UpdatedGuildMember(AbstractEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
@@ -163,13 +163,13 @@ class TypedEvent:
                 self.event_time: int = raw.get('event_time')
                 self.guilds: List[str] = raw.get('guilds')
 
-        class GuildMemberOnlineEvent(_AbstractGuildMemberEvent):
+        class GuildMemberOnline(_AbstractGuildMemberEvent):
             pass
 
-        class GuildMemberOfflineEvent(_AbstractGuildMemberEvent):
+        class GuildMemberOffline(_AbstractGuildMemberEvent):
             pass
 
-    class PrivateMessageEvent:
+    class PrivateMessage:
         class _AbstractPrivateMessageEvent(AbstractEvent, ABC):
             def __init__(self, raw: dict):
                 super().__init__(raw)
@@ -178,14 +178,14 @@ class TypedEvent:
                 self.target_id: str = raw.get('target_id')
                 self.chat_code: str = raw.get('chat_code')
 
-        class UpdatePrivateMessageEvent(_AbstractPrivateMessageEvent):
+        class UpdatePrivateMessage(_AbstractPrivateMessageEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.content: str = raw.get('content')
                 self.updated_at: int = raw.get('updated_at')
 
-        class DeletedPrivateMessageEvent(_AbstractPrivateMessageEvent):
+        class DeletedPrivateMessage(_AbstractPrivateMessageEvent):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.deleted_at: int = raw.get('deleted_at')
@@ -200,31 +200,31 @@ class TypedEvent:
                 self.emoji: dict = raw.get('emoji')
                 self.chat_code: str = raw.get('chat_code')
 
-        class PrivateAddedReactionEvent(_AbstractPrivateReactionEvent):
+        class PrivateAddedReaction(_AbstractPrivateReactionEvent):
             pass
 
-        class PrivateDeletedReactionEvent(_AbstractPrivateReactionEvent):
+        class PrivateDeletedReaction(_AbstractPrivateReactionEvent):
             pass
 
-    class UserEvent:
+    class User:
         class _AbstractChannelEvent(AbstractEvent, ABC):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.user_id: str = raw.get('user_id')
                 self.channel_id: str = raw.get('channel_id')
 
-        class JoinedChannelEvent(_AbstractChannelEvent):
+        class JoinedChannel(_AbstractChannelEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.joined_at: int = raw.get('joined_at')
 
-        class ExitedChannelEvent(_AbstractChannelEvent):
+        class ExitedChannel(_AbstractChannelEvent):
             def __init__(self, raw: dict):
                 super().__init__(raw)
                 self.exited_at: int = raw.get('exited_at')
 
-        class UserUpdatedEvent(AbstractEvent):
+        class UserUpdated(AbstractEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
@@ -238,13 +238,13 @@ class TypedEvent:
                 super().__init__(raw)
                 self.guild_id: str = raw.get('guild_id')
 
-        class SelfJoinedGuildEvent(_AbstractSelfGuildEvent):
+        class SelfJoinedGuild(_AbstractSelfGuildEvent):
             pass
 
-        class SelfExitedGuildEvent(_AbstractSelfGuildEvent):
+        class SelfExitedGuild(_AbstractSelfGuildEvent):
             pass
 
-        class MessageButtonClickEvent(AbstractEvent):
+        class MessageButtonClick(AbstractEvent):
 
             def __init__(self, raw: dict):
                 super().__init__(raw)
