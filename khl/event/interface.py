@@ -1,7 +1,7 @@
 from abc import ABC
 
 
-class AbstractEvent(ABC):
+class BaseEvent(ABC):
     """base event"""
 
     def __init__(self, raw: dict):

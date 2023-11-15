@@ -4,12 +4,12 @@ import logging
 from typing import Callable, Coroutine, Any, Dict, Type, List, Optional, Union
 
 from .event import TypedEvent
-from .interface import AbstractEvent
+from .interface import BaseEvent
 from .. import Event, EventTypes
 
 log = logging.getLogger(__name__)
 
-EVENT_HANDLE_TYPE = Callable[[AbstractEvent], Coroutine[Any, Any, None]]
+EVENT_HANDLE_TYPE = Callable[[BaseEvent], Coroutine[Any, Any, None]]
 
 _EVENT_MAP = {
     EventTypes.ADDED_REACTION: TypedEvent.Channel.AddedReaction,
@@ -56,9 +56,9 @@ class EventManager:
         self.subscribe(handle)
 
     def __init__(self):
-        self._event_handles: Dict[Type[AbstractEvent], List[EVENT_HANDLE_TYPE]] = {}
+        self._event_handles: Dict[Type[BaseEvent], List[EVENT_HANDLE_TYPE]] = {}
 
-    async def post(self, event: Union[AbstractEvent, Event]):
+    async def post(self, event: Union[BaseEvent, Event]):
         """post event to registered handles"""
         if isinstance(event, Event):
             event = self._make_event(event)
@@ -84,7 +84,7 @@ class EventManager:
             log.error('Event handle %s params lens not match.', name)
             return
         event_type = params[0].annotation
-        if not issubclass(event_type, AbstractEvent):
+        if not issubclass(event_type, BaseEvent):
             log.error('Event handle %s type not match.', name)
             return
 
@@ -95,7 +95,7 @@ class EventManager:
         log.debug('Event handle %s registered.', name)
 
     @staticmethod
-    def _make_event(event: Event) -> Optional[AbstractEvent]:
+    def _make_event(event: Event) -> Optional[BaseEvent]:
         """make event to typed event"""
         event_type = event.event_type
 
