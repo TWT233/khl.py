@@ -17,7 +17,7 @@ class Role:
     type: RoleTypes
 
     def __init__(self, **kwargs):
-        self.id: int = kwargs.get("role_id", 0)
+        self.role_id: int = kwargs.get("role_id", 0)
         self.name: str = kwargs.get("name", "")
         self.color: int = kwargs.get("color", 0)
         self.position: int = kwargs.get("position", 0)
@@ -25,6 +25,14 @@ class Role:
         self.mentionable: int = kwargs.get("mentionable", 0)
         self.permissions: int = kwargs.get("permissions", 0)
         self.type: RoleTypes = RoleTypes(kwargs.get("type", 0))
+
+    @property
+    def id(self) -> int:
+        return self.role_id
+
+    @id.setter
+    def id(self, value: int):
+        self.role_id = value
 
     def has_permission(self, bit_value: int) -> bool:
         """
