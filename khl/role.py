@@ -28,10 +28,12 @@ class Role:
 
     @property
     def id(self) -> int:
+        """get role id"""
         return self.role_id
 
     @id.setter
     def id(self, value: int):
+        """set role id"""
         self.role_id = value
 
     def has_permission(self, bit_value: int) -> bool:
