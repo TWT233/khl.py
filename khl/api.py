@@ -394,6 +394,14 @@ class DirectMessage:
         ...
 
     @staticmethod
+    @req('GET')
+    def view(
+        chat_code,
+        msg_id
+    ):
+        ...
+
+    @staticmethod
     @req('POST')
     def create(
         type,
