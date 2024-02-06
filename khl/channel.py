@@ -1,5 +1,6 @@
 """abstraction of khl concept channel: where messages flow in"""
 import json
+import warnings
 from abc import ABC, abstractmethod
 from typing import Union, List, Dict
 
@@ -206,7 +207,8 @@ class PrivateChannel(Channel):
     is_friend: bool
     is_blocked: bool
     is_target_blocked: bool
-    target_info: Dict
+    target: User
+    _target_info: Dict
 
     def __init__(self, **kwargs):
         self.code: str = kwargs.get('code')
@@ -216,7 +218,13 @@ class PrivateChannel(Channel):
         self.is_friend: bool = kwargs.get('is_friend')
         self.is_blocked: bool = kwargs.get('is_blocked')
         self.is_target_blocked: bool = kwargs.get('is_target_blocked')
-        self.target_info: Dict = kwargs.get('target_info')
+        self._target_info: Dict = kwargs.get('target_info')
+        if kwargs.get('target') is not None:
+            self.target = kwargs.get('target')
+        elif kwargs.get('target') is None and self._target_info.get('id') is not None:
+            self.target = User(**self._target_info)
+        else:
+            self.target = User()
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
         self.gate = kwargs.get('_gate_')
@@ -225,28 +233,31 @@ class PrivateChannel(Channel):
         pass
 
     @property
-    def id(self) -> str:
-        return self.target_user_id
+    def target_info(self):
+        warnings.warn("deprecated, alternative: `PrivateChannel.target: User`",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.target
 
     @property
     def target_user_id(self) -> str:
         """prop, the target's id"""
-        return self.target_info.get('id') if self.target_info else None
+        return self.target.id
 
     @property
     def target_user_name(self) -> str:
         """prop, the target's name"""
-        return self.target_info.get('username') if self.target_info else None
+        return self.target.username
 
     @property
     def is_target_user_online(self) -> bool:
         """prop, is the target online"""
-        return self.target_info.get('online') if self.target_info else None
+        return self.target.online
 
     @property
     def target_user_avatar(self) -> str:
         """prop, the target's avatar"""
-        return self.target_info.get('avatar') if self.target_info else None
+        return self.target.avatar
 
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         return await User(id=self.id, _gate_=self.gate).send(content, type=type, **kwargs)
