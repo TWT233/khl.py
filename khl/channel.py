@@ -108,7 +108,7 @@ class PublicChannel(Channel, PermissionHolder, ABC):
             params['joined_at'] = joined_at
         if filter_user_id is not None:
             params['filter_user_id'] = filter_user_id
-        users = await self.gate.exec_paged_req(api.Guild.userList(**params))
+        users = await self.gate.exec_req(api.Channel.userList(**params))
         return [User(_gate_=self.gate, _lazy_loaded_=True, **i) for i in users]
 
     async def list_messages(self,
