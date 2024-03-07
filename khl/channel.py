@@ -219,25 +219,18 @@ class PrivateChannel(Channel):
         self.is_blocked: bool = kwargs.get('is_blocked')
         self.is_target_blocked: bool = kwargs.get('is_target_blocked')
         self._target_info: Dict = kwargs.get('target_info')
+        self.gate = kwargs.get('_gate_')
         if kwargs.get('target') is not None:
             self.target = kwargs.get('target')
         elif kwargs.get('target') is None and self._target_info.get('id') is not None:
-            self.target = User(**self._target_info)
+            self.target = User(_gate_=self.gate, **self._target_info)
         else:
-            self.target = User()
+            self.target = User(_gate_=self.gate)
 
         self._loaded = kwargs.get('_lazy_loaded_', False)
-        self.gate = kwargs.get('_gate_')
 
     async def load(self):
         pass
-
-    @property
-    def target_info(self):
-        warnings.warn("deprecated, alternative: `PrivateChannel.target: User`",
-                      DeprecationWarning,
-                      stacklevel=2)
-        return self.target
 
     @property
     def target_user_id(self) -> str:
@@ -258,6 +251,20 @@ class PrivateChannel(Channel):
     def target_user_avatar(self) -> str:
         """prop, the target's avatar"""
         return self.target.avatar
+
+    @property
+    def id(self) -> str:
+        warnings.warn("deprecated, alternative: `PrivateChannel.target.id`",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.target.id
+
+    @property
+    def target_info(self):
+        warnings.warn("deprecated, alternative: `PrivateChannel.target: User`",
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self._target_info
 
     async def send(self, content: Union[str, List], *, type: MessageTypes = None, **kwargs):
         return await User(id=self.id, _gate_=self.gate).send(content, type=type, **kwargs)
