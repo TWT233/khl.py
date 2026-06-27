@@ -488,7 +488,11 @@ class Bot(AsyncRunnable):
     def run(self):
         """run the bot in blocking mode"""
         if not self.loop:
-            self.loop = asyncio.get_event_loop()
+            try:
+                self.loop = asyncio.get_event_loop()
+            except RuntimeError:
+                self.loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self.loop)
         try:
             self.loop.run_until_complete(self.start())
         except KeyboardInterrupt:
