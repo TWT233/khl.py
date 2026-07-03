@@ -42,7 +42,6 @@ class Types:
         INVISIBLE = 'invisible'
         INFO = 'info'
         NONE = 'none'
-        
 
     class Size(_TypeEnum):
         """describes a component's size"""
