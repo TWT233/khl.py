@@ -39,9 +39,9 @@ class Types:
         SUCCESS = 'success'
         DANGER = 'danger'
         WARNING = 'warning'
+        INVISIBLE = 'invisible'
         INFO = 'info'
         NONE = 'none'
-        INVISIBLE = 'invisible'
 
     class Size(_TypeEnum):
         """describes a component's size"""
