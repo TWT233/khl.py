@@ -1,5 +1,4 @@
 """parser: component used in command args handling, convert string token to fit the command signature"""
-import asyncio
 import copy
 import inspect
 import logging
@@ -29,7 +28,7 @@ def _get_param_type(param: Union[inspect.Parameter, None]):
 
 
 def _wrap_one_param_func(func: Callable) -> Callable:
-    def wrapper(msg: Message, client: Client, token: str):
+    def wrapper(_msg: Message, _client: Client, token: str):
         return func(token)
     return wrapper
 

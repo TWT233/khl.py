@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Dict, Callable, List, Optional, Union, Coroutine, IO
 
 from .. import AsyncRunnable  # interfaces
-from .. import Cert, HTTPRequester, RateLimiter, WebhookReceiver, WebsocketReceiver, Gateway, Client  # net related
+from .. import Cert, HTTPRequester, RateLimiter, Gateway, Client  # net related
+from .. import Receiver, WebhookReceiver, WebsocketReceiver  # net related, receivers
 from .. import MessageTypes, EventTypes, SlowModeTypes, SoftwareTypes  # types
 from .. import User, Channel, PublicChannel, Guild, Event, Message  # concepts
 from ..command import CommandManager
@@ -46,6 +47,7 @@ class Bot(AsyncRunnable):
                  cert: Cert = None,
                  client: Client = None,
                  gate: Gateway = None,
+                 receiver: Receiver = None,
                  out: HTTPRequester = None,
                  compress: bool = True,
                  port=5000,
@@ -59,6 +61,7 @@ class Bot(AsyncRunnable):
         :param cert: used to build requester and receiver
         :param client: the bot relies on
         :param gate: the client relies on
+        :param receiver: custom receiver as the gate's component
         :param out: the gate's component
         :param compress: used to tune the receiver
         :param port: used to tune the WebhookReceiver
@@ -67,7 +70,7 @@ class Bot(AsyncRunnable):
         if not token and not cert:
             raise ValueError('require token or cert')
 
-        self._init_client(cert or Cert(token=token), client, gate, out, compress, port, route, ratelimiter)
+        self._init_client(cert or Cert(token=token), client, gate, receiver, out, compress, port, route, ratelimiter)
         self._register_client_handler()
 
         self.command = CommandManager()
@@ -79,8 +82,8 @@ class Bot(AsyncRunnable):
         self._startup_index = []
         self._shutdown_index = []
 
-    def _init_client(self, cert: Cert, client: Client, gate: Gateway, out: HTTPRequester, compress: bool, port, route,
-                     ratelimiter):
+    def _init_client(self, cert: Cert, client: Client, gate: Gateway, receiver: Receiver, out: HTTPRequester,
+                     compress: bool, port, route, ratelimiter):
         """
         construct self.client from args.
 
@@ -90,6 +93,7 @@ class Bot(AsyncRunnable):
         :param cert: used to build requester and receiver
         :param client: the bot relies on
         :param gate: the client relies on
+        :param receiver: custom receiver as the gate's component
         :param out: the gate's component
         :param compress: used to tune the receiver
         :param port: used to tune the WebhookReceiver
@@ -105,7 +109,9 @@ class Bot(AsyncRunnable):
 
         # client and gate not in args, build them
         _out = out if out else HTTPRequester(cert, ratelimiter)
-        if cert.type == Cert.Types.WEBSOCKET:
+        if receiver:
+            _in = receiver
+        elif cert.type == Cert.Types.WEBSOCKET:
             _in = WebsocketReceiver(cert, compress)
         elif cert.type == Cert.Types.WEBHOOK:
             _in = WebhookReceiver(cert, port=port, route=route, compress=compress)
